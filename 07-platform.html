@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>07 · The platform — TAP•IP Tour</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a><span class="dot"></span>
+    <a href="00-foundations.html">00</a>
+    <a href="01-the-product.html">01</a>
+    <a href="02-the-stack.html">02</a>
+    <a href="03-tenant-security.html">03</a>
+    <a href="04-frontend-layers.html">04</a>
+    <a href="05-request-flow.html">05</a>
+    <a href="06-navigation.html">06</a>
+    <a href="07-platform.html" class="current">07</a>
+    <a href="10-daily-tools.html">09</a>
+    <a href="11-principles.html">10</a>
+    <a href="12-reference.html">11</a>
+    <a href="13-exercises.html">12</a>
+    <a href="14-glossary.html">13</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">07</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Chapter 07 · ~10 minutes</div>
+      <h2 class="section-title">The platform: <em>how it all runs</em>.</h2>
+      <p class="lede">Python backend + the four services that keep TAP•IP running. You'll see these names every day.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <h3 class="feature-title">The Python backend.</h3>
+    <p>99% of user traffic goes through Next.js. The other 1% goes through a separate Python server (FastAPI). The Python server exists for work that doesn't fit nicely in TypeScript:</p>
+
+    <ul>
+      <li><strong>AI agents.</strong> Long-running, tool-using AI workflows (think: "draft this patent claim, check for prior art, summarize the response"). Python's AI ecosystem (LangChain, Anthropic SDK with tools) is much more mature than TypeScript's.</li>
+      <li><strong>Heavy math.</strong> The Cost Engine and the Deadline Engine — both crunch a lot of numbers across rate cards and jurisdiction rules.</li>
+      <li><strong>Scheduled jobs (cron).</strong> Daily docketing checks, weekly reports, monthly billing runs. Lives in <code>backend/scripts/</code> + a Celery worker.</li>
+      <li><strong>Document RAG.</strong> A separate microservice for "ask a question about a patent PDF" at <code>backend/document_rag/</code>.</li>
+    </ul>
+
+    <p>The Python backend uses <span class="pill" data-term="async">async</span> SQLAlchemy to talk to the same Postgres database. Same tenant isolation guarantees as the frontend.</p>
+
+    <div class="analogy">
+      Async SQLAlchemy is like ordering coffee while the previous person's drink is being made. The waiter doesn't stand still — they take the next order while the espresso machine runs.
+    </div>
+
+    <p>You won't write Python this summer unless we explicitly assign it. But know the backend exists, runs at port 8001, and handles the "AI / math / cron" cases. The frontend calls it via HTTP for those specific jobs.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d3">
+    <h3 class="feature-title">Four services. One pipeline.</h3>
+    <p>Four services keep TAP•IP running. You'll see these names every day. Here's how they work together:</p>
+
+    <div style="margin: 36px 0; padding: 32px; background: var(--bg-deep); border: 1px solid var(--line-soft); border-radius: 16px;">
+
+      <div style="display: grid; grid-template-columns: 1fr; gap: 14px;">
+
+        <div style="display: flex; align-items: center; gap: 18px; padding: 16px 20px; background: var(--bg-surface); border: 1px solid var(--line-soft); border-radius: 10px;">
+          <div style="font-size: 24px;">👩‍💻</div>
+          <div style="flex: 1;">
+            <div style="font-family: var(--font-display); font-style: italic; font-size: 18px; color: var(--type-primary);">Developer laptop</div>
+            <div style="font-size: 12px; color: var(--type-tertiary);"><code>git push</code> a change</div>
+          </div>
+        </div>
+
+        <div style="text-align: center; color: var(--cyan); font-family: var(--font-mono); font-size: 12px;">↓ <span style="color: var(--type-quiet); margin-left: 6px;">code</span></div>
+
+        <div style="display: flex; align-items: center; gap: 18px; padding: 16px 20px; background: var(--bg-surface); border: 1px solid var(--line-soft); border-radius: 10px;">
+          <div style="font-size: 24px;">🐙</div>
+          <div style="flex: 1;">
+            <div style="font-family: var(--font-display); font-style: italic; font-size: 18px; color: var(--type-primary);">GitHub</div>
+            <div style="font-size: 12px; color: var(--type-tertiary);">code repo · webhook fires</div>
+          </div>
+        </div>
+
+        <div style="text-align: center; color: var(--cyan); font-family: var(--font-mono); font-size: 12px;">↓ <span style="color: var(--type-quiet); margin-left: 6px;">webhook</span></div>
+
+        <div style="display: flex; align-items: center; gap: 18px; padding: 16px 20px; background: linear-gradient(135deg, rgba(168,85,247,0.08), rgba(192,132,252,0.04)); border: 1px solid rgba(168,85,247,0.3); border-radius: 10px;">
+          <div style="font-size: 24px;">🚂</div>
+          <div style="flex: 1;">
+            <div style="font-family: var(--font-display); font-style: italic; font-size: 18px; color: var(--type-primary);">Railway</div>
+            <div style="font-size: 12px; color: var(--type-tertiary);">builds + runs Docker containers</div>
+          </div>
+        </div>
+
+        <div style="text-align: center; color: var(--cyan); font-family: var(--font-mono); font-size: 12px;">↓ <span style="color: var(--type-quiet); margin-left: 6px;">builds</span></div>
+
+        <div style="display: flex; align-items: center; gap: 18px; padding: 16px 20px; background: var(--bg-surface); border: 1px solid var(--line-soft); border-radius: 10px;">
+          <div style="font-size: 24px;">🐳</div>
+          <div style="flex: 1;">
+            <div style="font-family: var(--font-display); font-style: italic; font-size: 18px; color: var(--type-primary);">Docker container</div>
+            <div style="font-size: 12px; color: var(--type-tertiary);">live · serves users</div>
+          </div>
+        </div>
+
+        <div style="text-align: center; color: var(--cyan); font-family: var(--font-mono); font-size: 12px;">↓ <span style="color: var(--type-quiet); margin-left: 6px;">SQL queries</span></div>
+
+        <div style="display: flex; align-items: center; gap: 18px; padding: 16px 20px; background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(34,197,94,0.02)); border: 1px solid rgba(34,197,94,0.25); border-radius: 10px;">
+          <div style="font-size: 24px;">🟩</div>
+          <div style="flex: 1;">
+            <div style="font-family: var(--font-display); font-style: italic; font-size: 18px; color: var(--type-primary);">Supabase</div>
+            <div style="font-size: 12px; color: var(--type-tertiary);">Postgres + Auth + Storage</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </section>
+
+  <section class="fade-in d4" style="margin-top: 56px;">
+    <h3 class="feature-title">🐳 Docker.</h3>
+    <p>Docker packages software into a "container" — a sealed bundle that runs identically on the founder's laptop, on a teammate's laptop, and on Railway's servers. Inside the container is the app code, its dependencies, and the right version of Node or Python.</p>
+    <div class="analogy">Docker is a shipping container for software. Whatever code you put inside, it travels the same way and arrives identical. No "works on my machine" problems.</div>
+
+    <h3 class="feature-title" style="margin-top: 36px;">🐙 GitHub.</h3>
+    <p>GitHub hosts the source code. Every change is tracked. Multiple people can work on the same project without overwriting each other. You'll open <span class="pill" data-term="pr">Pull Requests</span> here when you make changes — that's how the founder reviews your work before it goes live.</p>
+    <div class="analogy">GitHub is a shared Google Doc for code. Every change is tracked, everyone can see history, you can fork your own copy. Pull Requests = "I want to merge my edits into the main doc."</div>
+
+    <h3 class="feature-title" style="margin-top: 36px;">🟩 Supabase.</h3>
+    <p>Supabase rents us a managed Postgres database. They handle the server, backups, security patches. We just connect and run queries. They also give us a free authentication system (login + signup + password reset) and a dashboard called <strong>Supabase Studio</strong> where you can browse rows.</p>
+    <div class="analogy">Supabase is renting a Postgres database instead of running your own. Like Vercel for databases — they handle the server, backups, and access control; we just connect.</div>
+
+    <h3 class="feature-title" style="margin-top: 36px;">🚂 Railway.</h3>
+    <p>Railway runs our Docker containers in the cloud. When we push code to GitHub, Railway automatically detects the push, builds a new Docker container, and rolls it out to live servers. Five Railway services keep TAP•IP running: the marketing site (tap-ip.com), the Next.js app, the Python backend, a Celery worker, and the RAG microservice.</p>
+    <div class="analogy">Railway is the company that picks up your shipping containers from GitHub and runs them on its trucks (servers). Auto-deploys when you push code.</div>
+
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d5">
+    <div class="card" style="border-color: var(--violet-glow); background: linear-gradient(180deg, rgba(139,92,246,0.06), rgba(34,211,238,0.02));">
+      <div class="eyebrow" style="margin-bottom: 12px;">For your own product</div>
+      <h3 class="feature-title" style="margin-bottom: 14px;">Same four services. Free at small scale.</h3>
+      <p>GitHub: free for public repos, $4/mo for private. Supabase: free for 500MB / 50K users. Railway: $5/mo free credit. Docker: free.</p>
+      <p style="margin-bottom: 0;"><strong>Total cost to run a real product on this stack at small scale: $0/month.</strong> That's not marketing. That's what most indie hackers actually pay until they hit traction.</p>
+    </div>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="06-navigation.html" class="foot-link prev">
+      <span class="lbl">← Previous</span>
+      <span class="tt">06 · Navigation</span>
+    </a>
+    <a href="08-lifecycle.html" class="foot-link next">
+      <span class="lbl">Next chapter →</span>
+      <span class="tt">08 · Lifecycle of a feature</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+<script src="tour.js"></script>
+</body>
+</html>

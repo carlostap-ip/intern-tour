@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>00 · Foundations — TAP•IP Tour</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<style>
+  /* Mermaid container — sits naturally in the dark theme */
+  .mermaid-wrap {
+    background: var(--bg-surface);
+    border: 1px solid var(--line-soft);
+    border-radius: 14px;
+    padding: 28px 24px;
+    margin: 24px 0;
+    overflow-x: auto;
+  }
+  .mermaid-wrap .mermaid { background: transparent !important; }
+  .mermaid-wrap svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a><span class="dot"></span>
+    <a href="00-foundations.html" class="current">00</a>
+    <a href="01-the-product.html">01</a>
+    <a href="02-the-stack.html">02</a>
+    <a href="03-tenant-security.html">03</a>
+    <a href="04-frontend-layers.html">04</a>
+    <a href="05-request-flow.html">05</a>
+    <a href="06-navigation.html">06</a>
+    <a href="07-platform.html">07</a>
+    <a href="09-external.html">08</a>
+    <a href="10-daily-tools.html">09</a>
+    <a href="11-principles.html">10</a>
+    <a href="12-reference.html">11</a>
+    <a href="13-exercises.html">12</a>
+    <a href="14-glossary.html">13</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">00</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Chapter 00 · Optional pre-read · ~15 minutes</div>
+      <h2 class="section-title">First, <em>the basics</em>.</h2>
+      <p class="lede">If you've never built a website, this chapter is your runway. Nine concepts the rest of the tour assumes you know — each in plain language, no jargon.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <div class="note">
+      <p style="margin: 0;"><strong>Already familiar with web development?</strong> Skim or skip. The tour proper starts at chapter 01. This page is a safety net for first-time readers — nine concepts that come up over and over.</p>
+    </div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d3">
+    <h3 class="feature-title">1. What's a <em>server</em>?</h3>
+    <p>A server is just a computer that's always on and reachable over the internet. It runs a program that listens for incoming requests ("hey, send me the homepage" or "save this form") and sends back responses.</p>
+    <p>Your laptop is technically a server too, but it's not always on, not always reachable, and not optimized for handling traffic. Real servers live in data centers — companies like Railway, AWS, Vercel rent them to you so you don't have to buy your own.</p>
+    <div class="analogy">A server is like a 24/7 phone line for your business. Customers (browsers) call in, the line is always picked up, and someone always answers with the right information.</div>
+
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+  B1[🌐 Browser 1<br/>your laptop]
+  B2[🌐 Browser 2<br/>your phone]
+  B3[🌐 Browser 3<br/>someone in Tokyo]
+  S{{🖥️ The server<br/>always on}}
+  B1 -.request.-> S
+  B2 -.request.-> S
+  B3 -.request.-> S
+  S -.response.-> B1
+  S -.response.-> B2
+  S -.response.-> B3
+</pre>
+    </div>
+
+    <p>When this tour says "the Next.js server" or "the Python server," it means: a computer in Railway's data center running a Next.js program (or a Python program), waiting for browser requests.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d4">
+    <h3 class="feature-title">2. What's a <em>database</em>?</h3>
+    <p>A database is a program that stores data in an organized way and lets other programs ask questions about it ("give me all patents owned by Acme Corp").</p>
+    <p>The data lives in <strong>tables</strong> — like spreadsheets, but with strict rules about what kind of data each column can hold and how tables relate to each other. The most popular open-source database is <strong>PostgreSQL</strong> (we just say "Postgres"). TAP•IP uses Postgres.</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 24px 0;">
+      <div class="card" style="padding: 18px 20px;">
+        <h4 style="margin: 0 0 8px;">Table</h4>
+        <p style="font-size: 13px; margin: 0;">A spreadsheet with named columns. Example: a <code>patents</code> table with columns <code>id</code>, <code>title</code>, <code>filing_date</code>, <code>tenant_id</code>.</p>
+      </div>
+      <div class="card" style="padding: 18px 20px;">
+        <h4 style="margin: 0 0 8px;">Row</h4>
+        <p style="font-size: 13px; margin: 0;">One entry in a table. One patent in the <code>patents</code> table is one row.</p>
+      </div>
+      <div class="card" style="padding: 18px 20px;">
+        <h4 style="margin: 0 0 8px;">Query</h4>
+        <p style="font-size: 13px; margin: 0;">A question you ask the database. <em>"Give me all patents where tenant_id is acme-uuid"</em> is a query.</p>
+      </div>
+      <div class="card" style="padding: 18px 20px;">
+        <h4 style="margin: 0 0 8px;">SQL</h4>
+        <p style="font-size: 13px; margin: 0;">The language for writing queries. Pronounced "sequel" or "S-Q-L."</p>
+      </div>
+    </div>
+
+    <div class="analogy">A database is like a filing cabinet plus a librarian. The cabinet holds the rows. The librarian (SQL) answers questions like "find me everything filed by Acme in 2024." You ask in English-ish; she pulls the right folders.</div>
+
+    <p>Here's what one table looks like — three columns, four rows. Every row is one patent. Every column has a strict type.</p>
+
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+erDiagram
+  PATENTS {
+    uuid id PK "primary key"
+    varchar title "the patent name"
+    date filing_date "when filed"
+    uuid tenant_id FK "owning customer"
+  }
+  TENANTS ||--o{ PATENTS : owns
+  TENANTS {
+    uuid id PK
+    varchar name "Acme, Globex, etc"
+  }
+</pre>
+    </div>
+
+    <p>The diagram above shows two tables — <code>tenants</code> (customers) and <code>patents</code> — and the line between them means <em>"one tenant can own many patents."</em> That's how databases let you connect rows across tables. Postgres calls this a <strong>foreign key</strong> relationship.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d5">
+    <h3 class="feature-title">3. What's a <em>framework</em>?</h3>
+    <p>A framework is a pre-built foundation for building software. It handles the boring, repetitive parts ("how do I serve a webpage?", "how do I route URLs?") so you can focus on what makes your app unique.</p>
+    <p><strong>Next.js</strong> is the framework TAP•IP uses for the frontend. It's built on top of <strong>React</strong> (a library for building user interfaces). Together they handle:</p>
+    <ul>
+      <li>Rendering pages with HTML/CSS/JavaScript.</li>
+      <li>Routing — making <code>/engine/patents</code> show the patents page automatically.</li>
+      <li>Server-side rendering — building the page on the server so it loads fast.</li>
+      <li>Server actions — letting the browser call server functions like local ones.</li>
+    </ul>
+    <p>Without a framework, you'd have to write all of this yourself. With Next.js, you just write the parts that are unique to your app.</p>
+    <div class="analogy">A framework is like buying a pre-built house frame instead of cutting every 2×4 from scratch. The plumbing and electrical rough-in is done; you just choose the wallpaper, the appliances, the layout of the rooms.</div>
+
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart TB
+  YOU[👤 You write<br/>your business logic]
+  NX{{Next.js framework<br/>provides everything below}}
+  R[Routing<br/>/patents → patents page]
+  SR[Server-side rendering<br/>HTML built on the server]
+  SA[Server actions<br/>browser calls server functions]
+  B[Build &amp; bundle<br/>code → optimized files]
+  D[Dev server<br/>auto-reload as you code]
+  YOU --> NX
+  NX --> R
+  NX --> SR
+  NX --> SA
+  NX --> B
+  NX --> D
+</pre>
+    </div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d6">
+    <h3 class="feature-title">4. <em>Frontend</em> vs <em>backend</em>.</h3>
+    <p><strong>Frontend</strong> = the code that runs in your browser. What the user sees and clicks. Made of HTML, CSS, and JavaScript.</p>
+    <p><strong>Backend</strong> = the code that runs on the server. Reads from the database, runs business logic, sends data back to the frontend.</p>
+    <p>TAP•IP's frontend is mostly Next.js + React. The backend is split: most of it lives inside the Next.js server (as server actions), and a small piece lives in a separate Python (FastAPI) server for AI and heavy computation.</p>
+    <div class="analogy">Frontend is the storefront — the displays, the signs, the cash register. Backend is the warehouse and the accountants — out of sight, doing the actual work.</div>
+
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+  subgraph FE["FRONTEND — runs in your browser"]
+    direction TB
+    HTML[HTML + CSS<br/>what you see]
+    JS[JavaScript<br/>buttons, forms, clicks]
+  end
+  subgraph BE["BACKEND — runs on the server"]
+    direction TB
+    LOGIC[Business logic<br/>permissions, math]
+    DBR[(Database<br/>persistent storage)]
+  end
+  FE -.HTTP request.-> BE
+  BE -.HTTP response.-> FE
+  LOGIC --> DBR
+</pre>
+    </div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d7">
+    <h3 class="feature-title">5. What's a <em>URL</em>?</h3>
+    <p>A URL (<em>Uniform Resource Locator</em>) is the address you type in the browser bar — like <code>https://app.tap-ip.com/engine/patents/5</code>. It tells the browser <em>which server to talk to, on which port, asking for which thing</em>. Every URL is a mini-instruction.</p>
+
+    <p>A URL has up to six parts. Most you don't see day-to-day, but you'll meet all of them eventually:</p>
+
+    <div style="background: var(--bg-deep); border: 1px solid var(--line-soft); border-radius: 12px; padding: 24px; margin: 24px 0; overflow-x: auto;">
+      <pre style="margin: 0; font-family: var(--font-mono); font-size: 13px; line-height: 1.9; color: var(--type-secondary); white-space: pre;"><span style="color: #A78BFA;">https://</span><span style="color: #67E8F9;">app.tap-ip.com</span><span style="color: #F59E0B;">:443</span><span style="color: #A78BFA;">/engine/patents/5</span><span style="color: #67E8F9;">?status=pending</span><span style="color: #F59E0B;">#claims</span>
+<span style="color: #A78BFA;">└──┬───┘</span> <span style="color: #67E8F9;">└──────┬─────┘</span><span style="color: #F59E0B;">└─┬─┘</span><span style="color: #A78BFA;">└──────┬──────────┘</span><span style="color: #67E8F9;">└──────┬──────┘</span><span style="color: #F59E0B;">└──┬──┘</span>
+<span style="color: var(--type-tertiary);">protocol</span>   <span style="color: var(--type-tertiary);">domain (host)</span> <span style="color: var(--type-tertiary);">port</span>    <span style="color: var(--type-tertiary);">path</span>          <span style="color: var(--type-tertiary);">query string</span>  <span style="color: var(--type-tertiary);">fragment</span></pre>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 24px 0;">
+      <div class="card" style="padding: 18px 20px;">
+        <h4 style="margin: 0 0 8px;">Protocol</h4>
+        <p style="font-size: 13px; margin: 0;"><code>https://</code> — how browser and server agree to talk. <code>https</code> is encrypted; <code>http</code> is plain text. Always <code>https</code> in production.</p>
+      </div>
+      <div class="card" style="padding: 18px 20px;">
+        <h4 style="margin: 0 0 8px;">Domain (host)</h4>
+        <p style="font-size: 13px; margin: 0;"><code>app.tap-ip.com</code> — the server's name. DNS translates it into an IP address (a numeric server location), like a phone book lookup.</p>
+      </div>
+      <div class="card" style="padding: 18px 20px;">
+        <h4 style="margin: 0 0 8px;">Port</h4>
+        <p style="font-size: 13px; margin: 0;"><code>:443</code> — <em>which program</em> on that server. See the callout below.</p>
+      </div>
+      <div class="card" style="padding: 18px 20px;">
+        <h4 style="margin: 0 0 8px;">Path</h4>
+        <p style="font-size: 13px; margin: 0;"><code>/engine/patents/5</code> — which thing on the server. With Next.js, this matches a folder path inside <code>src/app/</code>.</p>
+      </div>
+      <div class="card" style="padding: 18px 20px;">
+        <h4 style="margin: 0 0 8px;">Query string</h4>
+        <p style="font-size: 13px; margin: 0;"><code>?status=pending&amp;page=2</code> — extra parameters the server can read. Like passing arguments to a function via the URL. See the example below.</p>
+      </div>
+      <div class="card" style="padding: 18px 20px;">
+        <h4 style="margin: 0 0 8px;">Fragment</h4>
+        <p style="font-size: 13px; margin: 0;"><code>#claims</code> — a spot to scroll to <em>within</em> the page. Never sent to the server; the browser handles it locally.</p>
+      </div>
+    </div>
+
+    <h4 style="margin-top: 28px;">More on query strings.</h4>
+    <p>The query string is everything after the <code>?</code>. Each parameter is a <code>key=value</code> pair, joined with <code>&amp;</code>. Multiple parameters work like keyword arguments to a function:</p>
+
+    <div style="background: var(--bg-deep); border: 1px solid var(--line-soft); border-radius: 12px; padding: 18px 22px; margin: 16px 0; font-family: var(--font-mono); font-size: 13px; line-height: 1.85; overflow-x: auto;">
+      <div style="color: var(--type-secondary);">https://app.tap-ip.com/engine/patents<span style="color: #F59E0B;">?status=pending&amp;jurisdiction=US&amp;page=2&amp;sort=filed_desc</span></div>
+      <div style="color: var(--type-tertiary); margin-top: 10px;">↓ the server sees four parameters</div>
+      <div style="margin-top: 10px;">
+        <span style="color: #67E8F9;">status</span>        <span style="color: var(--type-secondary);">= "pending"</span>
+      </div>
+      <div><span style="color: #67E8F9;">jurisdiction</span>  <span style="color: var(--type-secondary);">= "US"</span></div>
+      <div><span style="color: #67E8F9;">page</span>          <span style="color: var(--type-secondary);">= "2"</span></div>
+      <div><span style="color: #67E8F9;">sort</span>          <span style="color: var(--type-secondary);">= "filed_desc"</span></div>
+    </div>
+
+    <p>The server reads the query string and uses it to <em>filter, paginate, or sort</em> whatever data it sends back. Same URL path, different query string = different data. Open the Network tab in DevTools (chapter 06) and you'll see query strings everywhere.</p>
+
+    <p style="color: var(--type-tertiary); font-size: 14px;">A few gotchas: spaces become <code>%20</code> or <code>+</code>; special characters get <em>percent-encoded</em> (the <code>%XX</code> notation). The browser handles this automatically when you submit a form — but you'll see encoded URLs in the wild.</p>
+
+    <h4 style="margin-top: 28px;">About ports.</h4>
+    <p>A single computer can run many programs at once — and several of them might want to listen for network traffic. <strong>Port numbers</strong> are how the operating system tells them apart, like apartment numbers in a building. When traffic arrives on port <code>443</code>, the OS hands it to whichever program is listening on 443.</p>
+
+    <p>Web traffic has two defaults nobody types because they're always assumed:</p>
+    <ul>
+      <li><strong>Port 80</strong> — plain <code>http://</code></li>
+      <li><strong>Port 443</strong> — encrypted <code>https://</code></li>
+    </ul>
+
+    <p>You'll see other ports all the time when working locally. TAP•IP's dev environment uses these:</p>
+
+    <div style="background: var(--bg-deep); border: 1px solid var(--line-soft); border-radius: 12px; padding: 18px 22px; margin: 16px 0; font-family: var(--font-mono); font-size: 13px; line-height: 1.85; overflow-x: auto;">
+      <div><span style="color: #67E8F9;">http://localhost:3000</span>   <span style="color: var(--type-tertiary);">→ Next.js frontend dev server</span></div>
+      <div><span style="color: #67E8F9;">http://localhost:8001</span>   <span style="color: var(--type-tertiary);">→ Python (FastAPI) backend</span></div>
+      <div><span style="color: #67E8F9;">http://localhost:5432</span>   <span style="color: var(--type-tertiary);">→ Local Postgres (via Docker)</span></div>
+      <div><span style="color: #67E8F9;">http://localhost:6006</span>   <span style="color: var(--type-tertiary);">→ Storybook (UI component preview)</span></div>
+    </div>
+
+    <p style="color: var(--type-tertiary);"><code>localhost</code> means <em>"this computer"</em> — your laptop talking to itself. Different ports = different programs running on it.</p>
+
+    <div class="analogy">A URL is a mailing address. <strong>Protocol</strong> = delivery service (FedEx vs USPS). <strong>Domain</strong> = the building. <strong>Port</strong> = the apartment number. <strong>Path</strong> = the resident's name. <strong>Query string</strong> = a note on the envelope. <strong>Fragment</strong> = which page of the magazine to flip to.</div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d7">
+    <h3 class="feature-title">6. What's an <em>HTTP request</em>?</h3>
+    <p>An HTTP request is how a browser talks to a server. Every time you click a link, submit a form, or load a page, your browser sends an HTTP request and the server sends back an HTTP response.</p>
+    <p>Requests come in a few flavors (called <em>methods</em> or <em>verbs</em>):</p>
+    <ul>
+      <li><code>GET</code> — "give me this page / data"</li>
+      <li><code>POST</code> — "here's some new data, save it"</li>
+      <li><code>PUT</code> / <code>PATCH</code> — "update this existing data"</li>
+      <li><code>DELETE</code> — "remove this data"</li>
+    </ul>
+    <p>When the tour says "the browser sends a POST to the server action," it means: the browser packages your form data into an HTTP POST request and sends it to a specific URL on the server. The server processes it and sends back a response (e.g., "patent created, here's the new ID").</p>
+
+    <h4 style="margin-top: 28px;">About request payloads (POST / PATCH bodies).</h4>
+    <p>For <code>GET</code> and <code>DELETE</code>, the request is mostly just "the URL plus headers" — there's no body. But for <code>POST</code>, <code>PUT</code>, and <code>PATCH</code>, the browser also sends a <strong>request body</strong> (often called the <em>payload</em>) — the actual data being submitted. Two common formats:</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0;">
+      <div>
+        <p style="font-size: 13px; color: var(--type-tertiary); margin: 0 0 6px;"><strong>JSON</strong> — what server actions + modern APIs use</p>
+        <div style="background: var(--bg-deep); border: 1px solid var(--line-soft); border-radius: 12px; padding: 16px 18px; font-family: var(--font-mono); font-size: 12px; line-height: 1.7; overflow-x: auto;"><div style="color: var(--type-tertiary);">POST /actions/createPatent</div><div style="color: var(--type-tertiary);">Content-Type: application/json</div><div style="margin-top: 8px; color: var(--type-secondary);">{</div><div style="color: var(--type-secondary);">  <span style="color: #67E8F9;">"title"</span>: <span style="color: #F59E0B;">"Adaptive Heat Sink"</span>,</div><div style="color: var(--type-secondary);">  <span style="color: #67E8F9;">"jurisdiction"</span>: <span style="color: #F59E0B;">"US"</span>,</div><div style="color: var(--type-secondary);">  <span style="color: #67E8F9;">"filing_date"</span>: <span style="color: #F59E0B;">"2026-06-15"</span>,</div><div style="color: var(--type-secondary);">  <span style="color: #67E8F9;">"inventor_ids"</span>: [<span style="color: #F59E0B;">42</span>, <span style="color: #F59E0B;">57</span>]</div><div style="color: var(--type-secondary);">}</div></div>
+      </div>
+      <div>
+        <p style="font-size: 13px; color: var(--type-tertiary); margin: 0 0 6px;"><strong>Form-encoded</strong> — old-school HTML forms</p>
+        <div style="background: var(--bg-deep); border: 1px solid var(--line-soft); border-radius: 12px; padding: 16px 18px; font-family: var(--font-mono); font-size: 12px; line-height: 1.7; overflow-x: auto;"><div style="color: var(--type-tertiary);">POST /actions/createPatent</div><div style="color: var(--type-tertiary);">Content-Type: application/x-www-form-urlencoded</div><div style="margin-top: 8px; color: var(--type-secondary);"><span style="color: #67E8F9;">title</span>=Adaptive+Heat+Sink<span style="color: #A78BFA;">&amp;</span></div><div style="color: var(--type-secondary);"><span style="color: #67E8F9;">jurisdiction</span>=US<span style="color: #A78BFA;">&amp;</span></div><div style="color: var(--type-secondary);"><span style="color: #67E8F9;">filing_date</span>=2026-06-15</div></div>
+      </div>
+    </div>
+
+    <p>The server's response will <em>also</em> have a body — usually JSON describing what got created, what changed, or what went wrong. The <strong>Network tab</strong> in DevTools shows you both halves: what you sent (Payload tab) and what came back (Response tab). That's exercise 10.</p>
+
+    <p style="color: var(--type-tertiary); font-size: 14px;">Notice query string vs request body: a <em>query string</em> lives in the URL itself (after the <code>?</code>) and is visible in the browser bar. A <em>request body</em> rides separately, isn't visible in the URL bar, and can be much larger. Query string = "which thing am I asking for?" Body = "here's the data I'm sending up."</p>
+
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+sequenceDiagram
+  participant B as 🌐 Browser
+  participant S as 🖥️ Server
+  Note over B,S: Load the page
+  B->>S: GET /patents
+  S-->>B: 200 OK — HTML + patent list
+  Note over B,S: User submits a new patent
+  B->>S: POST /patents (form data)
+  S-->>B: 201 Created — new patent ID
+  Note over B,S: User deletes one
+  B->>S: DELETE /patents/abc-123
+  S-->>B: 204 No Content
+</pre>
+    </div>
+
+    <h4 style="margin-top: 28px;">About status codes.</h4>
+    <p>Those numbers (<code>200</code>, <code>201</code>, <code>204</code>) are <strong>HTTP status codes</strong> — three-digit summaries the server returns saying "here's how it went." The first digit tells you the category at a glance:</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 24px 0;">
+      <div class="card" style="padding: 18px 20px; border-left: 3px solid #22C55E;">
+        <h4 style="margin: 0 0 6px; color: #22C55E;">2xx — Success</h4>
+        <p style="font-size: 13px; margin: 0;">It worked. <code>200 OK</code> = "here's what you asked for." <code>201 Created</code> = "I made it." <code>204 No Content</code> = "done; nothing to send back."</p>
+      </div>
+      <div class="card" style="padding: 18px 20px; border-left: 3px solid #67E8F9;">
+        <h4 style="margin: 0 0 6px; color: #67E8F9;">3xx — Redirect</h4>
+        <p style="font-size: 13px; margin: 0;">"Look somewhere else." <code>301 Moved Permanently</code> = "the page moved forever." <code>302 Found</code> = "temporarily go here." <code>304 Not Modified</code> = "use your cache."</p>
+      </div>
+      <div class="card" style="padding: 18px 20px; border-left: 3px solid #F59E0B;">
+        <h4 style="margin: 0 0 6px; color: #F59E0B;">4xx — You messed up</h4>
+        <p style="font-size: 13px; margin: 0;">The <em>browser</em>'s fault. <code>400 Bad Request</code> = malformed. <code>401 Unauthorized</code> = "log in first." <code>403 Forbidden</code> = "logged in, but no permission." <code>404 Not Found</code> = "that doesn't exist." <code>429 Too Many Requests</code> = "slow down."</p>
+      </div>
+      <div class="card" style="padding: 18px 20px; border-left: 3px solid #EF4444;">
+        <h4 style="margin: 0 0 6px; color: #EF4444;">5xx — Server messed up</h4>
+        <p style="font-size: 13px; margin: 0;">The <em>server</em>'s fault. <code>500 Internal Server Error</code> = "something broke; we don't know what." <code>502 Bad Gateway</code> = "the server in front called another server that died." <code>503 Service Unavailable</code> = "we're overloaded."</p>
+      </div>
+    </div>
+
+    <p style="color: var(--type-tertiary); font-size: 14px;">You'll memorize these without trying. <strong>404</strong> and <strong>500</strong> within a week. The rest follows.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d7">
+    <h3 class="feature-title">7. JavaScript vs <em>TypeScript</em>.</h3>
+    <p><strong>JavaScript</strong> is the language web browsers can run. Every interactive website uses it. It's flexible but has a famous problem: it doesn't check types until the code runs, so you find out at 3 a.m. that you added a number to a string somewhere.</p>
+    <p><strong>TypeScript</strong> is JavaScript with type annotations. You declare what kind of data each variable holds (<code>string</code>, <code>number</code>, custom types). A TypeScript compiler then checks your code <em>before it runs</em> and yells at you if types don't match. Catches a huge category of bugs.</p>
+    <p>TAP•IP uses TypeScript for everything in the frontend. You'll see file extensions <code>.ts</code> (pure TypeScript) and <code>.tsx</code> (TypeScript with React JSX).</p>
+    <div class="analogy">JavaScript is writing a math equation by hand and hoping you didn't make a sign error. TypeScript is doing the same equation with a calculator that flags arithmetic errors before you press equals.</div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d7">
+    <h3 class="feature-title">8. What's an <em>API</em>?</h3>
+    <p>An API (Application Programming Interface) is a set of named functions that one program exposes for another program to call. When a server says "you can POST to <code>/api/patents</code> to create a patent," that's an API endpoint.</p>
+    <p>You'll hear "API" used three ways:</p>
+    <ul>
+      <li><strong>HTTP API</strong> — the URLs a server exposes for browsers or other servers to call. Most common usage.</li>
+      <li><strong>Library API</strong> — the functions inside a library you can call from your own code.</li>
+      <li><strong>External API</strong> — some other company's HTTP endpoints (the Stripe API, the OpenAI API).</li>
+    </ul>
+    <p>In TAP•IP, server actions effectively REPLACE most HTTP APIs. You call them like local functions; Next.js handles the HTTP request under the hood.</p>
+
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart TB
+  API["📡 The Patents API"]
+  E1["GET /patents<br/><i>list all</i>"]
+  E2["POST /patents<br/><i>create one</i>"]
+  E3["GET /patents/:id<br/><i>read one</i>"]
+  E4["PATCH /patents/:id<br/><i>update one</i>"]
+  E5["DELETE /patents/:id<br/><i>remove one</i>"]
+  API --> E1
+  API --> E2
+  API --> E3
+  API --> E4
+  API --> E5
+</pre>
+    </div>
+
+    <p style="font-size: 14px; color: var(--type-tertiary);">Each line above is an <strong>endpoint</strong> — one URL the server listens on, plus the HTTP method the browser is allowed to use. Together they're "the Patents API."</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d7">
+    <h3 class="feature-title">9. The big idea: <em>three boxes talking to each other</em>.</h3>
+    <p>If you remember nothing else from this chapter, remember this picture:</p>
+
+    <div class="card" style="background: var(--bg-deep); padding: 32px; margin: 24px 0; text-align: center;">
+      <p style="font-family: var(--font-display); font-style: italic; font-size: 26px; color: var(--type-primary); line-height: 1.4; margin: 0;">Browser  ⇄  Server  ⇄  Database</p>
+      <p style="color: var(--type-tertiary); font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; margin: 14px 0 0;">click · request · query · row · response · render</p>
+    </div>
+
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+sequenceDiagram
+  participant U as 👤 User
+  participant B as 🌐 Browser
+  participant S as 🖥️ Server
+  participant D as 💾 Database
+  U->>B: clicks button
+  B->>S: HTTP request
+  S->>D: SQL query
+  D-->>S: rows
+  S-->>B: HTTP response
+  B-->>U: shows the result
+</pre>
+    </div>
+
+    <p>That's almost every web application ever built. The browser shows things to the user. The server runs your business logic. The database remembers stuff between visits. The three talk to each other via HTTP and SQL.</p>
+    <p>Everything else in this tour is a zoom-in on this picture.</p>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="index.html" class="foot-link prev">
+      <span class="lbl">← Back to</span>
+      <span class="tt">Index</span>
+    </a>
+    <a href="01-the-product.html" class="foot-link next">
+      <span class="lbl">Now you're ready →</span>
+      <span class="tt">01 · The product</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    securityLevel: 'loose',
+    themeVariables: {
+      // Surface
+      background: 'transparent',
+      mainBkg: '#161C3A',
+      secondBkg: '#1A2147',
+      tertiaryColor: '#11162E',
+      // Borders & lines
+      primaryBorderColor: '#A78BFA',
+      secondaryBorderColor: '#67E8F9',
+      tertiaryBorderColor: '#818CF8',
+      lineColor: '#67E8F9',
+      // Text
+      primaryTextColor: '#ECEEFB',
+      secondaryTextColor: '#ECEEFB',
+      tertiaryTextColor: '#ECEEFB',
+      textColor: '#ECEEFB',
+      titleColor: '#ECEEFB',
+      labelTextColor: '#ECEEFB',
+      // Cluster (subgraph)
+      clusterBkg: '#0B0F23',
+      clusterBorder: '#232C56',
+      // Sequence diagram
+      actorBkg: '#1A2147',
+      actorBorder: '#A78BFA',
+      actorTextColor: '#ECEEFB',
+      actorLineColor: '#67E8F9',
+      signalColor: '#ECEEFB',
+      signalTextColor: '#ECEEFB',
+      labelBoxBkgColor: '#161C3A',
+      labelBoxBorderColor: '#67E8F9',
+      noteBkgColor: '#1A2147',
+      noteBorderColor: '#A78BFA',
+      noteTextColor: '#ECEEFB',
+      activationBkgColor: '#6366F1',
+      activationBorderColor: '#A78BFA',
+      // ER diagram
+      attributeBackgroundColorOdd: '#11162E',
+      attributeBackgroundColorEven: '#161C3A',
+      // Fonts
+      fontFamily: '"Geist", "Söhne", system-ui, sans-serif',
+      fontSize: '14px',
+    },
+    flowchart: { curve: 'basis', useMaxWidth: true, htmlLabels: true, padding: 16 },
+    sequence: { actorMargin: 60, messageMargin: 36, mirrorActors: false, showSequenceNumbers: false, wrap: true },
+    er: { useMaxWidth: true },
+  });
+</script>
+<script src="tour.js"></script>
+</body>
+</html>

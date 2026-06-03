@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>14 · Glossary &amp; read next — TAP•IP Tour</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<style>
+  .gloss-search { width: 100%; padding: 14px 18px; background: var(--bg-surface); border: 1px solid var(--line); border-radius: 10px; color: var(--type-primary); font-family: var(--font-body); font-size: 14px; margin: 14px 0 24px; }
+  .gloss-search:focus { outline: none; border-color: var(--violet-glow); }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a><span class="dot"></span>
+    <a href="00-foundations.html">00</a>
+    <a href="01-the-product.html">01</a>
+    <a href="02-the-stack.html">02</a>
+    <a href="03-tenant-security.html">03</a>
+    <a href="04-frontend-layers.html">04</a>
+    <a href="05-request-flow.html">05</a>
+    <a href="06-navigation.html">06</a>
+    <a href="07-platform.html">07</a>
+    <a href="09-external.html">08</a>
+    <a href="10-daily-tools.html">09</a>
+    <a href="11-principles.html">10</a>
+    <a href="12-reference.html">11</a>
+    <a href="13-exercises.html">12</a>
+    <a href="14-glossary.html" class="current">13</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">14</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Chapter 14 · Lookup &amp; closing</div>
+      <h2 class="section-title">Glossary, <em>read next</em>.</h2>
+      <p class="lede">Every term that gets a pill in the tour, expanded. Plus the five docs to graduate to when you're ready.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <h3 class="feature-title">Glossary.</h3>
+    <p>Hover any pill in any chapter for a quick definition. Click a pill to jump here to the full entry.</p>
+
+    <input type="text" class="gloss-search" id="gloss-search" placeholder="🔍 Search the glossary…" />
+
+    <div class="gloss" id="glossary-container"></div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d3">
+    <h3 class="feature-title">What to read next.</h3>
+    <p>When you're ready to graduate from this tour into the senior-engineer docs, here's the order:</p>
+    <ol>
+      <li><code>docs/FRONTEND_ARCHITECTURE.md</code> — the canonical write-up of typed contexts + repositories.</li>
+      <li><code>docs/DB_CONNECTION_ARCHITECTURE.md</code> — the canonical write-up of the three DB roles + RLS.</li>
+      <li><code>docs/SCHEMA_DESIGN.md</code> — the decision tree for when to add a new table.</li>
+      <li><code>frontend/GENERATOR_GUIDE.md</code> — every generator with examples.</li>
+      <li><code>CLAUDE.md</code> §0–§20 — the authoritative discipline reference. Read in chunks; it's long.</li>
+    </ol>
+
+    <div style="margin-top: 80px; padding-top: 32px; border-top: 1px solid var(--line-soft); text-align: center;">
+      <p style="color: var(--type-tertiary); font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px;">End of tour</p>
+      <p style="font-family: var(--font-display); font-style: italic; font-size: 32px; color: var(--violet-glow); line-height: 1.2;">Now go build something.</p>
+      <p style="color: var(--type-tertiary); margin-top: 18px;">Last reviewed · 2026 · 06 · 02 — if a chapter feels wrong against the code, tell the founder. That's how it stays useful.</p>
+    </div>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="13-exercises.html" class="foot-link prev">
+      <span class="lbl">← Previous</span>
+      <span class="tt">13 · Exercises &amp; build your own</span>
+    </a>
+    <a href="index.html" class="foot-link next">
+      <span class="lbl">Back to →</span>
+      <span class="tt">Index</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+<script src="tour.js"></script>
+<script>
+const GLOSSARY_FULL = {
+  ipms: { term: 'IPMS / IP Management', def: 'Intellectual Property Management System — the category TAP•IP plays in. The IPMS tracks, files, and manages a company\'s patents, trademarks, and IP assets. Anaqua, IPfolio, and Clarivate are the legacy enterprise IPMSes. TAP•IP\'s Engine workspace IS the IPMS.' },
+  ip: { term: 'Intellectual Property', def: 'Patents, trademarks, copyrights, trade secrets. The legal protections around inventions and brands that make a product defensible.' },
+  multitenant: { term: 'Multi-tenant', def: 'One app instance serves many separate customers, with strict data isolation between them. The opposite is single-tenant, where each customer gets their own database.' },
+  rls: { term: 'RLS (Row-Level Security)', def: 'Postgres feature where the DB filters query results automatically based on a policy. The policies are SQL rules attached to a table; every query Postgres runs against it is filtered first.' },
+  supabase: { term: 'Supabase', def: 'Managed Postgres + Auth + Storage. We rent our database from them. Free tier: 500MB.' },
+  serveraction: { term: 'Server action', def: "A TypeScript function marked 'use server' that runs on the server, called from the browser as if it were local. A Next.js feature. Replaces traditional REST endpoints for mutations." },
+  tenantcontext: { term: 'TenantContext', def: 'A branded TypeScript type that proves code is scoped to one specific tenant. Built by the tenantAction wrapper. The compiler refuses mismatches.' },
+  pr: { term: 'Pull Request', def: 'A proposed change to a Git repo, opened for review before merging. The founder reviews; you iterate; eventually it merges.' },
+  provenance: { term: 'Provenance', def: 'The source/audit trail of where a piece of data came from. TAP•IP\'s Cost Engine shows provenance on every dollar.' },
+  async: { term: 'async / await', def: 'A JS/Python pattern for non-blocking operations. Wait for one thing while doing another. Without async, every slow call (database, network) would block the entire server.' },
+  drizzle: { term: 'Drizzle ORM', def: 'TypeScript ORM (Object-Relational Mapper) that gives type-safe SQL. Lighter than Prisma.' },
+  ormo: { term: 'ORM', def: 'Object-Relational Mapper — software that turns database rows into typed objects so you don\'t hand-write SQL.' },
+  database: { term: 'Database', def: 'A program that stores data in tables and lets other programs ask questions about it. TAP•IP uses Postgres — the most popular open-source database. Lives on a Supabase server.' },
+  server: { term: 'Server', def: 'A computer that is always on and reachable over the internet. It runs a program that listens for incoming requests and sends back responses. Lives in a data center; companies like Railway and AWS rent them.' },
+  framework: { term: 'Framework', def: 'A pre-built foundation for building software. Handles the boring repetitive parts (routing, rendering, build) so you can focus on what makes your app unique. Next.js is the framework TAP•IP uses.' },
+  nextjs: { term: 'Next.js', def: 'The framework TAP•IP uses for the frontend. Built on React (a UI library). Handles routing, server-side rendering, and server actions. Created and maintained by Vercel.' },
+  http: { term: 'HTTP request', def: 'How a browser talks to a server. Common types: GET (give me this), POST (save this), PUT/PATCH (update), DELETE (remove). Every page load, every form submit, every button click that talks to the server uses HTTP.' },
+  api: { term: 'API', def: 'A set of named functions one program exposes for another to call. Most often: URLs a server exposes for browsers or other servers to hit (HTTP API). Also: a library\'s functions, or an external company\'s endpoints.' },
+  typescript: { term: 'TypeScript', def: 'JavaScript with type annotations. You declare what kind of data each variable holds; a compiler checks before code runs and yells if types don\'t match. Catches a huge category of bugs.' },
+  frontend: { term: 'Frontend', def: 'Code that runs in the browser. What the user sees and clicks. Made of HTML, CSS, and JavaScript (or TypeScript that compiles to JS).' },
+  backend: { term: 'Backend', def: 'Code that runs on the server. Talks to the database, runs business logic, sends data back to the frontend.' },
+};
+
+const container = document.getElementById('glossary-container');
+const renderGlossary = (filter = '') => {
+  const q = filter.toLowerCase().trim();
+  container.innerHTML = Object.entries(GLOSSARY_FULL)
+    .filter(([k, e]) => q === '' || (e.term + ' ' + e.def).toLowerCase().includes(q))
+    .map(([k, e]) => `<div class="gloss-entry" id="gloss-${k}"><div class="gloss-term">${e.term}</div><div class="gloss-def">${e.def}</div></div>`)
+    .join('');
+};
+renderGlossary();
+
+document.getElementById('gloss-search').addEventListener('input', e => renderGlossary(e.target.value));
+
+// If URL hash, highlight + scroll
+if (location.hash) {
+  const t = document.querySelector(location.hash);
+  if (t && t.classList.contains('gloss-entry')) {
+    t.classList.add('highlight');
+    setTimeout(() => t.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+  }
+}
+</script>
+</body>
+</html>

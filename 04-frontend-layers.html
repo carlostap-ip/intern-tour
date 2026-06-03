@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>04 · Frontend layers — TAP•IP Tour</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a><span class="dot"></span>
+    <a href="00-foundations.html">00</a>
+    <a href="01-the-product.html">01</a>
+    <a href="02-the-stack.html">02</a>
+    <a href="03-tenant-security.html">03</a>
+    <a href="04-frontend-layers.html" class="current">04</a>
+    <a href="05-request-flow.html">05</a>
+    <a href="06-navigation.html">06</a>
+    <a href="07-platform.html">07</a>
+    <a href="09-external.html">08</a>
+    <a href="10-daily-tools.html">09</a>
+    <a href="11-principles.html">10</a>
+    <a href="12-reference.html">11</a>
+    <a href="13-exercises.html">12</a>
+    <a href="14-glossary.html">13</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">04</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Chapter 04 · ~12 minutes</div>
+      <h2 class="section-title">The frontend, <em>layer by layer.</em></h2>
+      <p class="lede">The pattern that 80% of TAP•IP code follows. Click each layer to see what it owns.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <p>Frontend code is where most of TAP•IP lives. When a user clicks a button, here's the chain of code that fires — top to bottom.</p>
+
+    <div style="margin: 36px 0;">
+      <div class="expand" onclick="this.classList.toggle('open')">
+        <div class="expand-head">
+          <span><strong style="color: var(--cyan); font-family: var(--font-mono); font-size: 13px; margin-right: 12px;">01</strong>Browser <span style="color: var(--type-tertiary); font-weight: 400;">— React component</span></span>
+        </div>
+        <div class="expand-body">
+          <p>The page the user sees. A React component that renders HTML and listens for clicks. When the user clicks "Save", the component calls a <span class="pill" data-term="serveraction">server action</span> — a special TypeScript function marked <code>'use server'</code>.</p>
+          <p><strong>Lives in:</strong> <code>frontend/src/app/[tenantSegment]/(authenticated)/engine/patents/page.tsx</code> (or similar).</p>
+          <p><strong>Does NOT:</strong> talk directly to the database. It talks to a server action, which talks to a repository, which talks to the database.</p>
+        </div>
+      </div>
+
+      <div class="expand" onclick="this.classList.toggle('open')">
+        <div class="expand-head">
+          <span><strong style="color: var(--cyan); font-family: var(--font-mono); font-size: 13px; margin-right: 12px;">02</strong>Server action <span style="color: var(--type-tertiary); font-weight: 400;">— 'use server'</span></span>
+        </div>
+        <div class="expand-body">
+          <p>A function marked <code>'use server'</code> at the top. Next.js wires this up so when the browser calls it, the function runs on the server (not in the browser). It's a magic drive-through window.</p>
+          <p><strong>Lives in:</strong> <code>frontend/src/app/actions/patents.ts</code> (one file per domain).</p>
+          <p><strong>Always wrapped in <code>tenantAction()</code></strong> — the wrapper is the security boundary. It auto-checks auth, extracts the tenant, and builds the <span class="pill" data-term="tenantcontext">TenantContext</span> for you.</p>
+
+          <div class="code" style="margin-top: 18px;">
+<span class="path">frontend/src/app/actions/patents.ts (simplified)</span>
+<span class="str">'use server'</span>;
+
+<span class="kw">export const</span> createPatent = <span class="fn">tenantAction</span>(<span class="kw">async</span> (ctx, input) =&gt; {
+  <span class="com">// ctx is the TenantContext { tenantId, userId, role }</span>
+  <span class="com">// — the wrapper already verified auth and tenant.</span>
+
+  <span class="kw">await</span> <span class="fn">requireFeature</span>(FEATURES.IPMS_PATENTS);
+  <span class="kw">await</span> <span class="fn">requirePermission</span>(PERMISSIONS.PATENT_CREATE);
+
+  <span class="kw">const</span> repo = <span class="kw">new</span> <span class="ty">PatentRepository</span>(ctx);
+  <span class="kw">const</span> patent = <span class="kw">await</span> repo.<span class="fn">create</span>({ ...input, tenantId: ctx.tenantId });
+
+  <span class="fn">revalidatePath</span>(engineRoutes.<span class="fn">patents</span>(ctx.tenantId));
+  <span class="kw">return</span> patent;
+});
+          </div>
+        </div>
+      </div>
+
+      <div class="expand" onclick="this.classList.toggle('open')">
+        <div class="expand-head">
+          <span><strong style="color: var(--cyan); font-family: var(--font-mono); font-size: 13px; margin-right: 12px;">03</strong>Repository <span style="color: var(--type-tertiary); font-weight: 400;">— PatentRepository</span></span>
+        </div>
+        <div class="expand-body">
+          <p>A TypeScript class that owns <em>all database queries for one entity</em>. <code>PatentRepository</code> owns every read and write related to patents. <code>MatterRepository</code> owns matters. There are 60+ repositories in <code>frontend/src/lib/repositories/</code>.</p>
+          <p>If you want anything related to patents — list them, create one, update a status — you call a method on <code>PatentRepository</code>. Nothing else writes patent SQL.</p>
+
+          <div class="analogy" style="margin-top: 18px;">
+            A repository is a single specialist desk for one form. Want anything related to patents? Go to the Patent desk. They know the forms, the filing rules, the right cabinet. Nobody else handles patent forms — there's one source of truth.
+          </div>
+        </div>
+      </div>
+
+      <div class="expand" onclick="this.classList.toggle('open')">
+        <div class="expand-head">
+          <span><strong style="color: var(--cyan); font-family: var(--font-mono); font-size: 13px; margin-right: 12px;">04</strong>TenantContext <span style="color: var(--type-tertiary); font-weight: 400;">— the compiler's guard rail</span></span>
+        </div>
+        <div class="expand-body">
+          <p><span class="pill" data-term="tenantcontext">TenantContext</span> is a TypeScript type — a <em>branded</em> type — that means: <em>this code has been verified to be scoped to one specific tenant.</em></p>
+          <p>A <code>TenantContext</code> can't be passed to code expecting a different context type (like <code>ServiceContext</code> or <code>PublicContext</code>). The TypeScript compiler refuses to compile mismatches. This is <strong>structural security</strong> — the compiler enforces what humans would otherwise have to remember.</p>
+
+          <div class="analogy" style="margin-top: 18px;">
+            TenantContext is a hall pass with your name printed on it. The compiler refuses to let a "tenant user" hall pass into rooms marked "service-only." Forged passes don't compile.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p style="color: var(--type-tertiary); font-style: italic;">Next chapter: watch all four layers fire in one animated request flow.</p>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="03-tenant-security.html" class="foot-link prev">
+      <span class="lbl">← Previous</span>
+      <span class="tt">03 · Tenant security</span>
+    </a>
+    <a href="05-request-flow.html" class="foot-link next">
+      <span class="lbl">Next chapter →</span>
+      <span class="tt">05 · Watch a request fly</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+<script src="tour.js"></script>
+</body>
+</html>

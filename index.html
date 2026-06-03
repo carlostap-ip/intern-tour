@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TAP•IP — Architecture Tour</title>
+<meta name="description" content="A guided walkthrough of TAP•IP's stack, codebase, and tools — for new team members." />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<style>
+  /* Reading-plan link contrast — defaults inherit a violet that disappears on the dark cards */
+  #reading-plan a {
+    color: var(--cyan);
+    text-decoration: underline;
+    text-decoration-color: rgba(103, 232, 249, 0.4);
+    text-underline-offset: 3px;
+    transition: color 0.15s ease, text-decoration-color 0.15s ease;
+  }
+  #reading-plan a:hover {
+    color: #A5F3FC;
+    text-decoration-color: #A5F3FC;
+  }
+</style>
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="#chapters">Chapters</a>
+    <span class="dot"></span>
+    <a href="#reading-plan">Reading plan</a>
+    <span class="dot"></span>
+    <a href="14-glossary.html">Glossary</a>
+  </nav>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="eyebrow fade-in d1">Architecture tour · v1 · for summer interns</div>
+    <h1 class="display fade-in d2">
+      How TAP•IP<br/>
+      <em>actually works</em><br/>
+      — and how to<br/>
+      <em>build your own.</em>
+    </h1>
+    <p class="lede fade-in d3">A guided tour through the codebase, the stack, the platform, and the tools you'll touch every day. Then a stretch goal: by end of summer, ship your own product on the same rails.</p>
+
+    <div class="hero-marquee fade-in d4">
+      <span>Next.js</span><span class="sep">/</span>
+      <span>Postgres</span><span class="sep">/</span>
+      <span>Drizzle ORM</span><span class="sep">/</span>
+      <span>Supabase</span><span class="sep">/</span>
+      <span>Railway</span><span class="sep">/</span>
+      <span>Docker</span><span class="sep">/</span>
+      <span>Claude Code</span>
+    </div>
+  </section>
+
+  <section id="chapters" style="padding-top: 40px;">
+    <div class="eyebrow fade-in d5">Fourteen chapters · ~110 minutes</div>
+    <h2 class="section-title fade-in d6" style="margin-top: 14px;">Pick a <em>chapter</em>.</h2>
+    <p class="fade-in d6" style="color: var(--type-tertiary); margin-bottom: 36px;">Designed to read in order. Each one stands alone if you need to jump back.</p>
+
+    <a href="00-foundations.html" class="card fade-in d7" style="display: block; text-decoration: none; color: inherit; padding: 24px 28px; margin-bottom: 24px; border-color: var(--cyan-deep); background: linear-gradient(180deg, rgba(34,211,238,0.06), rgba(34,211,238,0.01)); position: relative;">
+      <div class="eyebrow" style="color: var(--cyan); margin-bottom: 8px;">Chapter 00 · Optional pre-read</div>
+      <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 6px;">
+        <span style="font-family: var(--font-display); font-style: italic; font-size: 36px; color: var(--cyan); line-height: 1;">00</span>
+        <div style="flex: 1;">
+          <div style="font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--type-primary); line-height: 1.2;">First, the basics.</div>
+          <div style="font-size: 14px; color: var(--type-tertiary); margin-top: 4px;">If you've never built a website: what's a server, database, framework, API, HTTP request — in plain language, ~12 min. Skip if you already know.</div>
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan); letter-spacing: 0.12em; text-transform: uppercase;">Foundations →</div>
+      </div>
+    </a>
+
+    <div class="chapter-grid fade-in d7">
+      <a href="01-the-product.html" class="chapter-card">
+        <span class="ch-num">01</span>
+        <div class="ch-title">The product, in <em>60 seconds</em>.</div>
+        <div class="ch-desc">What TAP•IP sells, and how three workspaces — Lab, Engine, Desk — map to the castle metaphor.</div>
+        <div class="ch-arrow">Start here</div>
+      </a>
+
+      <a href="02-the-stack.html" class="chapter-card">
+        <span class="ch-num">02</span>
+        <div class="ch-title">The stack <em>at a glance</em>.</div>
+        <div class="ch-desc">Two servers, one database, one browser. Everything else is a zoom-in on this picture.</div>
+        <div class="ch-arrow">2 min read</div>
+      </a>
+
+      <a href="03-tenant-security.html" class="chapter-card">
+        <span class="ch-num">03</span>
+        <div class="ch-title">Tenant security, <em>four layers deep</em>.</div>
+        <div class="ch-desc">Why multi-tenant SaaS is hard. Three Postgres roles. RLS as the last line of defense.</div>
+        <div class="ch-arrow">10 min</div>
+      </a>
+
+      <a href="04-frontend-layers.html" class="chapter-card">
+        <span class="ch-num">04</span>
+        <div class="ch-title">The frontend, <em>layer by layer</em>.</div>
+        <div class="ch-desc">Server actions, repositories, typed contexts. The pattern that 80% of TAP•IP code follows.</div>
+        <div class="ch-arrow">12 min</div>
+      </a>
+
+      <a href="05-request-flow.html" class="chapter-card">
+        <span class="ch-num">05</span>
+        <div class="ch-title">Watch one request <em>fly</em>.</div>
+        <div class="ch-desc">An animated walk-through of "create a patent" hopping through 9 layers — browser to server to database and all the way back — in real time.</div>
+        <div class="ch-arrow">Interactive</div>
+      </a>
+
+      <a href="06-navigation.html" class="chapter-card">
+        <span class="ch-num">06</span>
+        <div class="ch-title">Where <em>things live</em>.</div>
+        <div class="ch-desc">A navigation map of the <code>src/</code> folder tree. Find code by name in 60 seconds.</div>
+        <div class="ch-arrow">7 min</div>
+      </a>
+
+      <a href="07-platform.html" class="chapter-card">
+        <span class="ch-num">07</span>
+        <div class="ch-title">The platform: <em>Docker, GitHub, Supabase, Railway</em>.</div>
+        <div class="ch-desc">Plus the Python backend and what it's for. The four services that keep TAP•IP running.</div>
+        <div class="ch-arrow">10 min</div>
+      </a>
+
+      <a href="08-lifecycle.html" class="chapter-card">
+        <span class="ch-num">08</span>
+        <div class="ch-title">The lifecycle of <em>a feature</em>.</div>
+        <div class="ch-desc">Ticket → kanban → pick it up → dev loop → PR → CodeRabbit + founder review → merge → auto-deploy. The full path, end to end.</div>
+        <div class="ch-arrow">12 min</div>
+      </a>
+
+      <a href="09-external.html" class="chapter-card">
+        <span class="ch-num">09</span>
+        <div class="ch-title">The <em>outside world</em>.</div>
+        <div class="ch-desc">USPTO, EPO, AI providers, and the MCP server — how TAP•IP talks to everything we don't run ourselves. Advanced.</div>
+        <div class="ch-arrow">10 min</div>
+      </a>
+
+      <a href="10-daily-tools.html" class="chapter-card">
+        <span class="ch-num">10</span>
+        <div class="ch-title">Daily tools: <em>generators &amp; Claude Code</em>.</div>
+        <div class="ch-desc">Eight code generators, the TAP•IP plugin, and the superpowers skills you'll use every day.</div>
+        <div class="ch-arrow">8 min</div>
+      </a>
+
+      <a href="11-principles.html" class="chapter-card">
+        <span class="ch-num">11</span>
+        <div class="ch-title">Why the code <em>looks like this</em>.</div>
+        <div class="ch-desc">SOLID, DRY, Clean Code — the foundational principles that shape every file you'll read.</div>
+        <div class="ch-arrow">12 min</div>
+      </a>
+
+      <a href="12-reference.html" class="chapter-card">
+        <span class="ch-num">12</span>
+        <div class="ch-title">The complete <em>reference</em>.</div>
+        <div class="ch-desc">One scrollable table covering every folder, service, tool, generator, skill — plus how you'd use each in your own product.</div>
+        <div class="ch-arrow">Cheat sheet</div>
+      </a>
+
+      <a href="13-exercises.html" class="chapter-card">
+        <span class="ch-num">13</span>
+        <div class="ch-title">Exercises &amp; <em>build your own</em>.</div>
+        <div class="ch-desc">Twelve bounded exercises for weeks 2–7 (including four DevTools deep-dives) plus the 5-week roadmap to ship your own product by end of summer.</div>
+        <div class="ch-arrow">Things to do</div>
+      </a>
+
+      <a href="14-glossary.html" class="chapter-card">
+        <span class="ch-num">14</span>
+        <div class="ch-title">Glossary &amp; <em>read next</em>.</div>
+        <div class="ch-desc">Every term that gets a pill in the tour, expanded. Plus the five senior-engineer docs to graduate to.</div>
+        <div class="ch-arrow">Lookup</div>
+      </a>
+    </div>
+
+    <hr style="margin: 80px 0 48px;" />
+
+    <section id="reading-plan" style="margin-bottom: 60px;">
+      <div class="eyebrow" style="margin-bottom: 12px;">Reading plan</div>
+      <h3 class="feature-title" style="margin-bottom: 10px;">How to <em>use this tour</em>.</h3>
+      <p style="color: var(--type-secondary); margin-bottom: 8px;">The tour is ~110 minutes of reading total. You shouldn't binge it. Spread it across week 1 alongside your BD work and ICP research, then return to specific chapters as the exercises in chapter 13 prompt them.</p>
+      <p style="color: var(--type-tertiary); margin-bottom: 32px;">Each row below pairs <em>chapters to read</em> with <em>exercises to attempt</em>. Times are conservative — feel free to go faster if it clicks.</p>
+
+      <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+
+        <div style="display: grid; grid-template-columns: 130px 1fr 60px; gap: 20px; padding: 22px 24px; background: var(--bg-surface); border: 1px solid var(--cyan-deep); border-left: 3px solid var(--cyan); border-radius: 12px; align-items: start;">
+          <div>
+            <div style="font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--cyan); line-height: 1.1;">Day 1</div>
+            <div style="font-family: var(--font-mono); font-size: 10px; color: var(--type-quiet); letter-spacing: 0.1em; margin-top: 4px;">TUESDAY · PM</div>
+          </div>
+          <div>
+            <div style="font-size: 14px; color: var(--type-secondary); margin-bottom: 6px;"><strong style="color: var(--type-primary);">Read:</strong> <a href="00-foundations.html">00 Foundations</a> <span style="color: var(--type-quiet);">(skip if web-savvy)</span> · <a href="01-the-product.html">01 The product</a> · <a href="02-the-stack.html">02 The stack</a></div>
+            <div style="font-size: 14px; color: var(--type-secondary);"><strong style="color: var(--type-primary);">Goal:</strong> Walk away with the castle metaphor + the "browser ⇄ server ⇄ database" picture. That's the gist.</div>
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--type-tertiary); text-align: right;">~30 min</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 130px 1fr 60px; gap: 20px; padding: 22px 24px; background: var(--bg-surface); border: 1px solid var(--line-soft); border-left: 3px solid var(--violet-glow); border-radius: 12px; align-items: start;">
+          <div>
+            <div style="font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--violet-glow); line-height: 1.1;">Days 2–3</div>
+            <div style="font-family: var(--font-mono); font-size: 10px; color: var(--type-quiet); letter-spacing: 0.1em; margin-top: 4px;">WED–THU</div>
+          </div>
+          <div>
+            <div style="font-size: 14px; color: var(--type-secondary); margin-bottom: 6px;"><strong style="color: var(--type-primary);">Read:</strong> <a href="03-tenant-security.html">03 Tenant security</a> · <a href="04-frontend-layers.html">04 Frontend layers</a> · <a href="05-request-flow.html">05 Request flow</a> (interactive — play the animation)</div>
+            <div style="font-size: 14px; color: var(--type-secondary);"><strong style="color: var(--type-primary);">Do:</strong> <a href="13-exercises.html">Exercise 01</a> (read one repository, ~15 min) · <a href="13-exercises.html">Exercise 02</a> (see how a URL becomes a folder, ~20 min)</div>
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--type-tertiary); text-align: right;">~65 min</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 130px 1fr 60px; gap: 20px; padding: 22px 24px; background: var(--bg-surface); border: 1px solid var(--line-soft); border-left: 3px solid var(--violet-glow); border-radius: 12px; align-items: start;">
+          <div>
+            <div style="font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--violet-glow); line-height: 1.1;">Days 4–5</div>
+            <div style="font-family: var(--font-mono); font-size: 10px; color: var(--type-quiet); letter-spacing: 0.1em; margin-top: 4px;">FRI · END OF WK 1</div>
+          </div>
+          <div>
+            <div style="font-size: 14px; color: var(--type-secondary); margin-bottom: 6px;"><strong style="color: var(--type-primary);">Read:</strong> <a href="06-navigation.html">06 Where things live</a> · <a href="07-platform.html">07 The platform</a> · <a href="08-lifecycle.html">08 Lifecycle of a feature</a></div>
+            <div style="font-size: 14px; color: var(--type-secondary);"><strong style="color: var(--type-primary);">Do:</strong> <a href="13-exercises.html">Exercise 03</a> (trace a server action, ~30 min) · <a href="13-exercises.html">Exercise 04</a> (run dev server, watch a request, ~45 min)</div>
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--type-tertiary); text-align: right;">~105 min</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 130px 1fr 60px; gap: 20px; padding: 22px 24px; background: var(--bg-surface); border: 1px solid var(--line-soft); border-left: 3px solid var(--violet-glow); border-radius: 12px; align-items: start;">
+          <div>
+            <div style="font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--violet-glow); line-height: 1.1;">Week 2</div>
+            <div style="font-family: var(--font-mono); font-size: 10px; color: var(--type-quiet); letter-spacing: 0.1em; margin-top: 4px;">SELF-PACED</div>
+          </div>
+          <div>
+            <div style="font-size: 14px; color: var(--type-secondary); margin-bottom: 6px;"><strong style="color: var(--type-primary);">Read:</strong> <a href="09-external.html">09 The outside world</a> · <a href="10-daily-tools.html">10 Daily tools</a> · <a href="11-principles.html">11 Principles</a></div>
+            <div style="font-size: 14px; color: var(--type-secondary);"><strong style="color: var(--type-primary);">Do:</strong> <a href="13-exercises.html">Exercises 05–08</a> (platform tour, generator demo, skill demo, one senior-eng doc end-to-end)</div>
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--type-tertiary); text-align: right;">~3 hr</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 130px 1fr 60px; gap: 20px; padding: 22px 24px; background: var(--bg-surface); border: 1px solid var(--line-soft); border-left: 3px solid var(--violet-glow); border-radius: 12px; align-items: start;">
+          <div>
+            <div style="font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--violet-glow); line-height: 1.1;">Weeks 3–5</div>
+            <div style="font-family: var(--font-mono); font-size: 10px; color: var(--type-quiet); letter-spacing: 0.1em; margin-top: 4px;">DEVTOOLS + APPLY</div>
+          </div>
+          <div>
+            <div style="font-size: 14px; color: var(--type-secondary); margin-bottom: 6px;"><strong style="color: var(--type-primary);">Use as lookup:</strong> <a href="12-reference.html">12 Reference</a> · <a href="14-glossary.html">14 Glossary</a> (whenever a term confuses you)</div>
+            <div style="font-size: 14px; color: var(--type-secondary);"><strong style="color: var(--type-primary);">Do:</strong> DevTools deep-dive — <a href="13-exercises.html">Exercises 09–12</a> (Elements · Network · Console · Application). Apply chapter 08's lifecycle to a real ticket if the founder assigns one.</div>
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--type-tertiary); text-align: right;">~2 hr</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 130px 1fr 60px; gap: 20px; padding: 22px 24px; background: linear-gradient(180deg, rgba(139,92,246,0.06), rgba(34,211,238,0.02)); border: 1px solid var(--violet-glow); border-left: 3px solid var(--violet-glow); border-radius: 12px; align-items: start;">
+          <div>
+            <div style="font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--violet-glow); line-height: 1.1;">Weeks 6–10</div>
+            <div style="font-family: var(--font-mono); font-size: 10px; color: var(--type-quiet); letter-spacing: 0.1em; margin-top: 4px;">STRETCH GOAL</div>
+          </div>
+          <div>
+            <div style="font-size: 14px; color: var(--type-secondary); margin-bottom: 6px;"><strong style="color: var(--type-primary);">Build your own product.</strong> See <a href="13-exercises.html">chapter 13's stretch-goal roadmap</a>: idea → scaffold the stack → first feature → shareable → show one user.</div>
+            <div style="font-size: 14px; color: var(--type-secondary);">Re-read whichever chapters apply: 02 (stack), 07 (platform), 08 (lifecycle), 11 (principles). The tour becomes your engineering reference manual.</div>
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--type-tertiary); text-align: right;">5 wks</div>
+        </div>
+
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 36px;">
+        <div class="card" style="padding: 18px 22px;">
+          <h4 style="margin: 0 0 8px;">What's optional?</h4>
+          <p style="font-size: 14px; margin: 0; color: var(--type-secondary);">Chapter 00 (skip if you've built websites before). Chapter 11 (principles) is the most abstract — fine to skim now and come back later.</p>
+        </div>
+        <div class="card" style="padding: 18px 22px;">
+          <h4 style="margin: 0 0 8px;">If a chapter feels too dense.</h4>
+          <p style="font-size: 14px; margin: 0; color: var(--type-secondary);">Flag it in your daily log or 1:1. The tour gets better when you tell us where it broke. Written for someone who knows what a function and a webpage are — never seen RLS or server actions.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="card" style="border-color: var(--violet-glow); background: linear-gradient(180deg, rgba(139,92,246,0.06), rgba(34,211,238,0.02));">
+      <div class="eyebrow" style="margin-bottom: 12px;">Stretch goal</div>
+      <h3 class="feature-title" style="margin-bottom: 12px;">Ship your own product by week 10.</h3>
+      <p style="color: var(--type-secondary); margin-bottom: 8px;">Chapter 13 ends with a 5-week roadmap: pick an idea, scaffold the stack, add one feature, deploy, share with one user. Same tools as TAP•IP. Founder mentorship on demand. Your project, your call.</p>
+      <p style="color: var(--type-tertiary); font-size: 14px; margin: 0;">It's optional. It's also probably the single best thing you can do with your summer.</p>
+    </div>
+
+    <div style="margin-top: 80px; padding-top: 32px; border-top: 1px solid var(--line-soft); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+      <div style="font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--type-tertiary);">Last reviewed · 2026 · 06 · 02</div>
+      <a href="01-the-product.html" class="btn btn-primary" style="text-decoration: none;">Begin chapter 01 →</a>
+    </div>
+  </section>
+
+</main>
+
+</div>
+
+<script>
+// Floating particles
+const p = document.getElementById('particles');
+for (let i = 0; i < 18; i++) {
+  const el = document.createElement('span');
+  el.style.left = Math.random()*100 + '%';
+  el.style.animationDuration = (12 + Math.random()*16) + 's';
+  el.style.animationDelay = (Math.random()*-20) + 's';
+  el.style.opacity = (0.3 + Math.random()*0.4);
+  p.appendChild(el);
+}
+</script>
+
+</body>
+</html>

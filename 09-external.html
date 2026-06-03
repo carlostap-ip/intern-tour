@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>09 · The outside world — TAP•IP Tour</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<style>
+  .mermaid-wrap {
+    background: var(--bg-surface);
+    border: 1px solid var(--line-soft);
+    border-radius: 14px;
+    padding: 28px 24px;
+    margin: 24px 0;
+    overflow-x: auto;
+  }
+  .mermaid-wrap .mermaid { background: transparent !important; }
+  .mermaid-wrap svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+
+  .service-row {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 18px;
+    padding: 20px 22px;
+    background: var(--bg-surface);
+    border: 1px solid var(--line-soft);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    align-items: start;
+  }
+  .service-row .ic { font-size: 30px; line-height: 1; text-align: center; }
+  .service-row h4 { margin: 0 0 4px; font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--type-primary); }
+  .service-row .meta { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); margin-bottom: 8px; }
+  .service-row p { margin: 0; font-size: 14px; }
+  .service-row p + p { margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a><span class="dot"></span>
+    <a href="00-foundations.html">00</a>
+    <a href="01-the-product.html">01</a>
+    <a href="02-the-stack.html">02</a>
+    <a href="03-tenant-security.html">03</a>
+    <a href="04-frontend-layers.html">04</a>
+    <a href="05-request-flow.html">05</a>
+    <a href="06-navigation.html">06</a>
+    <a href="07-platform.html">07</a>
+    <a href="09-external.html" class="current">08</a>
+    <a href="10-daily-tools.html">09</a>
+    <a href="11-principles.html">10</a>
+    <a href="12-reference.html">11</a>
+    <a href="13-exercises.html">12</a>
+    <a href="14-glossary.html">13</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">09</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Chapter 09 · Advanced · ~10 minutes</div>
+      <h2 class="section-title">The <em>outside world</em>.</h2>
+      <p class="lede">How TAP•IP talks to patent offices, AI providers, and other apps. The advanced layer that connects everything we don't run ourselves.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <p>Chapter 07 covered the services <em>we</em> run on — Docker, GitHub, Supabase, Railway. This chapter covers the services we <em>call</em>: patent offices, AI providers, and the protocol that lets other AI clients call us back. Most of these are advanced — you won't touch them in your first few weeks. Read this when you want to know how TAP•IP plugs into the rest of the internet.</p>
+
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+  subgraph TAP["TAP•IP backend"]
+    direction TB
+    PY["🐍 Python services<br/>backend/uspto/, paralegal/, etc."]
+    MCP["📡 MCP server<br/>mcp_service/"]
+  end
+  USPTO[🇺🇸 USPTO]
+  EPO[🇪🇺 EPO]
+  AI[🤖 Anthropic / OpenAI]
+  CLIENTS[🧑‍💻 Claude Desktop<br/>+ other AI clients]
+  PY -.HTTP API.-> USPTO
+  PY -.HTTP API.-> EPO
+  PY -.HTTP API.-> AI
+  CLIENTS -.MCP protocol.-> MCP
+  MCP -.tools.-> PY
+</pre>
+    </div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d3">
+    <h3 class="feature-title">A. Patent office APIs.</h3>
+    <p>TAP•IP's whole job is managing IP that lives in real government databases. We don't store patent filings ourselves — we pull live data from the actual patent offices. Three matter most:</p>
+
+    <div class="service-row">
+      <div class="ic">🇺🇸</div>
+      <div>
+        <div class="meta">backend/uspto/</div>
+        <h4>USPTO — United States Patent and Trademark Office.</h4>
+        <p>The biggest one. The USPTO exposes a few HTTP APIs: <strong>PEDS</strong> (Patent Examination Data System) for application metadata + status, <strong>PAIR</strong> (Patent Application Information Retrieval) for office actions and correspondence, and the public TM database for trademarks. TAP•IP wraps these in a Python client at <code>backend/uspto/clients/</code> and uses them to pull live status updates, file new applications, and check trademark availability.</p>
+        <p style="color: var(--type-tertiary);">Rate limits are real (USPTO caps at ~120 requests/min for some endpoints), so we cache aggressively and retry with backoff.</p>
+      </div>
+    </div>
+
+    <div class="service-row">
+      <div class="ic">🇪🇺</div>
+      <div>
+        <div class="meta">Open Patent Services</div>
+        <h4>EPO — European Patent Office.</h4>
+        <p>The European equivalent. EPO's <strong>Open Patent Services (OPS)</strong> is a REST API that gives us PCT (international filing) data plus European national-phase status. Auth is OAuth2 — we get a token, expire it every hour, and refresh.</p>
+      </div>
+    </div>
+
+    <div class="service-row">
+      <div class="ic">🌍</div>
+      <div>
+        <div class="meta">PATENTSCOPE + ePCT</div>
+        <h4>WIPO — World Intellectual Property Organization.</h4>
+        <p>The PCT (Patent Cooperation Treaty) infrastructure. WIPO doesn't have as developer-friendly an API as USPTO or EPO — most of what we use is XML feeds and scheduled bulk downloads. Used for international filings and deadline tracking across 25 jurisdictions.</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <p style="margin: 0;"><strong>The pattern:</strong> every patent-office integration follows the same shape — a Python client class wraps the HTTP protocol, retries with exponential backoff, caches responses for a sensible TTL, and surfaces errors through the <code>AppError</code> envelope (chapter 09's preview). When you read <code>backend/uspto/clients/</code>, you're reading the canonical version of this pattern.</p>
+    </div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d4">
+    <h3 class="feature-title">B. AI provider APIs.</h3>
+    <p>TAP•IP calls <strong>Anthropic</strong> (Claude) and <strong>OpenAI</strong> (GPT-5) APIs for every AI feature — drafting patent claims, summarizing prior art, parsing invoices, helping brainstorm sessions.</p>
+
+    <p>The split we covered briefly in chapter 02 lands here:</p>
+
+    <ul>
+      <li><strong>TypeScript-side calls</strong> (<code>frontend/src/lib/ai/completion.py</code>) — for one-shot prompts. Returns a single response, no tools, no memory.</li>
+      <li><strong>Python-side calls</strong> (<code>backend/paralegal/</code>) — for agentic loops. Multi-step reasoning, tools, memory across turns.</li>
+    </ul>
+
+    <p>Both go through wrapper layers that handle rate limits, retries, token accounting, and provenance — so callers don't worry about the raw SDK shape. CLAUDE.md §10 is the canonical reference if you want depth.</p>
+
+    <p style="color: var(--type-tertiary);">Your own product almost certainly uses one of these too. Anthropic and OpenAI both have free tiers; both have official Node.js and Python SDKs. The hard part isn't calling them — it's deciding whether you need agents or just one-shot prompts.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d5">
+    <h3 class="feature-title">C. The MCP server.</h3>
+    <p><strong>MCP</strong> is the <strong>Model Context Protocol</strong> — Anthropic's open standard for letting AI clients (like Claude Desktop, custom agents, or future AI tools) read and write data from your app, with proper auth and scoping.</p>
+    <p>TAP•IP runs an MCP server at <code>mcp_service/</code>. It exposes a curated set of tools that an authorized AI client can call:</p>
+
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+  USER[👤 Inventor at desk]
+  CLAUDE[🤖 Claude Desktop<br/>or other AI client]
+  MCP{{📡 TAP•IP MCP server<br/>mcp_service/}}
+  TOOLS["🔧 Tools exposed<br/>create_idea<br/>search_ideas<br/>add_notebook_entry<br/>create_whiteboard<br/>list_notebook_entries"]
+  TAP[(🟦 TAP•IP backend<br/>+ database)]
+  USER -.types prompt.-> CLAUDE
+  CLAUDE -.MCP protocol.-> MCP
+  MCP --> TOOLS
+  TOOLS --> TAP
+</pre>
+    </div>
+
+    <p><strong>What this means in practice:</strong> an inventor can open Claude Desktop, say <em>"jot down an idea about a new fastener design"</em>, and Claude will call TAP•IP's <code>create_idea</code> tool to actually create a draft idea in the Lab. No browser open, no manual data entry. The MCP server handles auth (which tenant?) and tenant-scoping (the idea belongs to that user, not someone else's).</p>
+
+    <p>Tools currently exposed by TAP•IP's MCP server (from <code>mcp_service/tools/</code>):</p>
+    <ul>
+      <li><code>create_idea</code>, <code>search_ideas</code>, <code>get_idea_details</code> — Lab idea management</li>
+      <li><code>add_notebook_entry</code>, <code>list_notebook_entries</code>, <code>update_notebook_entry</code> — notebook notes</li>
+      <li><code>create_whiteboard</code>, <code>list_whiteboard_options</code> — visual canvas creation</li>
+      <li><code>link_notebook_entry_to_idea</code>, <code>promote_notebook_entry_to_idea</code> — cross-linking</li>
+    </ul>
+
+    <p style="color: var(--type-tertiary);"><strong>Why this matters strategically:</strong> as more inventors and IP teams use AI assistants daily, the MCP server lets TAP•IP show up <em>inside</em> their existing AI workflow rather than forcing them to open another browser tab. It's also forward-looking — if Claude or another assistant gets agentic memory, TAP•IP's tools become part of that memory automatically.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d6">
+    <h3 class="feature-title">D. Briefly: webhooks, email, OAuth.</h3>
+    <p>A few more external integrations you'll see in the code but don't need to understand deeply yet:</p>
+    <ul>
+      <li><strong>Email (Resend)</strong> — outbound transactional email (account verification, notifications, share invites). The Resend API key is stored in <code>platform_api_credentials</code> and managed in the System Admin Portal.</li>
+      <li><strong>Gmail + Google Calendar (OAuth)</strong> — when a user connects their Google account, TAP•IP can read scheduled meetings (for prep / disclosure reminders) and send draft emails. OAuth tokens live in <code>mcp_service/oauth/</code>.</li>
+      <li><strong>Webhooks</strong> — TAP•IP listens for incoming events from a few services (Stripe for billing, USPTO bulk-update notifications). Webhook handlers are regular FastAPI routes on the Python backend.</li>
+    </ul>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d7">
+    <div class="card" style="border-color: var(--cyan-deep); background: linear-gradient(180deg, rgba(34,211,238,0.05), transparent);">
+      <div class="eyebrow" style="margin-bottom: 12px;">For your own product</div>
+      <h3 class="feature-title" style="margin-bottom: 12px;">You'll wire up external services from day one.</h3>
+      <p>Even a tiny project usually calls 2–4 external APIs. Common ones:</p>
+      <ul>
+        <li><strong>Anthropic or OpenAI</strong> — almost every modern app has an AI feature. Both have official SDKs and generous free tiers.</li>
+        <li><strong>Resend or Postmark</strong> — outbound email. Both free up to a few thousand emails/mo.</li>
+        <li><strong>Stripe</strong> — if you charge money. Stripe Checkout gets you a payment page in 10 minutes.</li>
+        <li><strong>Supabase Auth</strong> — already covered; handles login, signup, password reset for free.</li>
+      </ul>
+      <p style="margin-bottom: 0;">Wrap each API in its own client class. Don't sprinkle SDK calls throughout your code — same reason TAP•IP doesn't sprinkle Postgres queries everywhere.</p>
+    </div>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="08-lifecycle.html" class="foot-link prev">
+      <span class="lbl">← Previous</span>
+      <span class="tt">08 · Lifecycle of a feature</span>
+    </a>
+    <a href="10-daily-tools.html" class="foot-link next">
+      <span class="lbl">Next chapter →</span>
+      <span class="tt">10 · Daily tools</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    securityLevel: 'loose',
+    themeVariables: {
+      background: 'transparent',
+      mainBkg: '#161C3A',
+      secondBkg: '#1A2147',
+      tertiaryColor: '#11162E',
+      primaryBorderColor: '#A78BFA',
+      secondaryBorderColor: '#67E8F9',
+      tertiaryBorderColor: '#818CF8',
+      lineColor: '#67E8F9',
+      primaryTextColor: '#ECEEFB',
+      secondaryTextColor: '#ECEEFB',
+      tertiaryTextColor: '#ECEEFB',
+      textColor: '#ECEEFB',
+      titleColor: '#ECEEFB',
+      labelTextColor: '#ECEEFB',
+      clusterBkg: '#0B0F23',
+      clusterBorder: '#232C56',
+      fontFamily: '"Geist", "Söhne", system-ui, sans-serif',
+      fontSize: '14px',
+    },
+    flowchart: { curve: 'basis', useMaxWidth: true, htmlLabels: true, padding: 16 },
+  });
+</script>
+<script src="tour.js"></script>
+</body>
+</html>

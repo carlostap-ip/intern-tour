@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>08 · Lifecycle of a feature — TAP•IP Tour</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<style>
+  .mermaid-wrap {
+    background: var(--bg-surface);
+    border: 1px solid var(--line-soft);
+    border-radius: 14px;
+    padding: 28px 24px;
+    margin: 24px 0;
+    overflow-x: auto;
+  }
+  .mermaid-wrap .mermaid { background: transparent !important; }
+  .mermaid-wrap svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+
+  .lifecycle-step {
+    display: flex;
+    gap: 22px;
+    padding: 28px 28px;
+    background: var(--bg-surface);
+    border: 1px solid var(--line-soft);
+    border-radius: 14px;
+    margin-bottom: 16px;
+    align-items: flex-start;
+  }
+  .lifecycle-step .step-letter {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 48px;
+    line-height: 1;
+    color: var(--violet-glow);
+    flex-shrink: 0;
+    min-width: 56px;
+  }
+  .lifecycle-step .step-body { flex: 1; }
+  .lifecycle-step h4 {
+    margin: 0 0 6px;
+    font-size: 19px;
+  }
+  .lifecycle-step .step-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--type-quiet);
+    margin-bottom: 8px;
+  }
+  .lifecycle-step .step-actors {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--type-tertiary);
+    margin-left: 12px;
+  }
+  .lifecycle-step pre.cmd {
+    background: var(--bg-deep);
+    border: 1px solid var(--line-soft);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin: 12px 0;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--type-secondary);
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .lifecycle-step pre.cmd .c { color: var(--type-tertiary); }
+  .lifecycle-step pre.cmd .p { color: #67E8F9; }
+  .lifecycle-step pre.cmd .v { color: #A78BFA; }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a><span class="dot"></span>
+    <a href="00-foundations.html">00</a>
+    <a href="01-the-product.html">01</a>
+    <a href="02-the-stack.html">02</a>
+    <a href="03-tenant-security.html">03</a>
+    <a href="04-frontend-layers.html">04</a>
+    <a href="05-request-flow.html">05</a>
+    <a href="06-navigation.html">06</a>
+    <a href="07-platform.html">07</a>
+    <a href="08-lifecycle.html" class="current">08</a>
+    <a href="09-external.html">09</a>
+    <a href="10-daily-tools.html">10</a>
+    <a href="11-principles.html">11</a>
+    <a href="12-reference.html">12</a>
+    <a href="13-exercises.html">13</a>
+    <a href="14-glossary.html">14</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">08</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Chapter 08 · ~12 minutes</div>
+      <h2 class="section-title">The lifecycle of <em>a feature</em>.</h2>
+      <p class="lede">A feature or bug doesn't just appear on production. It flows through a predictable cycle — ticket, triage, branch, commit, review, merge, deploy — across the services from chapter 07. Here's the full path, end to end.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <div class="note">
+      <p style="margin: 0;"><strong>Why this matters.</strong> Every change to TAP•IP — every bug fix, every new feature, every refactor — follows the same loop. Once you know the shape, your first ticket isn't scary. You know what each step is for and where you are in it.</p>
+    </div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d3">
+    <h3 class="feature-title">The loop, <em>in one picture</em>.</h3>
+    <p>Five actors. Six steps. About a day of wall-clock time for a small fix; longer for big features. Read the diagram once before the deep-dive — you'll come back to it as a map.</p>
+
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+sequenceDiagram
+  participant F as 👤 Founder / Customer
+  participant Y as 🧑‍💻 You (intern)
+  participant GH as 🐙 GitHub
+  participant CR as 🤖 CodeRabbit (AI)
+  participant RW as 🚂 Railway
+  Note over F,RW: 1 · File the ticket
+  F->>GH: Open issue (bug / feature / epic)
+  Note over F,RW: 2 · Pick it up
+  Y->>GH: Assign self · move to "In Progress"
+  Note over F,RW: 3 · Dev loop
+  Y->>Y: git checkout -b feat/...<br/>code · test · commit
+  Y->>GH: git push (feature branch)
+  Note over F,RW: 4 · Open a PR
+  Y->>GH: Open Pull Request<br/>"Fixes #1042"
+  Note over F,RW: 5 · Review
+  GH->>CR: Trigger AI review
+  CR-->>GH: Inline comments
+  GH->>F: Notify founder
+  F-->>Y: Request changes / approve
+  Y->>GH: Push fixes (loop until approved)
+  Note over F,RW: 6 · Merge &amp; deploy
+  F->>GH: Squash &amp; merge to main
+  GH->>RW: Webhook fires
+  RW->>RW: Build Docker · roll out
+  RW-->>F: Live in production · ticket auto-closes
+</pre>
+    </div>
+
+    <div class="analogy">A feature lifecycle is like a restaurant order. The diner (founder, user) places it. The expediter (kanban board) sequences it. A cook (you) picks the ticket and works it. A second pair of eyes (CodeRabbit + founder) plates it for safety. The runner (Railway) carries it out. Same shape, every dish.</div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d4">
+    <h3 class="feature-title">Step by step.</h3>
+    <p>Each card below zooms into one phase of the loop above.</p>
+
+    <div class="lifecycle-step">
+      <div class="step-letter">A</div>
+      <div class="step-body">
+        <div class="step-eyebrow">Where work comes from</div>
+        <h4>1 · The ticket gets filed.</h4>
+        <p>Every change at TAP•IP starts as a <strong>GitHub Issue</strong>. No issue, no work. This isn't bureaucracy — it's a paper trail so nothing falls through the cracks, and so every decision is searchable later.</p>
+        <p>Work comes from three places:</p>
+        <ul>
+          <li><strong>Founder roadmap</strong> — the next feature on the build plan.</li>
+          <li><strong>User feedback</strong> — "this would be useful," "this is annoying."</li>
+          <li><strong>Bugs caught in review or production</strong> — something broke.</li>
+        </ul>
+
+        <p>Issues come in three sizes:</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 16px 0;">
+          <div class="card" style="padding: 14px 16px;">
+            <h4 style="margin: 0 0 6px; font-size: 14px;">🐛 Bug</h4>
+            <p style="font-size: 13px; margin: 0;">Narrow scope. Something broke. Example: <em>"Patent edit modal won't save Korean characters."</em></p>
+          </div>
+          <div class="card" style="padding: 14px 16px;">
+            <h4 style="margin: 0 0 6px; font-size: 14px;">✨ Feature</h4>
+            <p style="font-size: 13px; margin: 0;">Medium scope. New capability. Example: <em>"Add cost waterfall to family page."</em></p>
+          </div>
+          <div class="card" style="padding: 14px 16px;">
+            <h4 style="margin: 0 0 6px; font-size: 14px;">🏛️ Epic</h4>
+            <p style="font-size: 13px; margin: 0;">Large scope. Multi-week initiative spanning many tickets. Example: <em>"Frontend repository pattern migration (#850)."</em></p>
+          </div>
+        </div>
+
+        <p>A good ticket has: a clear title, a "why" in the body, and explicit <strong>Acceptance Criteria (AC)</strong> — a bulleted checklist of what "done" means. AC is the contract. If a bullet isn't checked, the ticket isn't done.</p>
+        <p style="color: var(--type-tertiary); font-size: 13px;">You can read every TAP•IP ticket at <a href="https://github.com/carlostap-ip/tp-ipms/issues" target="_blank" rel="noopener">github.com/carlostap-ip/tp-ipms/issues</a>. Browse a few. Find one labeled <code>good first issue</code> if it exists.</p>
+      </div>
+    </div>
+
+    <div class="lifecycle-step">
+      <div class="step-letter">B</div>
+      <div class="step-body">
+        <div class="step-eyebrow">Triage &amp; the kanban board</div>
+        <h4>2 · Where the ticket sits before you pick it up.</h4>
+        <p>TAP•IP uses <strong>kanban</strong>, not sprints. Why? Small team, fast iteration, founder-driven priorities. Sprints add ceremony that doesn't pay off until you're 6+ engineers.</p>
+        <p>The board has columns:</p>
+        <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+  BL[📥 Backlog<br/>everything filed]
+  RD[🟢 Ready<br/>well-defined · pick from here]
+  IP[🔨 In progress<br/>someone's working on it]
+  RV[👀 In review<br/>PR open · awaiting feedback]
+  DN[✅ Done<br/>merged + deployed]
+  BL --> RD --> IP --> RV --> DN
+</pre>
+        </div>
+
+        <ul>
+          <li><strong>Backlog</strong> — incoming. Could be anything from a one-line idea to a fully-spec'd epic.</li>
+          <li><strong>Ready</strong> — the founder has triaged it and confirmed it's well-defined enough to work on. Has AC. <em>This is the column you pick from.</em></li>
+          <li><strong>In progress</strong> — someone (you) is actively working on it. Drag the card here when you start.</li>
+          <li><strong>In review</strong> — you've opened a PR. The card sits here while CodeRabbit + founder review.</li>
+          <li><strong>Done</strong> — merged + auto-deployed.</li>
+        </ul>
+        <p>Founder triages incoming issues weekly, sometimes daily for hot bugs. If a ticket isn't in "Ready" yet, you don't pick it up — ask the founder if it should be.</p>
+      </div>
+    </div>
+
+    <div class="lifecycle-step">
+      <div class="step-letter">C</div>
+      <div class="step-body">
+        <div class="step-eyebrow">Picking up</div>
+        <h4>3 · Claim the ticket.</h4>
+        <ol>
+          <li><strong>Pick from "Ready"</strong> — read the title, then the body, then the AC. Every bullet in AC is a checkbox you'll need to hit.</li>
+          <li><strong>Assign yourself</strong> — click "Assignees" on the GitHub issue, pick your handle.</li>
+          <li><strong>Move the card to "In progress"</strong> — drag it on the board.</li>
+          <li><strong>Re-read the AC.</strong> If anything is ambiguous, ask the founder <em>before</em> you start coding. Asking after costs everyone time.</li>
+        </ol>
+        <p style="background: var(--bg-deep); border: 1px solid var(--line-soft); border-radius: 8px; padding: 14px 16px; margin: 16px 0; font-size: 14px;">📌 <strong>Founder rule:</strong> "Stick to AC. If you find scope you want to defer, ask first." Unfiled "we'll do this later" mentions are worse than no mention. If something is out of scope, file a separate ticket.</p>
+      </div>
+    </div>
+
+    <div class="lifecycle-step">
+      <div class="step-letter">D</div>
+      <div class="step-body">
+        <div class="step-eyebrow">The dev loop · your laptop ⇄ GitHub</div>
+        <h4>4 · Branch, code, commit, push.</h4>
+        <p>This is the longest phase — anywhere from 30 minutes to several days depending on ticket size. The shape is the same every time.</p>
+
+<pre class="cmd"><span class="c"># 1. Get the latest main branch</span>
+<span class="p">git</span> checkout main
+<span class="p">git</span> pull origin main
+
+<span class="c"># 2. Create a feature branch (name it after the ticket)</span>
+<span class="p">git</span> checkout -b <span class="v">feat/intern-1042-fix-korean-chars</span>
+
+<span class="c"># 3. Code · use Claude Code · follow patterns from chapter 04 + 10</span>
+
+<span class="c"># 4. Run gates locally · BEFORE pushing</span>
+<span class="p">cd</span> frontend
+<span class="p">npx</span> tsc --noEmit              <span class="c"># type check (mandatory · 0 errors)</span>
+<span class="p">npm</span> test                       <span class="c"># jest unit tests</span>
+<span class="p">docker</span> compose up -d           <span class="c"># dev server · smoke test in browser</span>
+
+<span class="c"># 5. Commit · clear message · imperative voice</span>
+<span class="p">git</span> add path/to/changed/files
+<span class="p">git</span> commit -m <span class="v">"fix(patent-edit): preserve unicode chars on save"</span>
+
+<span class="c"># 6. Push the branch to GitHub</span>
+<span class="p">git</span> push -u origin <span class="v">feat/intern-1042-fix-korean-chars</span></pre>
+
+        <p>Branch naming convention: <code>&lt;type&gt;/&lt;handle&gt;-&lt;issue#&gt;-&lt;short-slug&gt;</code> — e.g. <code>feat/sam-1042-fix-korean-chars</code>. The type prefix is <code>feat</code>, <code>fix</code>, <code>chore</code>, <code>docs</code>, or <code>refactor</code>.</p>
+        <p>Commit messages follow the same <code>type(scope): message</code> shape — <code>fix(patent-edit): ...</code>, <code>feat(cost-engine): ...</code>. Short. Imperative. Future-you grepping git log will thank you.</p>
+      </div>
+    </div>
+
+    <div class="lifecycle-step">
+      <div class="step-letter">E</div>
+      <div class="step-body">
+        <div class="step-eyebrow">Open the PR</div>
+        <h4>5 · Submit your work for review.</h4>
+        <p>A <strong>Pull Request</strong> (PR) is "I want my branch's changes merged into main. Please review." On GitHub, after you push a branch, a yellow banner appears: "Compare &amp; pull request." Click it.</p>
+        <p>What goes in a good PR:</p>
+        <ul>
+          <li><strong>Title</strong> — short summary, under 70 characters. Mirrors the commit message style.</li>
+          <li><strong>Summary</strong> — 2–3 bullets describing <em>what changed</em> and <em>why</em>.</li>
+          <li><strong>Test plan</strong> — checklist of how a reviewer can verify it works.</li>
+          <li><strong>Link the ticket</strong> — include <code>Fixes #1042</code> in the body. GitHub auto-closes the issue when the PR merges.</li>
+        </ul>
+
+<pre class="cmd"><span class="c"># Example PR body</span>
+## Summary
+- Patent edit modal now uses utf8mb4 encoding on save
+- Adds regression test for non-ASCII title input
+
+## Test plan
+- [ ] Edit a patent · set title to "특허 제목 테스트"
+- [ ] Save · reload · title persists
+- [ ] Run frontend/src/__tests__/patent-edit.test.tsx · all green
+
+Fixes #1042</pre>
+
+        <p>If your branch isn't ready for review yet, open it as a <strong>draft PR</strong> — same workflow, but no one will be paged. Flip it to "Ready for review" when it's done.</p>
+        <p style="color: var(--type-tertiary); font-size: 13px;">You'll learn the shortcut for this in chapter 10 — the <code>/ship</code> command in the TAP•IP plugin runs the gates + opens the PR for you.</p>
+      </div>
+    </div>
+
+    <div class="lifecycle-step">
+      <div class="step-letter">F</div>
+      <div class="step-body">
+        <div class="step-eyebrow">Code review · humans + AI</div>
+        <h4>6 · CodeRabbit + founder.</h4>
+        <p>TAP•IP uses two reviewers on every PR:</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0;">
+          <div class="card" style="padding: 18px 22px;">
+            <h4 style="margin: 0 0 8px;">🤖 CodeRabbit (AI)</h4>
+            <p style="font-size: 14px; margin: 0;">An AI reviewer that auto-comments within minutes of opening the PR. Catches obvious bugs, style issues, missing tests, security concerns. Sometimes wrong — push back if you disagree. Not blocking unless founder agrees with it.</p>
+          </div>
+          <div class="card" style="padding: 18px 22px;">
+            <h4 style="margin: 0 0 8px;">👤 Founder (human)</h4>
+            <p style="font-size: 14px; margin: 0;">Final say. Reviews the diff, asks questions, requests changes, or approves. Faster than industry average — usually within a few hours during work time.</p>
+          </div>
+        </div>
+
+        <p>How to address feedback: push more commits to the <em>same branch</em>. The PR updates automatically. You don't open a new PR.</p>
+
+<pre class="cmd"><span class="c"># Address review feedback</span>
+<span class="p">git</span> add changed/files
+<span class="p">git</span> commit -m <span class="v">"fix: address review · null-check on row.id"</span>
+<span class="p">git</span> push                          <span class="c"># pushes to the existing PR branch</span></pre>
+
+        <p>The review cycle repeats until both reviewers are happy. Most PRs go through 1–3 rounds. A couple rounds is normal — review isn't personal, it's how good code happens.</p>
+        <p style="color: var(--type-tertiary); font-size: 13px;">You'll meet the <code>/babysit-pr</code> command in chapter 10 — it auto-pushes your PR through review cycles with Claude Code's help. Use it after you open your first PR.</p>
+      </div>
+    </div>
+
+    <div class="lifecycle-step">
+      <div class="step-letter">G</div>
+      <div class="step-body">
+        <div class="step-eyebrow">Merge &amp; deploy</div>
+        <h4>7 · Founder hits "Squash and merge."</h4>
+        <p>Once both reviewers approve, the founder clicks <strong>Squash and merge</strong>. This collapses all your branch's commits into one commit on <code>main</code> — clean history. Your branch is then deleted (the PR remembers it forever).</p>
+        <p>The moment the merge happens, the deploy pipeline from chapter 07 kicks in:</p>
+
+        <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+  GH[🐙 main branch updated]
+  WB[Railway webhook fires]
+  RW[🚂 Railway builds<br/>Docker container<br/>~3-5 min]
+  PD[🌐 Production<br/>change is live]
+  GH --> WB --> RW --> PD
+</pre>
+        </div>
+
+        <ul>
+          <li>Railway detects the push to <code>main</code>.</li>
+          <li>Builds a new Docker container with your code.</li>
+          <li>Runs a quick smoke check.</li>
+          <li>Rolls it out — zero downtime — to live production.</li>
+          <li>Total time: ~3–5 minutes for a frontend change.</li>
+        </ul>
+        <p>The ticket auto-closes (because of <code>Fixes #1042</code>). Card moves to "Done" on the board.</p>
+      </div>
+    </div>
+
+    <div class="lifecycle-step">
+      <div class="step-letter">H</div>
+      <div class="step-body">
+        <div class="step-eyebrow">Verify · close out</div>
+        <h4>8 · Confirm it works in production.</h4>
+        <p>Don't trust "merged" as "shipped." Always verify.</p>
+        <ol>
+          <li>Wait for Railway to finish (you'll see ✅ on the PR).</li>
+          <li>Open production. Exercise your change. Does it work?</li>
+          <li>If yes: comment on the ticket <em>"shipped, verified."</em> Move on to your next ticket.</li>
+          <li>If no: <strong>roll it back</strong>. Railway has a one-click rollback to the previous version. Then file a bug ticket on yourself, debug, repeat the loop.</li>
+        </ol>
+        <p style="background: var(--bg-deep); border: 1px solid var(--line-soft); border-radius: 8px; padding: 14px 16px; margin: 16px 0; font-size: 14px;">📌 <strong>Founder rule:</strong> "Test visually before committing UI. Verify the page renders before claiming done." Type checks and unit tests don't catch broken UX. Always click through the feature in a browser.</p>
+      </div>
+    </div>
+
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d5">
+    <h3 class="feature-title">Two helpful shortcuts.</h3>
+    <p>You'll meet these in chapter 10, but they're worth flagging now since they automate parts of the loop above:</p>
+    <ul>
+      <li><code>/ship</code> — the TAP•IP plugin command that runs the type check + tests + opens the PR for you. Steps D + E above.</li>
+      <li><code>/babysit-pr &lt;number&gt;</code> — automatically pushes your PR through CodeRabbit feedback cycles. Steps F (the review-fix loop).</li>
+    </ul>
+    <p style="color: var(--type-tertiary); font-size: 14px;">Neither replaces understanding the loop. They speed it up <em>after</em> you understand the steps.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d6">
+    <div class="card" style="border-color: var(--violet-glow); background: linear-gradient(180deg, rgba(139,92,246,0.06), rgba(34,211,238,0.02));">
+      <div class="eyebrow" style="margin-bottom: 12px;">For your own product</div>
+      <h3 class="feature-title" style="margin-bottom: 14px;">Same loop. You play every role.</h3>
+      <p>Solo project? You're both the founder filing tickets and the engineer working them. GitHub Projects gives you a free kanban board on any repo. CodeRabbit has a free tier. Railway auto-deploys. The shape of the loop is identical — file a ticket, branch, commit, PR, self-review, merge, deploy, verify.</p>
+      <p style="margin-bottom: 0;">The habit is what matters. The lifecycle is what separates "I built a thing once" from "I ship things every week."</p>
+    </div>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="07-platform.html" class="foot-link prev">
+      <span class="lbl">← Previous</span>
+      <span class="tt">07 · The platform</span>
+    </a>
+    <a href="09-external.html" class="foot-link next">
+      <span class="lbl">Next chapter →</span>
+      <span class="tt">09 · The outside world</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    securityLevel: 'loose',
+    themeVariables: {
+      background: 'transparent',
+      mainBkg: '#161C3A',
+      secondBkg: '#1A2147',
+      tertiaryColor: '#11162E',
+      primaryBorderColor: '#A78BFA',
+      secondaryBorderColor: '#67E8F9',
+      tertiaryBorderColor: '#818CF8',
+      lineColor: '#67E8F9',
+      primaryTextColor: '#ECEEFB',
+      secondaryTextColor: '#ECEEFB',
+      tertiaryTextColor: '#ECEEFB',
+      textColor: '#ECEEFB',
+      titleColor: '#ECEEFB',
+      labelTextColor: '#ECEEFB',
+      clusterBkg: '#0B0F23',
+      clusterBorder: '#232C56',
+      actorBkg: '#1A2147',
+      actorBorder: '#A78BFA',
+      actorTextColor: '#ECEEFB',
+      actorLineColor: '#67E8F9',
+      signalColor: '#ECEEFB',
+      signalTextColor: '#ECEEFB',
+      labelBoxBkgColor: '#161C3A',
+      labelBoxBorderColor: '#67E8F9',
+      noteBkgColor: '#1A2147',
+      noteBorderColor: '#A78BFA',
+      noteTextColor: '#ECEEFB',
+      activationBkgColor: '#6366F1',
+      activationBorderColor: '#A78BFA',
+      fontFamily: '"Geist", "Söhne", system-ui, sans-serif',
+      fontSize: '14px',
+    },
+    flowchart: { curve: 'basis', useMaxWidth: true, htmlLabels: true, padding: 16 },
+    sequence: { actorMargin: 60, messageMargin: 36, mirrorActors: false, showSequenceNumbers: false, wrap: true },
+  });
+</script>
+<script src="tour.js"></script>
+</body>
+</html>

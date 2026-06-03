@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>13 · Exercises &amp; build your own — TAP•IP Tour</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a><span class="dot"></span>
+    <a href="00-foundations.html">00</a>
+    <a href="01-the-product.html">01</a>
+    <a href="02-the-stack.html">02</a>
+    <a href="03-tenant-security.html">03</a>
+    <a href="04-frontend-layers.html">04</a>
+    <a href="05-request-flow.html">05</a>
+    <a href="06-navigation.html">06</a>
+    <a href="07-platform.html">07</a>
+    <a href="09-external.html">08</a>
+    <a href="10-daily-tools.html">09</a>
+    <a href="11-principles.html">10</a>
+    <a href="12-reference.html">11</a>
+    <a href="13-exercises.html" class="current">12</a>
+    <a href="14-glossary.html">13</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">13</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Chapter 13 · Things to actually do</div>
+      <h2 class="section-title">Exercises &amp; <em>build your own</em>.</h2>
+      <p class="lede">Twelve standard exercises (weeks 2–7), then the 5-week stretch-goal roadmap to ship your own product by week 10.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <h3 class="feature-title">Standard exercises (Weeks 2–7).</h3>
+    <p>Twelve exercises to deepen the mental model. Eight are codebase reads; the last four are browser DevTools deep-dives — the single fastest way to stop guessing how the web actually works. Read-only relative to TAP•IP. Pick one per week; bring questions to your 1:1.</p>
+
+    <div style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 28px;">
+
+      <div class="card" style="padding: 22px 24px;">
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px;">
+          <span style="font-family: var(--font-display); font-style: italic; font-size: 28px; color: var(--cyan);">01</span>
+          <span style="background: var(--bg-elevated); color: var(--type-tertiary); padding: 2px 10px; border-radius: 999px; font-family: var(--font-mono); font-size: 11px;">15 min</span>
+          <h4 style="margin: 0;">Read a repository.</h4>
+        </div>
+        <p style="font-size: 14px; margin: 6px 0 0;">Pick any file in <code>frontend/src/lib/repositories/</code>. Read 10 min. Write a paragraph: what entity? What method to list everything? What you DON'T see (hint: tenant ID checks).</p>
+      </div>
+
+      <div class="card" style="padding: 22px 24px;">
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px;">
+          <span style="font-family: var(--font-display); font-style: italic; font-size: 28px; color: var(--cyan);">02</span>
+          <span style="background: var(--bg-elevated); color: var(--type-tertiary); padding: 2px 10px; border-radius: 999px; font-family: var(--font-mono); font-size: 11px;">20 min</span>
+          <h4 style="margin: 0;">See how a URL turns into a folder.</h4>
+        </div>
+
+        <p style="font-size: 14px; margin: 10px 0 14px;"><strong>The idea:</strong> when you open TAP•IP at <code>app.tap-ip.com/acme/engine/patents</code>, where does that page actually live in the code? Next.js uses a clever trick: <em>the URL path = the folder path.</em> This exercise makes you see it with your own eyes.</p>
+
+        <p style="font-size: 14px; margin: 0 0 8px;"><strong>Steps:</strong></p>
+        <ol style="font-size: 14px; margin: 0 0 14px 22px; padding: 0;">
+          <li style="margin-bottom: 6px;">Open the <code>tp-ipms</code> folder in VS Code.</li>
+          <li style="margin-bottom: 6px;">In VS Code's file explorer (left sidebar), navigate to <code>frontend/src/app/</code>.</li>
+          <li style="margin-bottom: 6px;">You'll see a folder called <code>[tenantSegment]</code>. The square brackets mean <em>"this part of the URL is a variable"</em> — at runtime, this gets filled in with the customer's name (like <code>acme</code>).</li>
+          <li style="margin-bottom: 6px;">Open it. Inside, you'll see <code>(authenticated)</code>. The parentheses are a Next.js trick to group routes <em>without changing the URL</em>. Just open it and keep going.</li>
+          <li style="margin-bottom: 6px;">Now you'll see three subfolders: <code>lab/</code>, <code>engine/</code>, <code>desk/</code>. <strong>Those are the three workspaces from chapter 01.</strong></li>
+          <li style="margin-bottom: 6px;">Open <code>engine/</code>. List the subfolders you see (you should find <code>patents/</code>, <code>trademarks/</code>, <code>inventors/</code>, etc.). Each one is a real URL on the live site.</li>
+        </ol>
+
+        <p style="font-size: 14px; margin: 0 0 8px;"><strong>What you should notice:</strong></p>
+        <ul style="font-size: 14px; margin: 0 0 14px 22px; padding: 0;">
+          <li style="margin-bottom: 6px;">The URL <code>app.tap-ip.com/acme/engine/patents</code> matches the folder path <code>app/[tenantSegment]/(authenticated)/engine/patents/</code>. The brackets and parens don't show up in the URL; everything else does.</li>
+          <li style="margin-bottom: 6px;">Each "leaf" folder (the ones that don't have more subfolders) has a file called <code>page.tsx</code>. That's the actual React page Next.js renders when a user visits that URL.</li>
+        </ul>
+
+        <p style="font-size: 14px; margin: 0;"><strong>Deliverable:</strong> Pick the workspace that interests you most (Lab, Engine, or Desk). In a note, list its top-level subfolders. Pick one of them and open its <code>page.tsx</code> file. Read the first 30 lines. Write down one thing you understood and one thing that confused you. Bring both to your next 1:1.</p>
+      </div>
+
+      <div class="card" style="padding: 22px 24px;">
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px;">
+          <span style="font-family: var(--font-display); font-style: italic; font-size: 28px; color: var(--cyan);">03</span>
+          <span style="background: var(--bg-elevated); color: var(--type-tertiary); padding: 2px 10px; border-radius: 999px; font-family: var(--font-mono); font-size: 11px;">30 min</span>
+          <h4 style="margin: 0;">Trace one server action end-to-end.</h4>
+        </div>
+        <p style="font-size: 14px; margin: 6px 0 0;">Open <code>frontend/src/app/actions/</code>. Pick any file. Find a <code>tenantAction(...)</code> call. Follow it to the repository, identify the table. Sketch the path on paper.</p>
+      </div>
+
+      <div class="card" style="padding: 22px 24px;">
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px;">
+          <span style="font-family: var(--font-display); font-style: italic; font-size: 28px; color: var(--cyan);">04</span>
+          <span style="background: var(--bg-elevated); color: var(--type-tertiary); padding: 2px 10px; border-radius: 999px; font-family: var(--font-mono); font-size: 11px;">45 min</span>
+          <h4 style="margin: 0;">Run the dev server. Watch §05 happen live.</h4>
+        </div>
+        <p style="font-size: 14px; margin: 6px 0 0;"><code>docker-compose up -d</code>, log in with the credentials the founder shared with you (or create your own user from the signup page). Create one idea. Open DevTools Network tab. Find the POST that handled the create. You just watched chapter 05 happen in real life.</p>
+      </div>
+
+      <div class="card" style="padding: 22px 24px;">
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px;">
+          <span style="font-family: var(--font-display); font-style: italic; font-size: 28px; color: var(--cyan);">05</span>
+          <span style="background: var(--bg-elevated); color: var(--type-tertiary); padding: 2px 10px; border-radius: 999px; font-family: var(--font-mono); font-size: 11px;">30 min</span>
+          <h4 style="margin: 0;">Platform tour.</h4>
+        </div>
+        <p style="font-size: 14px; margin: 6px 0 0;">Log into Railway (founder grants read-only access). Find the services. Then log into Supabase Studio. Look at the <code>tenants</code> table and the <code>ip_assets</code> table. Notice every row has a <code>tenant_id</code>. That's chapters 03 + 04 in real life.</p>
+      </div>
+
+      <div class="card" style="padding: 22px 24px;">
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px;">
+          <span style="font-family: var(--font-display); font-style: italic; font-size: 28px; color: var(--cyan);">06</span>
+          <span style="background: var(--bg-elevated); color: var(--type-tertiary); padding: 2px 10px; border-radius: 999px; font-family: var(--font-mono); font-size: 11px;">30 min</span>
+          <h4 style="margin: 0;">Generator demo.</h4>
+        </div>
+        <p style="font-size: 14px; margin: 6px 0 0;">Run <code>npm run generate:component DemoCard shared "Demo card"</code> in a branch (DON'T commit). Read what was generated. Match each file back to chapter 12's reference table.</p>
+      </div>
+
+      <div class="card" style="padding: 22px 24px;">
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px;">
+          <span style="font-family: var(--font-display); font-style: italic; font-size: 28px; color: var(--cyan);">07</span>
+          <span style="background: var(--bg-elevated); color: var(--type-tertiary); padding: 2px 10px; border-radius: 999px; font-family: var(--font-mono); font-size: 11px;">30 min</span>
+          <h4 style="margin: 0;">Skill demo.</h4>
+        </div>
+        <p style="font-size: 14px; margin: 6px 0 0;">Open Claude Code. Invoke <code>/superpowers:brainstorming</code>. Answer its prompts about a feature you'd want. Observe the structure.</p>
+      </div>
+
+      <div class="card" style="padding: 22px 24px;">
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px;">
+          <span style="font-family: var(--font-display); font-style: italic; font-size: 28px; color: var(--cyan);">08</span>
+          <span style="background: var(--bg-elevated); color: var(--type-tertiary); padding: 2px 10px; border-radius: 999px; font-family: var(--font-mono); font-size: 11px;">60 min</span>
+          <h4 style="margin: 0;">Read one senior-eng doc end-to-end.</h4>
+        </div>
+        <p style="font-size: 14px; margin: 6px 0 0;">Pick one: <code>docs/FRONTEND_ARCHITECTURE.md</code>, <code>docs/SCHEMA_DESIGN.md</code>, or <code>docs/DB_CONNECTION_ARCHITECTURE.md</code>. Highlight the 5 sentences that confused you most. Bring to next 1:1.</p>
+      </div>
+
+    </div>
+
+    <hr style="margin: 56px 0 40px;"/>
+
+    <div style="margin-bottom: 28px;">
+      <div class="eyebrow" style="margin-bottom: 12px; color: var(--violet-glow);">Browser DevTools deep-dive</div>
+      <h3 class="feature-title">Exercises 09–12: <em>see what the browser actually does</em>.</h3>
+      <p>Every web developer alive runs the browser DevTools dozens of times a day. They turn the browser from a black box into a glass box — you can see exactly what HTML rendered, what got sent over the network, what's stored on your machine, and what's broken. Open with <code>Cmd+Option+I</code> (Mac) or <code>F12</code> (Windows/Linux). See chapter 06 for the tab-by-tab tour.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+
+      <div class="card" style="padding: 22px 24px; border-left: 3px solid var(--violet-glow);">
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px;">
+          <span style="font-family: var(--font-display); font-style: italic; font-size: 28px; color: var(--violet-glow);">09</span>
+          <span style="background: var(--bg-elevated); color: var(--type-tertiary); padding: 2px 10px; border-radius: 999px; font-family: var(--font-mono); font-size: 11px;">20 min</span>
+          <h4 style="margin: 0;">Inspect like a designer (Elements tab).</h4>
+        </div>
+
+        <p style="font-size: 14px; margin: 10px 0 14px;"><strong>The idea:</strong> the page you see is just HTML + CSS that the browser turned into pixels. The Elements tab lets you read the HTML, see which CSS rules apply to any element, and edit either one <em>live</em> to see what changes. Designers use this to prototype. Engineers use it to debug.</p>
+
+        <p style="font-size: 14px; margin: 0 0 8px;"><strong>Steps:</strong></p>
+        <ol style="font-size: 14px; margin: 0 0 14px 22px; padding: 0;">
+          <li style="margin-bottom: 6px;">Open TAP•IP locally and log in. Navigate to any patents list page.</li>
+          <li style="margin-bottom: 6px;">Open DevTools (<code>Cmd+Option+I</code>) and click the <strong>Elements</strong> tab.</li>
+          <li style="margin-bottom: 6px;">Click the little <strong>cursor icon</strong> in the top-left of DevTools (or press <code>Cmd+Shift+C</code>). Now hover over any button or text on the page — DevTools highlights the matching HTML element.</li>
+          <li style="margin-bottom: 6px;">Click on a button. The Elements panel jumps to that <code>&lt;button&gt;</code> tag. On the right, you'll see the <strong>Styles</strong> panel showing every CSS rule that applies.</li>
+          <li style="margin-bottom: 6px;">In the Styles panel, find a color value (like <code>background-color: rgb(99, 102, 241)</code>). Click it. Change it to <code>red</code>. The page updates instantly. <em>Nothing is saved</em> — refresh and it's back to normal.</li>
+          <li style="margin-bottom: 6px;">Try changing some text: find a heading in the HTML panel, double-click the text, type your name, hit Enter.</li>
+        </ol>
+
+        <p style="font-size: 14px; margin: 0 0 8px;"><strong>What you should notice:</strong> the browser is fundamentally a layout engine that turns HTML + CSS into pixels. Everything you see <em>is</em> these two things. There's no magic.</p>
+
+        <p style="font-size: 14px; margin: 0;"><strong>Deliverable:</strong> Pick any TAP•IP page. Make three live edits in the Elements tab (a color change, a text change, hide an element by setting <code>display: none</code>). Screenshot the before/after. Bring to your next 1:1 with the question: "How would I make this change permanent?" (Hint: chapter 06 + the <code>frontend/src/components/</code> tour.)</p>
+      </div>
+
+      <div class="card" style="padding: 22px 24px; border-left: 3px solid var(--violet-glow);">
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px;">
+          <span style="font-family: var(--font-display); font-style: italic; font-size: 28px; color: var(--violet-glow);">10</span>
+          <span style="background: var(--bg-elevated); color: var(--type-tertiary); padding: 2px 10px; border-radius: 999px; font-family: var(--font-mono); font-size: 11px;">35 min</span>
+          <h4 style="margin: 0;">Watch one request fly (Network tab).</h4>
+        </div>
+
+        <p style="font-size: 14px; margin: 10px 0 14px;"><strong>The idea:</strong> the Network tab logs every HTTP request the browser makes. Status codes, URLs, headers, request bodies (payloads), response bodies, timing — all of it. This is the single most important DevTools skill. When something on a page "doesn't work," the Network tab tells you whether the browser even asked the server, what it asked, and what the server said back.</p>
+
+        <p style="font-size: 14px; margin: 0 0 8px;"><strong>Steps:</strong></p>
+        <ol style="font-size: 14px; margin: 0 0 14px 22px; padding: 0;">
+          <li style="margin-bottom: 6px;">Open TAP•IP locally. Open DevTools and click the <strong>Network</strong> tab.</li>
+          <li style="margin-bottom: 6px;">Check the <strong>Preserve log</strong> checkbox at the top — otherwise the tab clears on each navigation.</li>
+          <li style="margin-bottom: 6px;">Click <strong>Clear</strong> (the 🚫 icon) to wipe the log. Then navigate to the patents page. Watch the rows flood in.</li>
+          <li style="margin-bottom: 6px;">Find one row whose <strong>Type</strong> column says <code>document</code> or <code>fetch</code>. Click it. A side panel opens with five sub-tabs: <strong>Headers</strong>, <strong>Payload</strong>, <strong>Preview</strong>, <strong>Response</strong>, <strong>Timing</strong>.</li>
+          <li style="margin-bottom: 6px;"><strong>Headers</strong> — see the URL, the HTTP method (<code>GET</code> / <code>POST</code> / etc.), the status code (<code>200</code> / <code>404</code> / etc.), and the headers the browser sent + the server returned. Cookies live here.</li>
+          <li style="margin-bottom: 6px;"><strong>Payload</strong> — only present on POST/PATCH/PUT. The actual data the browser sent up (the form values, the JSON body).</li>
+          <li style="margin-bottom: 6px;"><strong>Response</strong> — the raw bytes the server sent back. Could be HTML, JSON, or anything else.</li>
+          <li style="margin-bottom: 6px;"><strong>Timing</strong> — how long each phase took (DNS lookup, connection, server processing, download).</li>
+          <li style="margin-bottom: 6px;">Now do something that <em>writes</em>: create a new idea or patent. Watch the Network tab. Find the request with method <code>POST</code> and a 2xx status. Open it.</li>
+          <li style="margin-bottom: 6px;">Look at its <strong>Payload</strong>. That's chapter 05 in real life — your form data flying to the server. Look at its <strong>Response</strong>. That's the ActionResult coming back.</li>
+        </ol>
+
+        <p style="font-size: 14px; margin: 0 0 8px;"><strong>What you should notice:</strong></p>
+        <ul style="font-size: 14px; margin: 0 0 14px 22px; padding: 0;">
+          <li style="margin-bottom: 6px;">One page load is rarely one request — it's dozens. HTML, CSS, JavaScript bundles, fonts, images, then any data fetches the page makes.</li>
+          <li style="margin-bottom: 6px;">Every request has a status code — and you can spot failures (red rows) instantly.</li>
+          <li style="margin-bottom: 6px;">The browser is making these requests on your behalf the whole time you're using the web. You just couldn't see them before.</li>
+        </ul>
+
+        <p style="font-size: 14px; margin: 0;"><strong>Deliverable:</strong> Create one new idea in TAP•IP with Network tab open. Find the POST request that handled the create. In a note, record: (a) the URL, (b) the HTTP method, (c) the status code, (d) what was in the Payload, (e) what came back in the Response. Then refresh the page and find one request that returned a status code that <em>wasn't</em> 200 (try 304 or 204 — both are normal). Write down what the code means.</p>
+      </div>
+
+      <div class="card" style="padding: 22px 24px; border-left: 3px solid var(--violet-glow);">
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px;">
+          <span style="font-family: var(--font-display); font-style: italic; font-size: 28px; color: var(--violet-glow);">11</span>
+          <span style="background: var(--bg-elevated); color: var(--type-tertiary); padding: 2px 10px; border-radius: 999px; font-family: var(--font-mono); font-size: 11px;">20 min</span>
+          <h4 style="margin: 0;">Debug like an engineer (Console tab).</h4>
+        </div>
+
+        <p style="font-size: 14px; margin: 10px 0 14px;"><strong>The idea:</strong> the Console is a live JavaScript prompt running on the current page. You can read errors, inspect any variable in scope, and run any JavaScript expression you want. When code on a page breaks, this is where the explanation appears. When you want to understand what some code is doing, you sprinkle <code>console.log(value)</code> calls in it and read them here.</p>
+
+        <p style="font-size: 14px; margin: 0 0 8px;"><strong>Steps:</strong></p>
+        <ol style="font-size: 14px; margin: 0 0 14px 22px; padding: 0;">
+          <li style="margin-bottom: 6px;">Open TAP•IP. Open DevTools, click the <strong>Console</strong> tab.</li>
+          <li style="margin-bottom: 6px;">If any errors show in red, read one. Errors are usually a sentence in English plus a file path and line number. Click the file path — DevTools jumps to the source.</li>
+          <li style="margin-bottom: 6px;">Click into the prompt at the bottom (next to the <code>&gt;</code>) and type: <code>2 + 2</code>. Press Enter. You should see <code>4</code>. The Console runs any JS expression.</li>
+          <li style="margin-bottom: 6px;">Try: <code>window.location.href</code>. Returns the current URL as a string.</li>
+          <li style="margin-bottom: 6px;">Try: <code>document.title</code>. Returns the page title (the text in the browser tab).</li>
+          <li style="margin-bottom: 6px;">Try: <code>document.querySelectorAll('button').length</code>. Returns the count of <code>&lt;button&gt;</code> elements on the page. (DevTools' Elements tab shows you HTML structure; the Console can <em>query</em> it.)</li>
+          <li style="margin-bottom: 6px;">Now navigate around the app. Watch the Console for any warnings or errors that pop up. Most are harmless (deprecation warnings, etc.), but some real bugs surface here first.</li>
+        </ol>
+
+        <p style="font-size: 14px; margin: 0;"><strong>Deliverable:</strong> Find one error or warning in the TAP•IP console during normal use. Copy the full message. In a note, write: what file did it point to? What line? Is it scary or harmless? (You don't have to fix it — just learn to read it.) Bring to your 1:1.</p>
+      </div>
+
+      <div class="card" style="padding: 22px 24px; border-left: 3px solid var(--violet-glow);">
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px;">
+          <span style="font-family: var(--font-display); font-style: italic; font-size: 28px; color: var(--violet-glow);">12</span>
+          <span style="background: var(--bg-elevated); color: var(--type-tertiary); padding: 2px 10px; border-radius: 999px; font-family: var(--font-mono); font-size: 11px;">25 min</span>
+          <h4 style="margin: 0;">See what's stored about you (Application tab).</h4>
+        </div>
+
+        <p style="font-size: 14px; margin: 10px 0 14px;"><strong>The idea:</strong> HTTP is technically <em>stateless</em> — every request is independent and the server doesn't "remember" you. So how does the web know you're logged in across page loads? The browser stores small pieces of data — cookies, localStorage, sessionStorage — and sends them along with requests. The <strong>Application</strong> tab shows everything the current site has stored. This is also where you spot privacy issues, hung-cache problems, and "why is the app showing me stale data" mysteries.</p>
+
+        <p style="font-size: 14px; margin: 0 0 8px;"><strong>Steps:</strong></p>
+        <ol style="font-size: 14px; margin: 0 0 14px 22px; padding: 0;">
+          <li style="margin-bottom: 6px;">Open TAP•IP, logged in. Open DevTools, click the <strong>Application</strong> tab (Chrome) or <strong>Storage</strong> (Firefox).</li>
+          <li style="margin-bottom: 6px;">In the left sidebar, find <strong>Cookies</strong> → click the TAP•IP domain. You'll see a table of cookies. Look for one whose name suggests authentication (Supabase uses names like <code>sb-...-auth-token</code>). Notice its <strong>HttpOnly</strong> column is checked — that means JavaScript on the page <em>cannot</em> read it; only the server can. That's a security feature.</li>
+          <li style="margin-bottom: 6px;">Click <strong>Local Storage</strong> → the TAP•IP domain. You'll see key/value pairs. Local storage persists across browser restarts. <strong>Session Storage</strong> (just below) clears when the tab closes. Together they're how the page "remembers" things on your machine without involving the server.</li>
+          <li style="margin-bottom: 6px;">Try a thought experiment: delete the auth cookie. Refresh the page. You'll be kicked back to the login screen — because that one cookie was the proof-of-login the server was checking on every request.</li>
+          <li style="margin-bottom: 6px;">Open the <strong>IndexedDB</strong> section. Some apps use this for large local databases (offline-first apps). TAP•IP probably has little here; that's fine — but Excalidraw (chapter 02's whiteboard) does use it.</li>
+        </ol>
+
+        <p style="font-size: 14px; margin: 0 0 8px;"><strong>What you should notice:</strong></p>
+        <ul style="font-size: 14px; margin: 0 0 14px 22px; padding: 0;">
+          <li style="margin-bottom: 6px;"><strong>Cookies</strong> get sent to the server with every request. They're the standard way to handle login state.</li>
+          <li style="margin-bottom: 6px;"><strong>localStorage</strong> stays on your machine — never sent to the server. Good for user preferences, theme settings, draft text.</li>
+          <li style="margin-bottom: 6px;"><strong>sessionStorage</strong> dies when the tab closes. Good for temporary state during a single visit.</li>
+          <li style="margin-bottom: 6px;">"Clear site data" in this tab is the nuclear option when something gets stuck.</li>
+        </ul>
+
+        <p style="font-size: 14px; margin: 0;"><strong>Deliverable:</strong> In a note, list (a) how many cookies TAP•IP stores for you, (b) which one is the auth cookie (the one that, if deleted, logs you out), (c) any item in localStorage and what you think it's for. Bring the list to your 1:1.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d3">
+    <div style="text-align: center; padding: 60px 0 40px;">
+      <div class="eyebrow" style="justify-content: center; margin-bottom: 20px;">Stretch goal</div>
+      <h2 class="section-title" style="margin-bottom: 24px;">Ship your own product.<br/><em>By week 10.</em></h2>
+      <p class="lede" style="margin: 0 auto;">Same stack as TAP•IP. Founder mentorship on demand. Your project, your call.</p>
+    </div>
+
+    <p>The roadmap is five weeks. Each milestone is bounded — small enough to finish in a week with normal intern hours. Pitch the idea to the founder in week 6 for sanity-check (not approval — it's your project).</p>
+
+    <div style="display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 28px;">
+
+      <div class="card" style="padding: 26px 28px; border-left: 3px solid #C4B5FD;">
+        <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 10px;">
+          <span style="font-family: var(--font-display); font-style: italic; font-size: 32px; color: var(--violet-glow);">Week 06</span>
+          <h4 style="margin: 0;">Pick an idea.</h4>
+        </div>
+        <p style="font-size: 14px; margin: 0;">Use <code>/superpowers:brainstorming</code> + the BD Playbook ideation techniques. Pick something narrow you could build in 3-4 weeks. Pitch to founder for sanity-check.</p>
+      </div>
+
+      <div class="card" style="padding: 26px 28px; border-left: 3px solid #C4B5FD;">
+        <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 10px;">
+          <span style="font-family: var(--font-display); font-style: italic; font-size: 32px; color: var(--violet-glow);">Week 07</span>
+          <h4 style="margin: 0;">Scaffold the stack.</h4>
+        </div>
+        <p style="font-size: 14px; margin: 0;">Your own GitHub repo. Free Supabase project. Free Railway service. <code>npm create next-app@latest</code> with TypeScript + Tailwind + App Router. Push the Hello World. Get the deployed URL.</p>
+      </div>
+
+      <div class="card" style="padding: 26px 28px; border-left: 3px solid #C4B5FD;">
+        <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 10px;">
+          <span style="font-family: var(--font-display); font-style: italic; font-size: 32px; color: var(--violet-glow);">Week 08</span>
+          <h4 style="margin: 0;">Add a table + one feature.</h4>
+        </div>
+        <p style="font-size: 14px; margin: 0;">Pick ONE entity (tasks, notes, bookmarks). Use Drizzle ORM. Create a table. Build one server action that inserts a row. Build one page that lists rows. Deploy.</p>
+      </div>
+
+      <div class="card" style="padding: 26px 28px; border-left: 3px solid #C4B5FD;">
+        <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 10px;">
+          <span style="font-family: var(--font-display); font-style: italic; font-size: 32px; color: var(--violet-glow);">Week 09</span>
+          <h4 style="margin: 0;">Make it shareable.</h4>
+        </div>
+        <p style="font-size: 14px; margin: 0;">Add auth (Supabase Auth has a Next.js quickstart). Add a landing page using brand voice principles from TAP•IP. Optionally buy a domain (~$12/yr).</p>
+      </div>
+
+      <div class="card" style="padding: 26px 28px; border-left: 3px solid var(--cyan);">
+        <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 10px;">
+          <span style="font-family: var(--font-display); font-style: italic; font-size: 32px; color: var(--cyan);">Week 10</span>
+          <h4 style="margin: 0;">Show someone.</h4>
+        </div>
+        <p style="font-size: 14px; margin: 0;">Share with one real user (friend, classmate, family). Watch them try it. Take notes. Present at your end-of-summer review: what you learned + what you'd do with another 10 weeks.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="12-reference.html" class="foot-link prev">
+      <span class="lbl">← Previous</span>
+      <span class="tt">12 · The reference</span>
+    </a>
+    <a href="14-glossary.html" class="foot-link next">
+      <span class="lbl">Next chapter →</span>
+      <span class="tt">14 · Glossary &amp; read next</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+<script src="tour.js"></script>
+</body>
+</html>

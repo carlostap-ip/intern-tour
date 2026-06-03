@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>06 · Where things live — TAP•IP Tour</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a><span class="dot"></span>
+    <a href="00-foundations.html">00</a>
+    <a href="01-the-product.html">01</a>
+    <a href="02-the-stack.html">02</a>
+    <a href="03-tenant-security.html">03</a>
+    <a href="04-frontend-layers.html">04</a>
+    <a href="05-request-flow.html">05</a>
+    <a href="06-navigation.html" class="current">06</a>
+    <a href="07-platform.html">07</a>
+    <a href="09-external.html">08</a>
+    <a href="10-daily-tools.html">09</a>
+    <a href="11-principles.html">10</a>
+    <a href="12-reference.html">11</a>
+    <a href="13-exercises.html">12</a>
+    <a href="14-glossary.html">13</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">06</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Chapter 06 · ~7 minutes</div>
+      <h2 class="section-title">Where <em>things live</em>.</h2>
+      <p class="lede">A navigation map of <code>frontend/src/</code>. Find code by name in 60 seconds.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <p>You'll spend a lot of time in <code>frontend/src/</code>. Here's the folder tree and what each piece holds.</p>
+
+    <div class="tree">
+<span class="dir">frontend/src/</span>
+├── <span class="dir">app/</span>              <span class="com">Next.js App Router. URL routes map 1:1 to directories.</span>
+│   ├── actions/      <span class="com">Server actions (the entry points)</span>
+│   ├── [tenantSegment]/(authenticated)/
+│   │   ├── engine/   <span class="com">The Engine workspace pages</span>
+│   │   ├── lab/      <span class="com">The Lab workspace pages</span>
+│   │   └── desk/     <span class="com">The Desk workspace pages</span>
+│   └── login/        <span class="com">Login page</span>
+├── <span class="dir">lib/</span>              <span class="com">Shared toolbox. ~170 folders + files.</span>
+│   ├── repositories/ <span class="com">One TS class per entity (PatentRepository, etc.)</span>
+│   ├── db/           <span class="com">Drizzle schema + tenantDb/adminDb helpers</span>
+│   ├── auth/         <span class="com">Authentication helpers</span>
+│   ├── errors/       <span class="com">AppError envelope</span>
+│   ├── features/     <span class="com">Feature flag registry</span>
+│   ├── ai/           <span class="com">AI infrastructure</span>
+│   ├── cost-engine/  <span class="com">Cost engine logic</span>
+│   └── (much more)
+├── <span class="dir">components/</span>       <span class="com">React UI components (buttons, modals, forms)</span>
+├── <span class="dir">contexts/</span>         <span class="com">React Context providers (client-side state)</span>
+├── <span class="dir">hooks/</span>            <span class="com">Custom React hooks (useTenant, useFeature, etc.)</span>
+├── <span class="dir">types/</span>            <span class="com">TypeScript type definitions</span>
+├── <span class="dir">utils/</span>            <span class="com">Small utility functions</span>
+└── <span class="dir">middleware.ts</span>     <span class="com">Runs on every request (auth checks, redirects)</span>
+    </div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d3">
+    <h3 class="feature-title">The 80/20.</h3>
+    <p>You'll find what you need 80% of the time with these four:</p>
+
+    <div class="grid-3">
+      <div class="card">
+        <div style="font-family: var(--font-mono); color: var(--cyan); font-size: 13px; margin-bottom: 8px;">src/app/</div>
+        <p style="font-size: 14px; margin: 0; color: var(--type-secondary);">"Where's the page for /engine/patents/5?"</p>
+      </div>
+      <div class="card">
+        <div style="font-family: var(--font-mono); color: var(--cyan); font-size: 13px; margin-bottom: 8px;">src/lib/repositories/</div>
+        <p style="font-size: 14px; margin: 0; color: var(--type-secondary);">"Where's the function that talks to the database?"</p>
+      </div>
+      <div class="card">
+        <div style="font-family: var(--font-mono); color: var(--cyan); font-size: 13px; margin-bottom: 8px;">src/components/</div>
+        <p style="font-size: 14px; margin: 0; color: var(--type-secondary);">"Where's that confirmation modal?"</p>
+      </div>
+      <div class="card">
+        <div style="font-family: var(--font-mono); color: var(--cyan); font-size: 13px; margin-bottom: 8px;">src/contexts/</div>
+        <p style="font-size: 14px; margin: 0; color: var(--type-secondary);">"How does the app know what tenant I'm in?"</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="fade-in d4">
+    <h3 class="feature-title">Naming conventions.</h3>
+    <ul>
+      <li>Files are <strong>kebab-case</strong>: <code>patent-repository.ts</code>, not <code>PatentRepository.ts</code>.</li>
+      <li><code>.ts</code> = pure TypeScript. <code>.tsx</code> = TypeScript with JSX (React components).</li>
+      <li>Imports use the <code>@/</code> alias for <code>src/</code>:</li>
+    </ul>
+
+    <div class="code">
+<span class="kw">import</span> { <span class="ty">PatentRepository</span> } <span class="kw">from</span> <span class="str">'@/lib/repositories/patent-repository'</span>;
+    </div>
+  </section>
+
+  <section class="fade-in d5">
+    <h3 class="feature-title">In VS Code, the 60-second speedrun.</h3>
+    <ul>
+      <li><kbd>Cmd</kbd>+<kbd>P</kbd> → type a file name → jump to it.</li>
+      <li><kbd>Cmd</kbd>+<kbd>T</kbd> → type a symbol name (function, class) → jump to its definition.</li>
+      <li><kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> → search across all files.</li>
+      <li>Right-click a function name → "Go to Definition" or "Find All References".</li>
+    </ul>
+
+    <p style="color: var(--type-tertiary); font-style: italic;">That's the entire navigation toolkit. The rest is muscle memory.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d6">
+    <h3 class="feature-title">And in the browser: <em>DevTools</em>.</h3>
+    <p>Knowing where code <em>lives</em> is half the job. The other half is seeing what it <em>does at runtime</em>. That's <strong>Browser DevTools</strong> — a panel built into every modern browser that lets you inspect the live page, watch network requests, see errors, and debug JavaScript.</p>
+    <p>Open it on any page: <kbd>Cmd</kbd>+<kbd>Option</kbd>+<kbd>I</kbd> on Mac, <kbd>F12</kbd> or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd> on Windows. Or right-click anything → <strong>Inspect</strong>.</p>
+
+    <p>Five tabs you'll use weekly:</p>
+
+    <div style="display: grid; grid-template-columns: 1fr; gap: 12px; margin: 24px 0;">
+
+      <div class="card" style="padding: 20px 22px;">
+        <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 4px;">
+          <span style="background: var(--bg-elevated); color: var(--cyan); padding: 3px 10px; border-radius: 6px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.05em;">Elements</span>
+          <h4 style="margin: 0;">Inspect the HTML &amp; CSS.</h4>
+        </div>
+        <p style="font-size: 14px; margin: 4px 0 0;">See the live HTML tree, click any element to highlight it on the page, edit CSS in real time to test styling changes. Right-click → "Inspect" jumps you straight to the element you clicked.</p>
+        <p style="font-size: 13px; color: var(--type-tertiary); margin: 6px 0 0;">When you'd use it: "why is this button mis-aligned?" / "what color is this?" / "where does this Tailwind class come from?"</p>
+      </div>
+
+      <div class="card" style="padding: 20px 22px;">
+        <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 4px;">
+          <span style="background: var(--bg-elevated); color: var(--violet-glow); padding: 3px 10px; border-radius: 6px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.05em;">Network</span>
+          <h4 style="margin: 0;">Watch every HTTP request.</h4>
+        </div>
+        <p style="font-size: 14px; margin: 4px 0 0;">Every page load and every button click that talks to the server shows up here as a row. Click a row to see the URL, method (GET, POST, …), status code, payload, and response. This is how you watch chapter 05's request flow happen for real.</p>
+        <p style="font-size: 13px; color: var(--type-tertiary); margin: 6px 0 0;">When you'd use it: "did my server action actually fire?" / "what data came back?" / "why is this page slow?"</p>
+      </div>
+
+      <div class="card" style="padding: 20px 22px;">
+        <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 4px;">
+          <span style="background: var(--bg-elevated); color: var(--gold); padding: 3px 10px; border-radius: 6px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.05em;">Console</span>
+          <h4 style="margin: 0;">See errors. Run JavaScript live.</h4>
+        </div>
+        <p style="font-size: 14px; margin: 4px 0 0;">Errors and warnings appear here in red. You can also type JavaScript directly and run it — <code>document.title</code> + <kbd>Enter</kbd> prints the current page title. Devs use <code>console.log("here", someVar)</code> in their code to print debug messages; they show up here.</p>
+        <p style="font-size: 13px; color: var(--type-tertiary); margin: 6px 0 0;">When you'd use it: "the page crashed — why?" / "what value does this variable have?" / "why doesn't my click handler fire?"</p>
+      </div>
+
+      <div class="card" style="padding: 20px 22px;">
+        <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 4px;">
+          <span style="background: var(--bg-elevated); color: var(--cyan); padding: 3px 10px; border-radius: 6px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.05em;">Sources</span>
+          <h4 style="margin: 0;">Set breakpoints. Step through code.</h4>
+        </div>
+        <p style="font-size: 14px; margin: 4px 0 0;">Open any JavaScript file the browser is running, click a line number to set a "breakpoint," then reload — execution pauses on that line. Step forward one line at a time, hover variables to see their values. The grown-up version of <code>console.log</code>.</p>
+        <p style="font-size: 13px; color: var(--type-tertiary); margin: 6px 0 0;">When you'd use it: when a <code>console.log</code> fest isn't enough or you need to understand a complex call chain.</p>
+      </div>
+
+      <div class="card" style="padding: 20px 22px;">
+        <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 4px;">
+          <span style="background: var(--bg-elevated); color: var(--violet-glow); padding: 3px 10px; border-radius: 6px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.05em;">Application</span>
+          <h4 style="margin: 0;">Cookies, localStorage, service workers.</h4>
+        </div>
+        <p style="font-size: 14px; margin: 4px 0 0;">See cookies (where login sessions live), <code>localStorage</code> / <code>sessionStorage</code> (small client-side preferences), and any service workers / cache the page uses. Right-click → "Clear" wipes a value if you want to test the logged-out flow without logging out.</p>
+        <p style="font-size: 13px; color: var(--type-tertiary); margin: 6px 0 0;">When you'd use it: "am I actually logged in?" / "where's my session token?" / "test what an unauthenticated user sees."</p>
+      </div>
+
+    </div>
+
+    <div class="note">
+      <p style="margin: 0;"><strong>Three shortcuts that pay for themselves the first day:</strong> <kbd>Cmd</kbd>+<kbd>R</kbd> in DevTools = reload the page. Hold <kbd>Shift</kbd> while reloading to bypass the cache. In the Network tab, check the <strong>Disable cache</strong> box so you always see fresh requests while DevTools is open.</p>
+    </div>
+
+    <p>Chrome's docs are great if you want depth: <a href="https://developer.chrome.com/docs/devtools" target="_blank" rel="noopener">developer.chrome.com/docs/devtools</a>. But honestly, you'll learn 80% of what you need by clicking around for 30 minutes.</p>
+
+    <div class="card" style="border-color: var(--violet-glow); background: linear-gradient(180deg, rgba(167,139,250,0.06), rgba(34,211,238,0.02)); margin-top: 24px;">
+      <div class="eyebrow" style="margin-bottom: 10px;">Practice these</div>
+      <p style="margin: 0;">Chapter 13 has four hands-on DevTools exercises — one per tab covered above. <a href="13-exercises.html#exercises">Exercises 09 (Elements) · 10 (Network) · 11 (Console) · 12 (Application) →</a></p>
+    </div>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="05-request-flow.html" class="foot-link prev">
+      <span class="lbl">← Previous</span>
+      <span class="tt">05 · Request flow</span>
+    </a>
+    <a href="07-platform.html" class="foot-link next">
+      <span class="lbl">Next chapter →</span>
+      <span class="tt">07 · The platform</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+<script src="tour.js"></script>
+</body>
+</html>

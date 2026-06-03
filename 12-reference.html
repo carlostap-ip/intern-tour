@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>12 · Reference — TAP•IP Tour</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a><span class="dot"></span>
+    <a href="00-foundations.html">00</a>
+    <a href="01-the-product.html">01</a>
+    <a href="02-the-stack.html">02</a>
+    <a href="03-tenant-security.html">03</a>
+    <a href="04-frontend-layers.html">04</a>
+    <a href="05-request-flow.html">05</a>
+    <a href="06-navigation.html">06</a>
+    <a href="07-platform.html">07</a>
+    <a href="09-external.html">08</a>
+    <a href="10-daily-tools.html">09</a>
+    <a href="11-principles.html">10</a>
+    <a href="12-reference.html" class="current">11</a>
+    <a href="13-exercises.html">12</a>
+    <a href="14-glossary.html">13</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">12</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Chapter 12 · Cheat sheet</div>
+      <h2 class="section-title">The complete <em>reference</em>.</h2>
+      <p class="lede">One table. Every folder, service, generator, skill. How you'd use each in your own product.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <input type="text" class="ref-search" id="ref-search" placeholder="🔍 Search the table (e.g. 'repository', 'Supabase', 'generator')…" />
+
+    <div class="ref-table" style="margin: 18px 0;">
+      <table style="width: 100%;" id="ref-table">
+        <thead><tr><th>Layer</th><th>Item</th><th>What it is</th><th>Where in TAP•IP</th><th>In YOUR product</th></tr></thead>
+        <tbody>
+          <tr><td class="layer">Folder</td><td class="item">src/app/</td><td>URL routes (Next.js App Router). Directories = URL paths.</td><td>All TAP•IP pages</td><td>Same. Use App Router in your Next.js project.</td></tr>
+          <tr><td class="layer">Folder</td><td class="item">src/app/actions/</td><td>Server actions — TypeScript functions that run on the server.</td><td>One file per domain (patents.ts, matters.ts, …)</td><td>Same. Group server actions by domain.</td></tr>
+          <tr><td class="layer">Folder</td><td class="item">src/lib/</td><td>Shared library code (the toolbox).</td><td>~170 files/folders</td><td>Same. Put any reusable code here.</td></tr>
+          <tr><td class="layer">Folder</td><td class="item">src/lib/repositories/</td><td>One class per entity. All DB queries for that entity live here.</td><td>60+ repositories</td><td>Recommended pattern. Keeps SQL out of routes.</td></tr>
+          <tr><td class="layer">Folder</td><td class="item">src/lib/db/</td><td>Drizzle schema + connection helpers (tenantDb, adminDb).</td><td>schema.ts is the single source of truth</td><td>Use Drizzle for new projects. Lighter than Prisma.</td></tr>
+          <tr><td class="layer">Folder</td><td class="item">src/components/</td><td>Reusable React UI components.</td><td>Buttons, modals, forms, cards</td><td>Same. One file per component.</td></tr>
+          <tr><td class="layer">Folder</td><td class="item">src/contexts/</td><td>React Context providers for client-side state.</td><td>User, tenant, features, theme</td><td>Use sparingly — only for app-wide state.</td></tr>
+          <tr><td class="layer">Folder</td><td class="item">src/hooks/</td><td>Custom React hooks.</td><td>useTenant, useFeature, etc.</td><td>Build hooks when 3+ components share logic.</td></tr>
+          <tr><td class="layer">Folder</td><td class="item">src/types/</td><td>TypeScript type definitions for shared shapes.</td><td>Patent, Matter, User types</td><td>Same. Or co-locate types with code.</td></tr>
+          <tr><td class="layer">Folder</td><td class="item">src/middleware.ts</td><td>One file that runs on every HTTP request.</td><td>Auth checks, route rewrites</td><td>Powerful. Use carefully.</td></tr>
+
+          <tr><td class="layer">Concept</td><td class="item">Server action</td><td>TS function marked 'use server' — runs on the server, called from the browser.</td><td>All mutations + most data fetches</td><td>Use them. Easier than building REST APIs.</td></tr>
+          <tr><td class="layer">Concept</td><td class="item">Repository pattern</td><td>One class owns all DB queries for one entity.</td><td>frontend/src/lib/repositories/</td><td>Highly recommended.</td></tr>
+          <tr><td class="layer">Concept</td><td class="item">TenantContext</td><td>Branded TS type that proves code is scoped to one tenant.</td><td>Built by tenantAction() wrapper</td><td>Only if multi-tenant. Simpler apps skip.</td></tr>
+          <tr><td class="layer">Concept</td><td class="item">RLS</td><td>Postgres Row-Level Security — DB filters queries automatically.</td><td>89 tables have RLS policies</td><td>Use for any user-data isolation. Supabase has it built-in.</td></tr>
+          <tr><td class="layer">Concept</td><td class="item">Feature flag</td><td>requireFeature() gates code per customer's package.</td><td>frontend/src/lib/features/</td><td>Useful for staged rollouts. Skip until you have customers.</td></tr>
+
+          <tr><td class="layer">Service</td><td class="item">GitHub</td><td>Hosts code, tracks changes, enables Pull Requests.</td><td>carlostap-ip/tp-ipms</td><td>Free for public. $4/mo for private.</td></tr>
+          <tr><td class="layer">Service</td><td class="item">Railway</td><td>Auto-deploys Docker containers on every push.</td><td>5 services</td><td>Free tier: $5/mo credit.</td></tr>
+          <tr><td class="layer">Service</td><td class="item">Supabase</td><td>Managed Postgres + Auth + Storage.</td><td>Production database</td><td>Free tier: 500MB DB, 50K users.</td></tr>
+          <tr><td class="layer">Service</td><td class="item">Docker</td><td>Packages app + dependencies into a portable container.</td><td>docker-compose.yml</td><td>Optional for tiny projects.</td></tr>
+
+          <tr><td class="layer">Generator</td><td class="item">npm run generate:feature</td><td>Full vertical slice (table + repo + action + page).</td><td>Run inside frontend/</td><td>Adopt the pattern. Or use Plop.js directly.</td></tr>
+          <tr><td class="layer">Generator</td><td class="item">npm run generate:repository</td><td>Stub tenant-scoped repository.</td><td>Run inside frontend/</td><td>Same.</td></tr>
+          <tr><td class="layer">Generator</td><td class="item">npm run generate:action</td><td>tenantAction CRUD scaffold for a repository.</td><td>Run inside frontend/</td><td>Same.</td></tr>
+          <tr><td class="layer">Generator</td><td class="item">npm run generate:constants</td><td>§19 constants module + helpers + ESLint rule.</td><td>For new string-typed values</td><td>Same — avoid raw string literals.</td></tr>
+          <tr><td class="layer">Generator</td><td class="item">npm run generate:component</td><td>ErrorBanner-aware React component.</td><td>For new UI components</td><td>Adopt the pattern.</td></tr>
+
+          <tr><td class="layer">Plugin cmd</td><td class="item">/babysit-pr</td><td>Pushes a PR through CodeRabbit cycles.</td><td>After you open any PR</td><td>Skip — too TAP•IP-specific.</td></tr>
+          <tr><td class="layer">Plugin cmd</td><td class="item">/ship</td><td>Canonical "ship a feature" pipeline.</td><td>For substantial features</td><td>Skip.</td></tr>
+          <tr><td class="layer">Plugin skill</td><td class="item">tap-ip-discipline</td><td>Engineering discipline rules.</td><td>Activates contextually</td><td>Skip.</td></tr>
+          <tr><td class="layer">Plugin skill</td><td class="item">canonical-helpers</td><td>The §19 canonical-helper pattern.</td><td>Activates contextually</td><td>Skip.</td></tr>
+
+          <tr><td class="layer">Skill</td><td class="item">superpowers:brainstorming</td><td>Explores user intent before building.</td><td>Use for any feature design</td><td><strong>Use for your own product ideation.</strong></td></tr>
+          <tr><td class="layer">Skill</td><td class="item">superpowers:writing-plans</td><td>Turns a vague task into a structured plan.</td><td>Before any non-trivial work</td><td><strong>Use before building each feature.</strong></td></tr>
+          <tr><td class="layer">Skill</td><td class="item">superpowers:verification-before-completion</td><td>Forces "show evidence" before claiming done.</td><td>Before opening a PR</td><td>Recommended discipline.</td></tr>
+          <tr><td class="layer">Skill</td><td class="item">superpowers:requesting-code-review</td><td>Dispatches a reviewer subagent.</td><td>Before opening a PR</td><td>Use when working alone.</td></tr>
+          <tr><td class="layer">Skill</td><td class="item">superpowers:test-driven-development</td><td>Write the test first, then the code.</td><td>For non-trivial logic</td><td>Use selectively.</td></tr>
+
+          <tr><td class="layer">Tool</td><td class="item">Next.js</td><td>The React framework. App Router + server actions.</td><td>frontend/ (Next.js 14.2)</td><td>Use it. Best fullstack TS framework.</td></tr>
+          <tr><td class="layer">Tool</td><td class="item">TypeScript</td><td>Typed JavaScript — catches bugs at compile time.</td><td>All TS files (.ts, .tsx)</td><td>Use from day 1. Hard to add later.</td></tr>
+          <tr><td class="layer">Tool</td><td class="item">Tailwind CSS</td><td>Utility-first CSS framework.</td><td>Styling everywhere</td><td>Use it. Fastest way to ship UI.</td></tr>
+          <tr><td class="layer">Tool</td><td class="item">Drizzle ORM</td><td>TypeScript ORM with full type safety.</td><td>frontend/src/lib/db/</td><td>Recommended. Lighter than Prisma.</td></tr>
+          <tr><td class="layer">Tool</td><td class="item">VS Code</td><td>Editor. Cmd+P, Cmd+T, integrated terminal.</td><td>Universal</td><td>Use it. Free.</td></tr>
+          <tr><td class="layer">Tool</td><td class="item">Claude Code</td><td>AI pair programmer in the terminal.</td><td>Universal</td><td>You'll have a Pro account. Use daily.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="color: var(--type-tertiary); font-size: 13px; font-style: italic;">~40 rows. Use the search box above to filter. Click any row's column to copy.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d3">
+    <h3 class="feature-title">Two patterns you'll see in <em>every file</em>.</h3>
+
+    <div class="card" style="padding: 26px 28px;">
+      <h4 style="margin: 0 0 12px;">A. Feature flags as access control.</h4>
+      <p style="font-size: 14px;">A "feature flag" is a switch that controls whether a feature is on for a given customer. TAP•IP uses them as access control — each customer subscribes to a <em>package</em> (e.g., "Desk only" or "Full Stack"), and the package determines which features they can access.</p>
+      <p style="font-size: 14px;">Every server action that touches a gated feature calls <code>requireFeature(FEATURES.IPMS_PATENTS)</code> at the top. If the customer's package doesn't include patents, the action throws before any database query runs.</p>
+      <div class="analogy" style="margin-top: 12px;">Feature flags are like a gym's tier system. Basic membership = pool. Premium = pool + sauna. Front desk checks your tier at every door.</div>
+    </div>
+
+    <div class="card" style="padding: 26px 28px; margin-top: 14px;">
+      <h4 style="margin: 0 0 12px;">B. The AppError envelope.</h4>
+      <p style="font-size: 14px;">When something goes wrong, TAP•IP never throws raw exception strings to the UI. Errors are wrapped in an <code>AppError</code> envelope — a TypeScript discriminated union with <code>code</code>, <code>category</code>, <code>userMessage</code>, <code>retryable</code>, and <code>requestId</code> fields.</p>
+      <p style="font-size: 14px;">Why? Three reasons. (1) The UI renders a friendly message instead of "ECONNREFUSED at line 47". (2) Errors get logged to a database table with the requestId, so support can find them. (3) Errors get auto-triaged — same category = same trace.</p>
+      <p style="font-size: 14px;">You'll see this in code as <code>actionFail('NOT_FOUND')</code> or <code>actionFail('VALIDATION', { userMessage: "..." })</code>. Never raw <code>throw new Error(...)</code>.</p>
+    </div>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="11-principles.html" class="foot-link prev">
+      <span class="lbl">← Previous</span>
+      <span class="tt">11 · Principles</span>
+    </a>
+    <a href="13-exercises.html" class="foot-link next">
+      <span class="lbl">Next chapter →</span>
+      <span class="tt">13 · Exercises &amp; build your own</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+<script src="tour.js"></script>
+<script>
+const search = document.getElementById('ref-search');
+const tbody = document.querySelector('#ref-table tbody');
+search.addEventListener('input', e => {
+  const q = e.target.value.toLowerCase().trim();
+  tbody.querySelectorAll('tr').forEach(row => {
+    const text = row.textContent.toLowerCase();
+    row.style.display = q === '' || text.includes(q) ? '' : 'none';
+  });
+});
+</script>
+</body>
+</html>

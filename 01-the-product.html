@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>01 · The product — TAP•IP Tour</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a>
+    <span class="dot"></span>
+    <a href="00-foundations.html">00</a>
+    <a href="01-the-product.html" class="current">01</a>
+    <a href="02-the-stack.html">02</a>
+    <a href="03-tenant-security.html">03</a>
+    <a href="04-frontend-layers.html">04</a>
+    <a href="05-request-flow.html">05</a>
+    <a href="06-navigation.html">06</a>
+    <a href="07-platform.html">07</a>
+    <a href="09-external.html">08</a>
+    <a href="10-daily-tools.html">09</a>
+    <a href="11-principles.html">10</a>
+    <a href="12-reference.html">11</a>
+    <a href="13-exercises.html">12</a>
+    <a href="14-glossary.html">13</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">01</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Chapter 01 · ~3 minutes</div>
+      <h2 class="section-title">The product, <em>in 60 seconds.</em></h2>
+      <p class="lede">What TAP•IP sells, and how three workspaces map to one castle metaphor.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <p>TAP•IP is <span class="pill" data-term="ipms">defensible IP management</span> for the products you ship. We help product companies — startups and mid-market — capture, protect, and commercialize their <span class="pill" data-term="ip">intellectual property</span> without turning every decision into a lawyer phone call.</p>
+
+    <p>Hold this metaphor in your head — it explains the entire product:</p>
+
+    <div class="card" style="background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(34,211,238,0.06)); border-color: rgba(139,92,246,0.25); padding: 48px; text-align: center; margin: 40px 0;">
+      <div style="font-size: 48px; margin-bottom: 18px; letter-spacing: 0.3em;">💡 → 🏰 → 🌊</div>
+      <p style="font-family: var(--font-display); font-style: italic; font-size: 24px; color: var(--type-primary); line-height: 1.45; margin-bottom: 12px;">The idea sits at the center.<br/>The product is the castle built around it.<br/>The IP is the moat that keeps competitors out.</p>
+      <p style="color: var(--violet-glow); font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; margin: 0;">Three layers · one castle</p>
+    </div>
+
+    <p>Customers don't buy patents — they buy products. The product is the prize. IP is what makes the win defensible. Every line of code in TAP•IP serves that story.</p>
+
+    <p>The company is pre-seed. Founder-led. Selling to inventors, product leads, IP counsel, and founders at companies that ship things and care about defensibility.</p>
+  </section>
+
+  <hr />
+
+  <section class="fade-in d3">
+    <div class="eyebrow">The product split</div>
+    <h2 class="section-title" style="margin: 12px 0 24px;">Three <em>workspaces</em>.</h2>
+    <p>The product splits into three workspaces. Each one is its own area of the app with its own URL prefix, navigation, and features. A customer can subscribe to one, two, or all three. Click any card to see what's inside.</p>
+
+    <div class="ws-grid">
+      <div class="ws-card" data-ws="lab" onclick="this.classList.toggle('open')">
+        <span class="ws-icon">🧪</span>
+        <div class="ws-name">The Lab</div>
+        <div class="ws-tag">Where ideas are born.</div>
+        <div class="ws-detail">
+          <h4>URL pattern</h4>
+          <code>/[tenant]/lab/...</code>
+          <h4>Code lives in</h4>
+          <code>frontend/src/app/[tenantSegment]/(authenticated)/lab/</code>
+          <h4>Top features</h4>
+          <ul>
+            <li>Inventor notebook + brainstorm sessions</li>
+            <li>Whiteboard with AI sketch transcription</li>
+            <li>AI capture-assist for raw notes → disclosure-ready records</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="ws-card" data-ws="engine" onclick="this.classList.toggle('open')">
+        <span class="ws-icon">⚙️</span>
+        <div class="ws-name">The Engine</div>
+        <div class="ws-tag">Where ideas are protected.</div>
+        <div class="ws-detail">
+          <h4>URL pattern</h4>
+          <code>/[tenant]/engine/...</code>
+          <h4>Code lives in</h4>
+          <code>frontend/src/app/[tenantSegment]/(authenticated)/engine/</code>
+          <h4>Top features</h4>
+          <ul>
+            <li>Portfolio dashboard for patents + trademarks</li>
+            <li>Deadline engine across 25 jurisdictions</li>
+            <li>Cost engine with provenance on every dollar</li>
+          </ul>
+          <p style="margin-top: 12px; color: var(--type-tertiary); font-style: italic;">The Engine = the IPMS.</p>
+        </div>
+      </div>
+
+      <div class="ws-card" data-ws="desk" onclick="this.classList.toggle('open')">
+        <span class="ws-icon">📋</span>
+        <div class="ws-name">The Desk</div>
+        <div class="ws-tag">Where ideas reach the market.</div>
+        <div class="ws-detail">
+          <h4>URL pattern</h4>
+          <code>/[tenant]/desk/...</code>
+          <h4>Code lives in</h4>
+          <code>frontend/src/app/[tenantSegment]/(authenticated)/desk/</code>
+          <h4>Top features</h4>
+          <ul>
+            <li>Today band — decisions waiting on you</li>
+            <li>Events + launches calendar (with public-disclosure clock)</li>
+            <li>Roadmap, pricing, GTM playbooks, licensing pipeline</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="background: var(--bg-deep); border-color: var(--line); padding: 24px; margin-top: 32px;">
+      <p style="margin: 0; font-size: 18px; color: var(--type-primary);"><strong>Memorize this:</strong> <em>Lab = born · Engine = protected · Desk = to market.</em></p>
+      <p style="margin: 6px 0 0; color: var(--type-tertiary); font-size: 14px;">You'll hear it in every all-hands.</p>
+    </div>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="index.html" class="foot-link prev">
+      <span class="lbl">← Back to</span>
+      <span class="tt">Index</span>
+    </a>
+    <a href="02-the-stack.html" class="foot-link next">
+      <span class="lbl">Next chapter →</span>
+      <span class="tt">02 · The stack at a glance</span>
+    </a>
+  </nav>
+
+</main>
+
+</div>
+
+<script src="tour.js"></script>
+</body>
+</html>

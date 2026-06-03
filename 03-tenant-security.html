@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>03 · Tenant security — TAP•IP Tour</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a><span class="dot"></span>
+    <a href="00-foundations.html">00</a>
+    <a href="01-the-product.html">01</a>
+    <a href="02-the-stack.html">02</a>
+    <a href="03-tenant-security.html" class="current">03</a>
+    <a href="04-frontend-layers.html">04</a>
+    <a href="05-request-flow.html">05</a>
+    <a href="06-navigation.html">06</a>
+    <a href="07-platform.html">07</a>
+    <a href="09-external.html">08</a>
+    <a href="10-daily-tools.html">09</a>
+    <a href="11-principles.html">10</a>
+    <a href="12-reference.html">11</a>
+    <a href="13-exercises.html">12</a>
+    <a href="14-glossary.html">13</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">03</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Chapter 03 · ~10 minutes</div>
+      <h2 class="section-title">Tenant security, <em>four layers deep</em>.</h2>
+      <p class="lede">Why multi-tenant SaaS is hard — and how TAP•IP makes it structurally safe.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <h3 class="feature-title">The hard problem.</h3>
+    <p>TAP•IP is a <span class="pill" data-term="multitenant">multi-tenant</span> app. Acme Corp's patents and Globex's patents both live in the same Postgres database, in the same tables. Every row has a <code>tenant_id</code> column. The most important security guarantee in the entire app:</p>
+
+    <p style="font-family: var(--font-display); font-style: italic; font-size: 28px; color: var(--violet-glow); line-height: 1.3; margin: 32px 0; padding: 24px 0; border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft);">No query Acme runs can ever see Globex's data, and vice versa.</p>
+
+    <div class="note">
+      <p style="margin: 0 0 10px;"><strong>Quick SQL primer.</strong> <code>SQL</code> (pronounced "sequel" or "S-Q-L") is the language you use to talk to a database. A <em>query</em> is one instruction. The most common one is "give me rows from this table" — written like this:</p>
+      <div class="code" style="margin: 12px 0 10px;">
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> patents <span class="kw">WHERE</span> tenant_id = <span class="str">'acme-uuid'</span>;
+      </div>
+      <p style="margin: 0; font-size: 13px;">In English: <em>"give me every column from the patents table, but only rows where the tenant_id column equals acme-uuid."</em> The <code>WHERE</code> part is the filter. Without it, you get <strong>every patent from every customer</strong>.</p>
+    </div>
+
+    <p>This sounds obvious. It's hard. One missing <code>WHERE tenant_id = ?</code> in any SQL query, anywhere in the codebase, would leak every customer's data. So TAP•IP has four layers of belt-and-suspenders defense to make sure that filter never gets forgotten.</p>
+    <p style="font-size: 14px; color: var(--type-tertiary);"><em>(The <code>?</code> is a placeholder — when the code runs, it gets replaced with the actual tenant ID for safety reasons. You'll see this pattern everywhere; it's called a "parameterized query.")</em></p>
+
+    <div class="analogy">
+      Think of TAP•IP as a bank that holds every customer's account in one giant vault. Every transaction is stamped with an account number. The bank's systems refuse to let any teller pull data without an account number, and the vault itself refuses to open without the right key. Forget the account number? Nothing happens.
+    </div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d3">
+    <h3 class="feature-title">Three database roles.</h3>
+    <p>TAP•IP doesn't run its own database server — we rent one from <span class="pill" data-term="supabase">Supabase</span>. Inside that one Postgres instance, we use <strong>three different "roles"</strong> with different powers. A role is like a user account — it controls what queries you're allowed to run.</p>
+
+    <div style="display: grid; grid-template-columns: 1fr; gap: 14px; margin: 32px 0;">
+
+      <div class="card" style="border-color: rgba(34,197,94,0.3); background: linear-gradient(180deg, rgba(34,197,94,0.05), transparent);">
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px;">
+          <code style="font-size: 16px; padding: 4px 10px;">app_user</code>
+          <span style="background: rgba(34,197,94,0.2); color: #86EFAC; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-family: var(--font-mono); border: none;">99% of traffic</span>
+        </div>
+        <p style="margin: 0; font-size: 14px;">The role 99% of user requests run as. <strong>Bound by RLS policies</strong>, meaning Postgres only shows it rows that belong to the current tenant. If your code accidentally queries another tenant's data, Postgres returns zero rows — no error, no leak.</p>
+      </div>
+
+      <div class="card" style="border-color: rgba(252,211,77,0.3); background: linear-gradient(180deg, rgba(252,211,77,0.05), transparent);">
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px;">
+          <code style="font-size: 16px; padding: 4px 10px;">app_admin_user</code>
+          <span style="background: rgba(252,211,77,0.2); color: var(--gold); padding: 2px 8px; border-radius: 999px; font-size: 11px; font-family: var(--font-mono); border: none;">~1%</span>
+        </div>
+        <p style="margin: 0; font-size: 14px;">For cron jobs, webhooks, and rare cross-tenant admin work. This role <strong>bypasses RLS</strong>. We use it sparingly — it removes the safety net.</p>
+      </div>
+
+      <div class="card" style="border-color: rgba(239,68,68,0.3); background: linear-gradient(180deg, rgba(239,68,68,0.05), transparent);">
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px;">
+          <code style="font-size: 16px; padding: 4px 10px;">postgres</code>
+          <span style="background: rgba(239,68,68,0.2); color: #FCA5A5; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-family: var(--font-mono); border: none;">migrations only</span>
+        </div>
+        <p style="margin: 0; font-size: 14px;">The superuser. Only used for running migrations. Should never connect from app code.</p>
+      </div>
+
+    </div>
+
+    <p>In TAP•IP code, you almost never write raw SQL or talk to the database directly. Instead, two patterns wrap every database call:</p>
+
+    <div style="display: grid; grid-template-columns: 1fr; gap: 14px; margin: 28px 0;">
+
+      <div class="card" style="padding: 22px 26px;">
+        <h4 style="margin: 0 0 8px;">🧰 <em>Repositories</em> — one class per entity.</h4>
+        <p style="font-size: 14px; margin: 0;">A <strong>repository</strong> is a TypeScript class that owns every read and write for one kind of thing. <code>PatentRepository</code> owns patents. <code>MatterRepository</code> owns matters. There's no scattered SQL — if you want patents, you go to the Patent class.</p>
+      </div>
+
+      <div class="card" style="padding: 22px 26px;">
+        <h4 style="margin: 0 0 8px;">🪪 <em>Context</em> — a "who are you" object.</h4>
+        <p style="font-size: 14px; margin: 0;">A <strong>context</strong> is a small TypeScript object passed around that says <em>"this code is running on behalf of user U at tenant T."</em> It looks like <code>{ tenantId, userId, role }</code>. Every repository takes a context when you build it.</p>
+      </div>
+
+    </div>
+
+    <p>So a real "list all patents" call in TAP•IP looks like this — clean, no SQL, no database plumbing:</p>
+
+    <div class="code">
+<span class="com">// frontend/src/app/actions/patents.ts</span>
+<span class="kw">const</span> repo = <span class="kw">new</span> <span class="ty">PatentRepository</span>(ctx);  <span class="com">// ctx = { tenantId, userId, role }</span>
+<span class="kw">const</span> patents = <span class="kw">await</span> repo.<span class="fn">list</span>();
+    </div>
+
+    <p>Under the hood, <code>PatentRepository.list()</code> calls a helper called <code>tenantDb()</code> — which is what actually picks the right database role and sets the tenant filter. That helper looks like this:</p>
+
+    <div class="code">
+<span class="path">// frontend/src/lib/db/index.ts (helpers used inside repositories)</span>
+<span class="com">// 99% of code — RLS-bound, scoped to the current tenant via ctx</span>
+<span class="fn">tenantDb</span>()  <span class="com">→ connects as app_user, applies RLS</span>
+
+<span class="com">// Rare admin only — bypasses RLS (cron, webhooks)</span>
+<span class="fn">adminDb</span>()  <span class="com">→ connects as app_admin_user</span>
+    </div>
+
+    <p style="color: var(--type-tertiary); font-size: 14px;">You'll see this layered pattern unfold in chapter 04. The point for now: <strong>app code calls a repository method · the repository chooses tenantDb() or adminDb() · the database does the RLS check.</strong></p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d4">
+    <h3 class="feature-title">RLS — the vault door.</h3>
+    <p><span class="pill" data-term="rls">RLS</span> (Row-Level Security) is a Postgres feature where you write a small policy that runs <em>automatically</em> on every query. The policy decides which rows the user can see.</p>
+
+    <p>Here's the policy that protects the <code>ip_assets</code> table:</p>
+
+    <div class="code">
+<span class="path">database/alembic/versions/008_rls_policies.py</span>
+<span class="com">-- Every SELECT, INSERT, UPDATE, DELETE runs through this:</span>
+<span class="kw">CREATE POLICY</span> ip_assets_tenant_isolation <span class="kw">ON</span> ip_assets
+  <span class="kw">USING</span> (tenant_id = <span class="fn">current_tenant_id</span>())
+  <span class="kw">WITH CHECK</span> (tenant_id = <span class="fn">current_tenant_id</span>());
+
+<span class="com">-- current_tenant_id() returns the value SET in the transaction.</span>
+<span class="com">-- If our code forgets to set it, queries see zero rows. Safe by default.</span>
+    </div>
+
+    <div class="analogy">
+      RLS is the vault door, not just the lobby guard. Even if the lobby guard (our app code) waves someone through by mistake, the vault won't open without the right key. Postgres is the vault; the app is the lobby.
+    </div>
+
+    <p>This is the architecture's most-loved feature. A developer can write <code>SELECT * FROM patents</code> with no <code>WHERE</code> clause, and the database <em>automatically</em> filters by the current tenant. The safety isn't optional — it's structural.</p>
+
+    <p style="color: var(--type-tertiary);">RLS is why TAP•IP can have hundreds of customers in one database and still sleep at night. CLAUDE.md §15 walks through the full RLS classification of every table if you want depth later.</p>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="02-the-stack.html" class="foot-link prev">
+      <span class="lbl">← Previous</span>
+      <span class="tt">02 · The stack</span>
+    </a>
+    <a href="04-frontend-layers.html" class="foot-link next">
+      <span class="lbl">Next chapter →</span>
+      <span class="tt">04 · Frontend layers</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+<script src="tour.js"></script>
+</body>
+</html>

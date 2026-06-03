@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>05 · Watch a request fly — TAP•IP Tour</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<style>
+  /* Three big actor cards — Browser / Server / Database — that glow when active */
+  .actor-track {
+    display: grid;
+    grid-template-columns: 1fr auto 1.5fr auto 1fr;
+    gap: 12px;
+    align-items: stretch;
+    margin-bottom: 24px;
+  }
+  .actor-card {
+    padding: 18px 16px;
+    background: var(--bg-deep);
+    border: 1px solid var(--line-soft);
+    border-radius: 12px;
+    text-align: center;
+    transition: all .35s var(--ease-out);
+    position: relative;
+    opacity: 0.55;
+  }
+  .actor-card.active { opacity: 1; transform: translateY(-2px); }
+  .actor-card .ac-icon { font-size: 28px; line-height: 1; margin-bottom: 8px; }
+  .actor-card .ac-name { font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--type-primary); line-height: 1.1; }
+  .actor-card .ac-sub { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--type-tertiary); margin-top: 4px; }
+  .actor-card[data-actor="browser"].active {
+    background: linear-gradient(135deg, rgba(34,211,238,0.15), rgba(34,211,238,0.04));
+    border-color: var(--cyan);
+    box-shadow: 0 0 30px -4px rgba(34,211,238,0.45);
+  }
+  .actor-card[data-actor="browser"].active .ac-sub { color: var(--cyan); }
+  .actor-card[data-actor="server"].active {
+    background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(139,92,246,0.04));
+    border-color: var(--violet-glow);
+    box-shadow: 0 0 30px -4px rgba(139,92,246,0.45);
+  }
+  .actor-card[data-actor="server"].active .ac-sub { color: var(--violet-glow); }
+  .actor-card[data-actor="database"].active {
+    background: linear-gradient(135deg, rgba(252,211,77,0.15), rgba(252,211,77,0.04));
+    border-color: var(--gold);
+    box-shadow: 0 0 30px -4px rgba(252,211,77,0.45);
+  }
+  .actor-card[data-actor="database"].active .ac-sub { color: var(--gold); }
+  .actor-arrow {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: var(--type-tertiary); padding: 0 4px;
+    min-width: 48px;
+  }
+  .actor-arrow .lab {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--type-quiet); margin-bottom: 6px;
+  }
+  .actor-arrow .ar { font-size: 18px; color: var(--type-tertiary); transition: color .35s; }
+  .actor-arrow.active .ar { color: var(--violet-glow); }
+  .actor-arrow.active .lab { color: var(--cyan); }
+  @media (max-width: 768px) {
+    .actor-track { grid-template-columns: 1fr; }
+    .actor-arrow { display: none; }
+  }
+  /* Override the default 8-column step grid — chapter 05 has 9 steps */
+  .flow-steps { grid-template-columns: repeat(9, 1fr) !important; }
+  @media (max-width: 768px) {
+    .flow-steps { grid-template-columns: repeat(3, 1fr) !important; }
+  }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a><span class="dot"></span>
+    <a href="00-foundations.html">00</a>
+    <a href="01-the-product.html">01</a>
+    <a href="02-the-stack.html">02</a>
+    <a href="03-tenant-security.html">03</a>
+    <a href="04-frontend-layers.html">04</a>
+    <a href="05-request-flow.html" class="current">05</a>
+    <a href="06-navigation.html">06</a>
+    <a href="07-platform.html">07</a>
+    <a href="09-external.html">08</a>
+    <a href="10-daily-tools.html">09</a>
+    <a href="11-principles.html">10</a>
+    <a href="12-reference.html">11</a>
+    <a href="13-exercises.html">12</a>
+    <a href="14-glossary.html">13</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">05</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Chapter 05 · Interactive</div>
+      <h2 class="section-title">Watch one request <em>fly</em>.</h2>
+      <p class="lede">"Create a patent" — 9 layers, ~13 seconds, 6 automatic security checks. Click ▶ Play.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <div class="flow">
+      <div class="flow-controls">
+        <button class="btn btn-primary" id="flow-play">▶ Play</button>
+        <button class="btn" id="flow-reset">⟲ Reset</button>
+      </div>
+
+      <div class="actor-track">
+        <div class="actor-card" data-actor="browser">
+          <div class="ac-icon">🌐</div>
+          <div class="ac-name">Browser</div>
+          <div class="ac-sub">React UI</div>
+        </div>
+        <div class="actor-arrow"><div class="lab">HTTP</div><div class="ar">⇄</div></div>
+        <div class="actor-card" data-actor="server">
+          <div class="ac-icon">🖥️</div>
+          <div class="ac-name">Server</div>
+          <div class="ac-sub">Next.js · TypeScript</div>
+        </div>
+        <div class="actor-arrow"><div class="lab">SQL</div><div class="ar">⇄</div></div>
+        <div class="actor-card" data-actor="database">
+          <div class="ac-icon">💾</div>
+          <div class="ac-name">Database</div>
+          <div class="ac-sub">Postgres + RLS</div>
+        </div>
+      </div>
+
+      <div class="flow-steps">
+        <div class="flow-step" data-step="0"><span class="step-num">01</span>Browser<br/>click Save</div>
+        <div class="flow-step" data-step="1"><span class="step-num">02</span>Server Action<br/>createPatent()</div>
+        <div class="flow-step" data-step="2"><span class="step-num">03</span>tenantAction<br/>build ctx</div>
+        <div class="flow-step" data-step="3"><span class="step-num">04</span>Guards<br/>feature · perm</div>
+        <div class="flow-step" data-step="4"><span class="step-num">05</span>Repository<br/>repo.create()</div>
+        <div class="flow-step" data-step="5"><span class="step-num">06</span>tenantDb<br/>app_user</div>
+        <div class="flow-step" data-step="6"><span class="step-num">07</span>Postgres<br/>RLS + insert</div>
+        <div class="flow-step" data-step="7"><span class="step-num">08</span>Server<br/>ActionResult</div>
+        <div class="flow-step" data-step="8"><span class="step-num">09</span>Browser<br/>re-render</div>
+      </div>
+
+      <div class="flow-detail" id="flow-detail">
+        <em style="color: var(--type-quiet);">Click ▶ Play to start, or click any step to read it directly.</em>
+      </div>
+    </div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d3">
+    <h3 class="feature-title">Six security checkpoints — automatic.</h3>
+    <p>While that request was flying, the architecture fired six security checks. You didn't write any of them by hand.</p>
+
+    <ul style="margin-top: 24px;">
+      <li><strong>Auth verified</strong> — by <code>tenantAction</code> wrapper.</li>
+      <li><strong>Feature flag checked</strong> — by <code>requireFeature</code>.</li>
+      <li><strong>Permission checked</strong> — by <code>requirePermission</code>.</li>
+      <li><strong>TenantContext type-checked</strong> at compile time.</li>
+      <li><strong>RLS filter set</strong> in the transaction by <code>tenantDb()</code>.</li>
+      <li><strong>Postgres RLS policy</strong> double-checked the insert.</li>
+    </ul>
+
+    <p style="margin-top: 20px;">This is what "structural security" buys. The right thing happens because the architecture <em>forces</em> it — not because a developer remembered.</p>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="04-frontend-layers.html" class="foot-link prev">
+      <span class="lbl">← Previous</span>
+      <span class="tt">04 · Frontend layers</span>
+    </a>
+    <a href="06-navigation.html" class="foot-link next">
+      <span class="lbl">Next chapter →</span>
+      <span class="tt">06 · Where things live</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+
+<script src="tour.js"></script>
+<script>
+const FLOW = [
+  '<strong>01 · Browser.</strong> User clicks "Create Patent". The React component captures the form data and calls the server action — the browser is now waiting for a response.',
+  '<strong>02 · Server Action.</strong> <code>createPatent</code> runs on the Next.js server. (The browser is still waiting.)',
+  '<strong>03 · tenantAction wrapper.</strong> Extracts the user\'s session, builds the TenantContext <code>{ tenantId, userId, role }</code>, passes it to the inner function.',
+  '<strong>04 · Guards.</strong> <code>requireFeature(FEATURES.IPMS_PATENTS)</code> checks the customer\'s package. <code>requirePermission(PERMISSIONS.PATENT_CREATE)</code> checks RBAC. If either fails, throw early.',
+  '<strong>05 · Repository.</strong> <code>PatentRepository(ctx)</code> is constructed — it owns all patent DB queries. <code>repo.create(input)</code> is called.',
+  '<strong>06 · tenantDb().</strong> The repository opens a database connection as <code>app_user</code>, starts a transaction, and SETs <code>current_tenant_id = ctx.tenantId</code>.',
+  '<strong>07 · Postgres + RLS.</strong> <code>INSERT INTO ip_assets</code> runs. The RLS policy checks <code>tenant_id = current_tenant_id()</code> — it matches, the row is saved. Postgres returns the inserted row back up the call stack.',
+  '<strong>08 · Server wraps the response.</strong> The repository returns a typed <code>Patent</code> object. The action wraps it: <code>return { success: true, data: patent }</code> — an <code>ActionResult</code>. Then <code>revalidatePath()</code> marks the patent-list cache as stale. The HTTP response is sent.',
+  '<strong>09 · Browser re-renders.</strong> The HTTP response arrives. The React component receives the <code>ActionResult</code>, sees the new patent, and re-renders the list. User sees "Patent created" and the new row appears.',
+];
+
+let intv = null;
+let step = 0;
+const steps = document.querySelectorAll('.flow-step');
+const detail = document.getElementById('flow-detail');
+const play = document.getElementById('flow-play');
+const reset = document.getElementById('flow-reset');
+const actorCards = document.querySelectorAll('.actor-card');
+const actorArrows = document.querySelectorAll('.actor-arrow');
+
+// Which actor owns each step (browser / server / database)
+// 0: Browser click → 1-5: Server (action, wrapper, guards, repo, tenantDb)
+// → 6: Database (Postgres + RLS) → 7: Server (wraps + revalidate) → 8: Browser (re-render)
+const STEP_ACTOR = ['browser', 'server', 'server', 'server', 'server', 'server', 'database', 'server', 'browser'];
+
+function setActor(actor, prevActor) {
+  actorCards.forEach(c => c.classList.toggle('active', c.dataset.actor === actor));
+  // Light up the arrow between the previous and current actor
+  actorArrows.forEach(a => a.classList.remove('active'));
+  if (prevActor && prevActor !== actor) {
+    // Determine which arrow connects the two
+    // arrows[0] = between browser and server; arrows[1] = between server and database
+    const involves = (a, b) => (prev => prev[a] && prev[b])({ browser: 0, server: 1, database: 2 });
+    // Highlight any arrow that sits between the two adjacent positions in the visual layout
+    const idx = { browser: 0, server: 1, database: 2 };
+    const from = idx[prevActor], to = idx[actor];
+    const lo = Math.min(from, to), hi = Math.max(from, to);
+    for (let i = lo; i < hi; i++) {
+      if (actorArrows[i]) actorArrows[i].classList.add('active');
+    }
+  }
+}
+
+function show(i) {
+  steps.forEach((s, idx) => {
+    s.classList.remove('active');
+    if (idx < i) s.classList.add('played'); else s.classList.remove('played');
+  });
+  if (i < steps.length) {
+    steps[i].classList.add('active');
+    detail.innerHTML = FLOW[i];
+    const prev = i > 0 ? STEP_ACTOR[i - 1] : null;
+    setActor(STEP_ACTOR[i], prev);
+  }
+}
+
+play.addEventListener('click', () => {
+  if (intv) { clearInterval(intv); intv = null; play.innerHTML = '▶ Play'; return; }
+  step = 0;
+  play.innerHTML = '⏸ Pause';
+  show(step);
+  intv = setInterval(() => {
+    step++;
+    if (step >= steps.length) {
+      clearInterval(intv); intv = null; play.innerHTML = '▶ Play';
+      steps.forEach(s => s.classList.add('played'));
+      steps[steps.length-1].classList.add('active');
+      return;
+    }
+    show(step);
+  }, 1400);
+});
+
+reset.addEventListener('click', () => {
+  if (intv) { clearInterval(intv); intv = null; play.innerHTML = '▶ Play'; }
+  steps.forEach(s => { s.classList.remove('active'); s.classList.remove('played'); });
+  actorCards.forEach(c => c.classList.remove('active'));
+  actorArrows.forEach(a => a.classList.remove('active'));
+  detail.innerHTML = '<em style="color: var(--type-quiet);">Click ▶ Play to start, or click any step to read it directly.</em>';
+});
+
+steps.forEach((s, i) => s.addEventListener('click', () => {
+  if (intv) { clearInterval(intv); intv = null; play.innerHTML = '▶ Play'; }
+  show(i);
+}));
+</script>
+</body>
+</html>

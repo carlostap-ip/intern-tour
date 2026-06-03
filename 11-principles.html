@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>11 · Principles — TAP•IP Tour</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a><span class="dot"></span>
+    <a href="00-foundations.html">00</a>
+    <a href="01-the-product.html">01</a>
+    <a href="02-the-stack.html">02</a>
+    <a href="03-tenant-security.html">03</a>
+    <a href="04-frontend-layers.html">04</a>
+    <a href="05-request-flow.html">05</a>
+    <a href="06-navigation.html">06</a>
+    <a href="07-platform.html">07</a>
+    <a href="09-external.html">08</a>
+    <a href="10-daily-tools.html">09</a>
+    <a href="11-principles.html" class="current">10</a>
+    <a href="12-reference.html">11</a>
+    <a href="13-exercises.html">12</a>
+    <a href="14-glossary.html">13</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">11</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Chapter 11 · ~12 minutes</div>
+      <h2 class="section-title">Why the code <em>looks like this</em>.</h2>
+      <p class="lede">SOLID · DRY · Clean Code. The principles that shape every file you'll read.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <p>You've seen the layered architecture — server actions, repositories, typed contexts, RLS. Why is the code organized this way and not some simpler way? Three foundational ideas from software engineering shape almost every line.</p>
+    <p>You don't need to memorize the definitions. But knowing the names lets you read PRs and engineering writing without flinching.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d3">
+    <h3 class="feature-title">A. SOLID — five disciplines, one acronym.</h3>
+    <p>SOLID is a checklist of five principles for writing maintainable object-oriented code. Introduced by Robert C. Martin ("Uncle Bob") in 2000. Each letter is one principle.</p>
+
+    <div style="display: grid; grid-template-columns: 1fr; gap: 12px; margin: 28px 0;">
+
+      <div class="card">
+        <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 10px;">
+          <div style="font-family: var(--font-display); font-style: italic; font-size: 48px; color: var(--violet-glow); line-height: 1;">S</div>
+          <div>
+            <div style="font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--type-primary);">Single Responsibility.</div>
+            <div style="font-size: 13px; color: var(--type-tertiary); font-family: var(--font-mono);">SRP — one class, one job.</div>
+          </div>
+        </div>
+        <p style="margin: 6px 0 4px;">Every class should do one thing, and have only one reason to change.</p>
+        <p style="font-size: 13px; color: var(--type-tertiary); margin: 0; font-style: italic;">A specialist desk for patents. Not a "general legal stuff" desk that handles patents AND matters AND tasks.</p>
+        <p style="font-size: 13px; margin-top: 8px; color: var(--type-secondary);"><strong style="color: var(--cyan);">In TAP•IP:</strong> <code>PatentRepository</code> only handles patents. <code>MatterRepository</code> only handles matters. Never one giant <code>DataRepository</code>.</p>
+      </div>
+
+      <div class="card">
+        <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 10px;">
+          <div style="font-family: var(--font-display); font-style: italic; font-size: 48px; color: var(--violet-glow); line-height: 1;">O</div>
+          <div>
+            <div style="font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--type-primary);">Open / Closed.</div>
+            <div style="font-size: 13px; color: var(--type-tertiary); font-family: var(--font-mono);">OCP — open to extension, closed to modification.</div>
+          </div>
+        </div>
+        <p style="margin: 6px 0 4px;">Code should be open to extension but closed to modification.</p>
+        <p style="font-size: 13px; color: var(--type-tertiary); margin: 0; font-style: italic;">Adding a new aisle to a grocery store without rearranging existing aisles.</p>
+        <p style="font-size: 13px; margin-top: 8px; color: var(--type-secondary);"><strong style="color: var(--cyan);">In TAP•IP:</strong> adding a new IP-asset type doesn't require modifying every existing repository. We extend the <code>ip_assets</code> table with a new discriminator value (§17 of CLAUDE.md).</p>
+      </div>
+
+      <div class="card">
+        <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 10px;">
+          <div style="font-family: var(--font-display); font-style: italic; font-size: 48px; color: var(--violet-glow); line-height: 1;">L</div>
+          <div>
+            <div style="font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--type-primary);">Liskov Substitution.</div>
+            <div style="font-size: 13px; color: var(--type-tertiary); font-family: var(--font-mono);">LSP — subclasses behave like their parents.</div>
+          </div>
+        </div>
+        <p style="margin: 6px 0 4px;">A subclass should be usable anywhere its parent is used, without surprises.</p>
+        <p style="font-size: 13px; color: var(--type-tertiary); margin: 0; font-style: italic;">If someone asks for a vehicle, both a Car and a Truck should work — same wheels, both go forward.</p>
+        <p style="font-size: 13px; margin-top: 8px; color: var(--type-secondary);"><strong style="color: var(--cyan);">In TAP•IP:</strong> all repositories extend <code>TenantScopedRepository</code>. Anywhere code accepts a <code>TenantScopedRepository</code>, any specific repository works.</p>
+      </div>
+
+      <div class="card">
+        <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 10px;">
+          <div style="font-family: var(--font-display); font-style: italic; font-size: 48px; color: var(--violet-glow); line-height: 1;">I</div>
+          <div>
+            <div style="font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--type-primary);">Interface Segregation.</div>
+            <div style="font-size: 13px; color: var(--type-tertiary); font-family: var(--font-mono);">ISP — narrow interfaces beat wide ones.</div>
+          </div>
+        </div>
+        <p style="margin: 6px 0 4px;">Don't force code to depend on methods it doesn't use.</p>
+        <p style="font-size: 13px; color: var(--type-tertiary); margin: 0; font-style: italic;">Don't make every Animal implement bark() — only Dogs need that.</p>
+        <p style="font-size: 13px; margin-top: 8px; color: var(--type-secondary);"><strong style="color: var(--cyan);">In TAP•IP:</strong> the typed-context family (TenantContext / ServiceContext / PublicContext) is segregated. Code that only needs PublicContext can't accidentally touch tenant data.</p>
+      </div>
+
+      <div class="card">
+        <div style="display: flex; align-items: baseline; gap: 14px; margin-bottom: 10px;">
+          <div style="font-family: var(--font-display); font-style: italic; font-size: 48px; color: var(--violet-glow); line-height: 1;">D</div>
+          <div>
+            <div style="font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--type-primary);">Dependency Inversion.</div>
+            <div style="font-size: 13px; color: var(--type-tertiary); font-family: var(--font-mono);">DIP — depend on interfaces, not implementations.</div>
+          </div>
+        </div>
+        <p style="margin: 6px 0 4px;">Code should depend on interfaces, not on specific implementations.</p>
+        <p style="font-size: 13px; color: var(--type-tertiary); margin: 0; font-style: italic;">Your code asks for "a way to send email," not "Gmail." You can swap Gmail for SendGrid without rewriting the caller.</p>
+        <p style="font-size: 13px; margin-top: 8px; color: var(--type-secondary);"><strong style="color: var(--cyan);">In TAP•IP:</strong> repositories accept a <code>TenantContext</code> interface. The interface is the contract; the actual implementation is injected at runtime.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d4">
+    <h3 class="feature-title">B. DRY — Don't Repeat Yourself.</h3>
+    <p>If the same logic appears in three places, extract it to one place. From <em>The Pragmatic Programmer</em> (1999).</p>
+
+    <div class="analogy">DRY is like writing an FAQ instead of answering the same question in 50 separate emails. Write the answer once; point everyone at the same page.</div>
+
+    <p><strong>In TAP•IP:</strong> tenant filtering happens in ONE place (the <code>tenantDb()</code> helper), not in every query. Permission checks happen in ONE place (<code>requirePermission</code>), not duplicated in every action. The §19 canonical-helper pattern is DRY taken seriously — even small repeated patterns get extracted.</p>
+
+    <div class="note">
+      <p style="margin: 0;"><strong>Counterpoint worth knowing:</strong> DRY can be overdone. Three lines that <em>look</em> similar but represent different concepts shouldn't be merged — premature abstraction is worse than duplication. CLAUDE.md puts it well: <em>three similar lines is better than a premature abstraction.</em></p>
+    </div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d5">
+    <h3 class="feature-title">C. Clean Code.</h3>
+    <p>A set of habits popularized by Robert C. Martin's book of the same name (2008). The goal: code reads like prose.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 28px 0;">
+      <div class="card" style="padding: 20px 22px;">
+        <h4 style="margin: 0 0 6px;">Good naming.</h4>
+        <p style="font-size: 13px; margin: 0;">Variables and functions named for what they mean, not what they are. <code>activePatents</code>, not <code>arr</code>.</p>
+      </div>
+      <div class="card" style="padding: 20px 22px;">
+        <h4 style="margin: 0 0 6px;">Small functions.</h4>
+        <p style="font-size: 13px; margin: 0;">A function should fit on your screen. If it doesn't, split it.</p>
+      </div>
+      <div class="card" style="padding: 20px 22px;">
+        <h4 style="margin: 0 0 6px;">No useless comments.</h4>
+        <p style="font-size: 13px; margin: 0;">If you need a comment to explain WHAT, rename instead. Comments are for WHY.</p>
+      </div>
+      <div class="card" style="padding: 20px 22px;">
+        <h4 style="margin: 0 0 6px;">One concept per line.</h4>
+        <p style="font-size: 13px; margin: 0;">Don't pack three operations into one statement.</p>
+      </div>
+      <div class="card" style="padding: 20px 22px;">
+        <h4 style="margin: 0 0 6px;">Tests are first-class.</h4>
+        <p style="font-size: 13px; margin: 0;">Test code gets the same care as production code.</p>
+      </div>
+      <div class="card" style="padding: 20px 22px;">
+        <h4 style="margin: 0 0 6px;">Boy Scout Rule.</h4>
+        <p style="font-size: 13px; margin: 0;">Leave the campground cleaner than you found it. If you touch a file, clean up something small.</p>
+      </div>
+    </div>
+
+    <p><strong>In TAP•IP:</strong> file names use clear kebab-case. Functions tend to be small. Tests live alongside the code they test (<code>__tests__/</code>). The codebase isn't perfect, but the principles are aspirational and the team takes them seriously.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d6">
+    <div class="card" style="border-color: var(--cyan-deep); background: linear-gradient(180deg, rgba(34,211,238,0.05), transparent);">
+      <h3 class="feature-title" style="margin: 0 0 14px;">Why these matter for <em>you</em>.</h3>
+      <p>Two reasons. First, when you read TAP•IP code and wonder <em>"why is this split into so many files?"</em> — these principles are the answer.</p>
+      <p style="margin-bottom: 0;">Second, when you build your own product in the stretch goal, these are the rules that keep your code maintainable past week one. Skip them and your project becomes unsalvageable around 2000 lines of code.</p>
+    </div>
+
+    <p style="margin-top: 28px; color: var(--type-tertiary);">Recommended starter: read the first three chapters of <em>Clean Code</em> by Robert C. Martin. Or watch any of his free talks on YouTube. ~3 hours total, repays itself the first week.</p>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="10-daily-tools.html" class="foot-link prev">
+      <span class="lbl">← Previous</span>
+      <span class="tt">10 · Daily tools</span>
+    </a>
+    <a href="12-reference.html" class="foot-link next">
+      <span class="lbl">Next chapter →</span>
+      <span class="tt">12 · The complete reference</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+<script src="tour.js"></script>
+</body>
+</html>

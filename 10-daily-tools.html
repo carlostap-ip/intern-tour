@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>10 · Daily tools — TAP•IP Tour</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a><span class="dot"></span>
+    <a href="00-foundations.html">00</a>
+    <a href="01-the-product.html">01</a>
+    <a href="02-the-stack.html">02</a>
+    <a href="03-tenant-security.html">03</a>
+    <a href="04-frontend-layers.html">04</a>
+    <a href="05-request-flow.html">05</a>
+    <a href="06-navigation.html">06</a>
+    <a href="07-platform.html">07</a>
+    <a href="10-daily-tools.html" class="current">09</a>
+    <a href="11-principles.html">10</a>
+    <a href="12-reference.html">11</a>
+    <a href="13-exercises.html">12</a>
+    <a href="14-glossary.html">13</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">10</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Chapter 10 · ~8 minutes</div>
+      <h2 class="section-title">Daily tools: <em>generators &amp; Claude Code.</em></h2>
+      <p class="lede">Eight code generators, the TAP•IP plugin, and the superpowers skills. The tools that make you fast.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <h3 class="feature-title">A. Code generators.</h3>
+    <p>Generators emit scaffolding that follows TAP•IP's architectural rules. Instead of hand-writing 200 lines of boilerplate, you run one command. The generated code already follows §16 typed contexts, §18 error envelope, and §19 canonical helpers.</p>
+
+    <div style="margin: 28px 0;">
+      <div class="ref-table" style="margin: 0;">
+        <table style="width: 100%;">
+          <thead><tr><th>Generator</th><th>Emits</th></tr></thead>
+          <tbody>
+            <tr><td class="item">generate:feature</td><td>Full vertical slice (table + repo + action + page)</td></tr>
+            <tr><td class="item">generate:drizzle-entity</td><td>Just the data layer from a field spec</td></tr>
+            <tr><td class="item">generate:repository</td><td>Stub tenant-scoped repository</td></tr>
+            <tr><td class="item">generate:action</td><td>tenantAction CRUD for a repository</td></tr>
+            <tr><td class="item">generate:operation</td><td>Adds one operation to an existing entity</td></tr>
+            <tr><td class="item">generate:constants</td><td>§19 constants module + helpers + ESLint rule</td></tr>
+            <tr><td class="item">generate:context</td><td>Provider + useX() hook</td></tr>
+            <tr><td class="item">generate:component</td><td>ErrorBanner-aware presentational component</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p style="color: var(--type-tertiary); font-size: 14px;">Full guide: <code>frontend/GENERATOR_GUIDE.md</code>. Run any of them from inside <code>frontend/</code> with <code>npm run generate:&lt;name&gt; -- ...</code></p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d3">
+    <h3 class="feature-title">B. The TAP•IP Claude Code plugin.</h3>
+    <p>There's a custom Claude Code plugin at <code>tap-ip-plugin/</code> with commands and skills tailored to TAP•IP work. You'll install it on day 1.</p>
+
+    <h4 style="margin-top: 24px;">Commands</h4>
+    <div style="display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 12px;">
+      <div class="card" style="padding: 18px 22px;">
+        <code style="font-size: 14px; color: var(--cyan); background: none; border: none; padding: 0;">/babysit-pr &lt;number&gt;</code>
+        <p style="font-size: 14px; margin: 6px 0 0;">Automatically pushes your PR through CodeRabbit review cycles until mergeable. Use this after you open your first PR.</p>
+      </div>
+      <div class="card" style="padding: 18px 22px;">
+        <code style="font-size: 14px; color: var(--cyan); background: none; border: none; padding: 0;">/ship</code>
+        <p style="font-size: 14px; margin: 6px 0 0;">The canonical "ship a feature" pipeline. Plans, implements, reviews, opens the PR.</p>
+      </div>
+      <div class="card" style="padding: 18px 22px;">
+        <code style="font-size: 14px; color: var(--cyan); background: none; border: none; padding: 0;">/deliberate</code>
+        <p style="font-size: 14px; margin: 6px 0 0;">Multi-agent deliberation for tough design decisions.</p>
+      </div>
+    </div>
+
+    <h4 style="margin-top: 32px;">Skills (Claude Code activates these contextually)</h4>
+    <ul style="margin-top: 10px;">
+      <li><code>tap-ip-work-a-ticket</code> — how to work a ticket end-to-end.</li>
+      <li><code>tap-ip-discipline</code> — engineering discipline rules.</li>
+      <li><code>canonical-helpers</code> — the §19 canonical-helper pattern.</li>
+      <li><code>writing-codemod</code>, <code>running-deliberation</code>, <code>running-ship-pipeline</code> — advanced. Recognize the names; you'll grow into them.</li>
+    </ul>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d4">
+    <h3 class="feature-title">C. Superpowers skills.</h3>
+    <p>Anthropic ships a separate plugin of general-purpose skills. The ones you'll use most:</p>
+
+    <div style="display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 16px;">
+      <div class="card" style="padding: 18px 22px;">
+        <code style="font-size: 14px; color: var(--violet-glow); background: none; border: none; padding: 0;">superpowers:brainstorming</code>
+        <p style="font-size: 14px; margin: 6px 0 0;">Explores user intent + requirements before building. <strong>Use it for your own product ideation in the stretch goal.</strong></p>
+      </div>
+      <div class="card" style="padding: 18px 22px;">
+        <code style="font-size: 14px; color: var(--violet-glow); background: none; border: none; padding: 0;">superpowers:writing-plans</code>
+        <p style="font-size: 14px; margin: 6px 0 0;">Turns a vague task into a structured implementation plan.</p>
+      </div>
+      <div class="card" style="padding: 18px 22px;">
+        <code style="font-size: 14px; color: var(--violet-glow); background: none; border: none; padding: 0;">superpowers:verification-before-completion</code>
+        <p style="font-size: 14px; margin: 6px 0 0;">Forces "show evidence" before claiming work done.</p>
+      </div>
+      <div class="card" style="padding: 18px 22px;">
+        <code style="font-size: 14px; color: var(--violet-glow); background: none; border: none; padding: 0;">superpowers:requesting-code-review</code>
+        <p style="font-size: 14px; margin: 6px 0 0;">Dispatches a reviewer subagent for your work.</p>
+      </div>
+      <div class="card" style="padding: 18px 22px;">
+        <code style="font-size: 14px; color: var(--violet-glow); background: none; border: none; padding: 0;">superpowers:test-driven-development</code>
+        <p style="font-size: 14px; margin: 6px 0 0;">Write the test first, then the code.</p>
+      </div>
+    </div>
+
+    <p style="margin-top: 24px; color: var(--type-tertiary); font-style: italic;">For your first 2 weeks, you only need <code>brainstorming</code> and <code>writing-plans</code>. Everything else is for later.</p>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="09-external.html" class="foot-link prev">
+      <span class="lbl">← Previous</span>
+      <span class="tt">09 · The outside world</span>
+    </a>
+    <a href="11-principles.html" class="foot-link next">
+      <span class="lbl">Next chapter →</span>
+      <span class="tt">11 · Why the code looks like this</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+<script src="tour.js"></script>
+</body>
+</html>
