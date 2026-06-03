@@ -12,6 +12,47 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css" />
+<style>
+  .mermaid-wrap {
+    background: var(--bg-surface);
+    border: 1px solid var(--line-soft);
+    border-radius: 14px;
+    padding: 28px 24px;
+    margin: 24px 0;
+    overflow-x: auto;
+  }
+  .mermaid-wrap .mermaid { background: transparent !important; }
+  .mermaid-wrap svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+  .one-breath {
+    background: linear-gradient(180deg, rgba(167,139,250,0.10), rgba(34,211,238,0.04));
+    border: 1px solid rgba(167,139,250,0.4);
+    border-left: 3px solid var(--violet-glow);
+    border-radius: 14px;
+    padding: 26px 28px;
+    margin: 28px 0;
+  }
+  .one-breath .lbl {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--violet-glow);
+    margin-bottom: 10px;
+  }
+  .one-breath p {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--type-primary);
+    margin: 0;
+  }
+  .one-breath p strong {
+    font-style: normal;
+    font-weight: 600;
+    color: var(--cyan);
+  }
+</style>
 </head>
 <body>
 <div class="progress-bar" id="progress"></div>
@@ -175,6 +216,99 @@
     <p style="color: var(--type-tertiary);">RLS is why TAP•IP can have hundreds of customers in one database and still sleep at night. CLAUDE.md §15 walks through the full RLS classification of every table if you want depth later.</p>
   </section>
 
+  <hr/>
+
+  <section class="fade-in d5">
+    <h3 class="feature-title">How the tenant_id <em>actually crosses the boundary</em>.</h3>
+    <p>So far we've said: "RLS checks <code>tenant_id = current_tenant_id()</code> on every query." Natural follow-up: <em>how does Postgres know which tenant the current request is for?</em> There has to be a handoff — your TypeScript code knows the tenant (from the user's session); Postgres needs to be told. Here's exactly how that happens.</p>
+
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+sequenceDiagram
+  participant U as 👤 User
+  participant C as 🍪 JWT cookie
+  participant SA as 🧑‍💻 Server action
+  participant R as 📦 Repository
+  participant TD as 🔌 tenantDb
+  participant PG as 💾 Postgres
+
+  Note over U,PG: Login — once per session
+  U->>C: Supabase Auth issues JWT containing tenant_id
+
+  Note over U,PG: Every request, every query
+  U->>SA: Click "Create patent"
+  SA->>C: Read + verify JWT
+  SA->>R: new PatentRepo with TenantContext
+  R->>TD: query helper calls tenantDb
+  TD->>C: requireTenantId re-reads JWT
+  TD->>PG: BEGIN
+  TD->>PG: set_config app.current_tenant_id = uuid (transaction-scoped)
+  TD->>PG: SELECT * FROM patents (Drizzle, no WHERE)
+  PG->>PG: RLS policy calls current_tenant_id() — reads GUC
+  PG-->>TD: Only this tenants rows
+  TD->>PG: COMMIT — GUC resets
+  TD-->>R: rows
+  R-->>SA: rows
+  SA-->>U: rendered page
+</pre>
+    </div>
+
+    <h4 style="margin-top: 28px;">The TypeScript side: <code>tenantDb()</code>.</h4>
+    <p>Every tenant-scoped query goes through one helper. It opens a transaction, sets a Postgres config variable (called a <strong>GUC</strong> — Grand Unified Configuration), then runs your queries.</p>
+
+    <div class="code">
+<span class="path">frontend/src/lib/db/index.ts</span>
+<span class="kw">export async function</span> <span class="fn">tenantDb</span>&lt;T&gt;(callback) {
+  <span class="kw">const</span> tenantId = <span class="kw">await</span> <span class="fn">requireTenantId</span>();   <span class="com">// 1. read tenant_id from auth cookie/JWT</span>
+  <span class="com">// ...UUID format check (injection guard)...</span>
+  <span class="kw">return</span> db.<span class="fn">transaction</span>(<span class="kw">async</span> (tx) =&gt; {
+    <span class="kw">await</span> tx.<span class="fn">execute</span>(sql<span class="str">`SELECT set_config('app.current_tenant_id', </span>${tenantId}<span class="str">, true)`</span>);
+    <span class="kw">return</span> <span class="fn">callback</span>(tx);                <span class="com">// 2. now run Drizzle queries inside this tx</span>
+  });
+}
+    </div>
+
+    <p>The <code>true</code> flag means transaction-scoped — when the transaction commits, the GUC resets. <em>That's critical for connection pooling:</em> the next request that grabs this connection starts fresh.</p>
+
+    <h4 style="margin-top: 28px;">The Postgres side: <code>current_tenant_id()</code>.</h4>
+    <p>One tiny SQL function reads the GUC back out. Every RLS policy calls it.</p>
+
+    <div class="code">
+<span class="path">database/alembic/versions/001_schema_core.py</span>
+<span class="kw">CREATE OR REPLACE FUNCTION</span> <span class="fn">current_tenant_id</span>() <span class="kw">RETURNS</span> UUID <span class="kw">AS</span> $$
+  <span class="kw">SELECT</span> <span class="fn">NULLIF</span>(<span class="fn">current_setting</span>(<span class="str">'app.current_tenant_id'</span>, <span class="kw">true</span>), <span class="str">''</span>)::UUID;
+$$ <span class="kw">LANGUAGE</span> SQL <span class="kw">STABLE</span>;
+    </div>
+
+    <p>If the GUC was never set (because someone forgot to use <code>tenantDb()</code> and queried directly), <code>current_tenant_id()</code> returns NULL, the policy never matches, and queries return <strong>zero rows</strong>. Safe by default — you can't accidentally leak across tenants by skipping the GUC.</p>
+
+    <h4 style="margin-top: 28px;">How the Repository ties it together.</h4>
+    <p>The <code>TenantContext</code> passed into a repository's constructor (chapter 04 covers this in depth) is built by the <code>tenantAction</code> wrapper from the same JWT. When the repo calls <code>tenantDb()</code>, both sides re-read the JWT. The base class asserts they match — defense against someone hand-constructing a context with a different tenant:</p>
+
+    <div class="code">
+<span class="path">frontend/src/lib/repositories/base.ts</span>
+<span class="kw">protected async</span> <span class="fn">query</span>&lt;T&gt;(fn) {
+  <span class="kw">return</span> <span class="fn">tenantDb</span>(<span class="kw">async</span> (db) =&gt; {
+    <span class="kw">const</span> ambient = <span class="kw">await</span> <span class="fn">requireTenantId</span>();        <span class="com">// from JWT</span>
+    <span class="kw">if</span> (ambient !== <span class="kw">this</span>.ctx.tenantId) {              <span class="com">// from constructor</span>
+      <span class="kw">throw new</span> <span class="fn">Error</span>(<span class="str">'tenant mismatch — refusing to query'</span>);
+    }
+    <span class="kw">return</span> <span class="fn">fn</span>(db);
+  });
+}
+    </div>
+
+    <div class="one-breath">
+      <div class="lbl">Full round-trip · in one breath</div>
+      <p><strong>Login</strong> → Supabase issues JWT (containing tenant_id) → stored in an HttpOnly cookie. <strong>Request</strong> → server action runs → <code>tenantAction</code> wrapper reads cookie, builds <code>TenantContext</code> → <code>new Repo(ctx)</code> → <code>repo.query()</code> → <code>tenantDb()</code> opens a transaction → <code>set_config('app.current_tenant_id', uuid, true)</code> stashes the tenant on the transaction → Drizzle query runs → Postgres applies the RLS policy → policy calls <code>current_tenant_id()</code> → reads the GUC → filters rows where <code>tenant_id</code> matches → commits → GUC resets. Done.</p>
+    </div>
+
+    <h4 style="margin-top: 28px;">Why a GUC and not just a <code>WHERE</code> clause everywhere?</h4>
+    <p>Because the whole point of RLS is "even if app code forgets." A GUC + policy applies to <em>every</em> query that touches the table, automatically. Forget a <code>WHERE tenant_id</code> in one Drizzle call out of hundreds and you've leaked across tenants. With the GUC pattern, Postgres enforces it server-side — TypeScript only has to remember to call <code>tenantDb()</code> once per request. The rest is structural.</p>
+
+    <p>And because the connection authenticates as <code>app_user</code> (not superuser), RLS actually applies — superusers bypass RLS, so accidentally running cross-tenant queries on the wrong connection role would be a real risk if we used <code>postgres</code> or <code>app_admin_user</code>. The three-role separation from earlier in this chapter is what makes the GUC pattern bulletproof.</p>
+  </section>
+
   <nav class="chapter-foot">
     <a href="02-the-stack.html" class="foot-link prev">
       <span class="lbl">← Previous</span>
@@ -188,6 +322,48 @@
 
 </main>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    securityLevel: 'loose',
+    themeVariables: {
+      background: 'transparent',
+      mainBkg: '#161C3A',
+      secondBkg: '#1A2147',
+      tertiaryColor: '#11162E',
+      primaryBorderColor: '#A78BFA',
+      secondaryBorderColor: '#67E8F9',
+      tertiaryBorderColor: '#818CF8',
+      lineColor: '#67E8F9',
+      primaryTextColor: '#ECEEFB',
+      secondaryTextColor: '#ECEEFB',
+      tertiaryTextColor: '#ECEEFB',
+      textColor: '#ECEEFB',
+      titleColor: '#ECEEFB',
+      labelTextColor: '#ECEEFB',
+      clusterBkg: '#0B0F23',
+      clusterBorder: '#232C56',
+      actorBkg: '#1A2147',
+      actorBorder: '#A78BFA',
+      actorTextColor: '#ECEEFB',
+      actorLineColor: '#67E8F9',
+      signalColor: '#ECEEFB',
+      signalTextColor: '#ECEEFB',
+      labelBoxBkgColor: '#161C3A',
+      labelBoxBorderColor: '#67E8F9',
+      noteBkgColor: '#1A2147',
+      noteBorderColor: '#A78BFA',
+      noteTextColor: '#ECEEFB',
+      activationBkgColor: '#6366F1',
+      activationBorderColor: '#A78BFA',
+      fontFamily: '"Geist", "Söhne", system-ui, sans-serif',
+      fontSize: '14px',
+    },
+    sequence: { actorMargin: 60, messageMargin: 36, mirrorActors: false, showSequenceNumbers: false, wrap: true },
+  });
+</script>
 <script src="tour.js"></script>
 </body>
 </html>
