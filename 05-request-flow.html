@@ -74,6 +74,39 @@
   @media (max-width: 768px) {
     .flow-steps { grid-template-columns: repeat(3, 1fr) !important; }
   }
+
+  /* Data packet panel — shows the data shape flowing through the active step */
+  .packet-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--violet-glow);
+    margin: 22px 0 8px;
+  }
+  .flow-packet {
+    background: var(--bg-deep);
+    border: 1px solid var(--line-soft);
+    border-left: 3px solid var(--violet-glow);
+    border-radius: 12px;
+    padding: 18px 22px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.75;
+    color: var(--type-secondary);
+    overflow-x: auto;
+    white-space: pre;
+    min-height: 60px;
+  }
+  .flow-packet .k { color: #A78BFA; }        /* keywords: const, INSERT, BEGIN */
+  .flow-packet .s { color: #67E8F9; }        /* strings: "Adaptive Heat Sink" */
+  .flow-packet .n { color: #FCD34D; }        /* numbers: 47, 42 */
+  .flow-packet .c { color: var(--type-tertiary); font-style: italic; }  /* comments */
+  .flow-packet .p { color: var(--cyan); }    /* property names: tenantId */
+  .flow-packet .o { color: var(--type-tertiary); }  /* operators / punctuation */
+  @media (max-width: 768px) {
+    .flow-packet { padding: 14px 16px; font-size: 11.5px; }
+  }
 </style>
 </head>
 <body>
@@ -158,6 +191,9 @@
       <div class="flow-detail" id="flow-detail">
         <em style="color: var(--type-quiet);">Click ▶ Play to start, or click any step to read it directly.</em>
       </div>
+
+      <div class="packet-label">↓ Data flowing forward</div>
+      <div class="flow-packet" id="flow-packet"><span class="c">// Press ▶ Play — the actual payload at each step appears here.</span></div>
     </div>
   </section>
 
@@ -207,10 +243,44 @@ const FLOW = [
   '<strong>09 · Browser re-renders.</strong> The HTTP response arrives. The React component receives the <code>ActionResult</code>, sees the new patent, and re-renders the list. User sees "Patent created" and the new row appears.',
 ];
 
+// What's actually flowing forward at each step — the data packet.
+// Parallel to FLOW. Real shapes: TS objects, SQL, JSON.
+const PACKETS = [
+  // 01 — Browser collects form data and posts
+  '<span class="c">// React form state — captured on click</span>\n<span class="k">const</span> input = {\n  <span class="p">title</span>: <span class="s">"Adaptive Heat Sink"</span>,\n  <span class="p">jurisdiction</span>: <span class="s">"US"</span>,\n  <span class="p">filing_date</span>: <span class="s">"2026-06-15"</span>\n}<span class="o">;</span>\n<span class="k">await</span> <span class="p">createPatent</span>(input)<span class="o">;</span>  <span class="c">// POST →</span>',
+
+  // 02 — Server action receives input
+  '<span class="c">// frontend/src/app/actions/patents.ts</span>\n<span class="k">export const</span> <span class="p">createPatent</span> = <span class="p">tenantAction</span>(\n  <span class="k">async</span> (ctx, input) => {\n    <span class="c">// ↑ same { title, jurisdiction, filing_date } arrives here</span>\n  }\n)<span class="o">;</span>',
+
+  // 03 — tenantAction builds TenantContext from JWT
+  '<span class="c">// tenantAction has read the JWT cookie:</span>\nctx = {\n  <span class="p">_tag</span>: <span class="s">"TenantContext"</span>,\n  <span class="p">tenantId</span>: <span class="s">"a1b2-c3d4-e5f6-..."</span>,\n  <span class="p">userId</span>: <span class="n">42</span>,\n  <span class="p">role</span>: <span class="s">"user"</span>\n}<span class="o">;</span>\n<span class="c">// input forwarded unchanged</span>',
+
+  // 04 — Guards check feature + permission
+  '<span class="k">await</span> <span class="p">requireFeature</span>(<span class="s">"ipms.patents"</span>)<span class="o">;</span>      <span class="c">// ✓ in package</span>\n<span class="k">await</span> <span class="p">requirePermission</span>(<span class="s">"patent:create"</span>)<span class="o">;</span> <span class="c">// ✓ in role</span>\n<span class="c">// both pass → continue\n// (failure → throw → ActionResult.error)</span>',
+
+  // 05 — Repository constructed, create called, tenant_id stamped
+  '<span class="k">const</span> repo = <span class="k">new</span> <span class="p">PatentRepository</span>(ctx)<span class="o">;</span>\n<span class="k">await</span> repo.<span class="p">create</span>({\n  ...input,\n  <span class="p">tenant_id</span>: ctx.tenantId   <span class="c">// ← repo stamps this</span>\n})<span class="o">;</span>',
+
+  // 06 — tenantDb opens tx + sets GUC
+  '<span class="k">BEGIN</span><span class="o">;</span>\n<span class="k">SELECT</span> <span class="p">set_config</span>(\n  <span class="s">\'app.current_tenant_id\'</span>,\n  <span class="s">\'a1b2-c3d4-e5f6-...\'</span>,\n  <span class="k">true</span>     <span class="c">-- transaction-scoped</span>\n)<span class="o">;</span>',
+
+  // 07 — INSERT + RLS check + RETURNING
+  '<span class="k">INSERT INTO</span> ip_assets (...) <span class="k">VALUES</span> (...)\n  <span class="k">RETURNING</span> id, public_id, title, ...<span class="o">;</span>\n\n<span class="c">-- RLS policy WITH CHECK fires:</span>\n<span class="c">-- (tenant_id = current_tenant_id())</span>\n<span class="c">-- → \'a1b2-...\' = \'a1b2-...\' ✓ row saved</span>',
+
+  // 08 — ActionResult JSON returned
+  'HTTP/2 <span class="n">200</span> OK\nContent-Type: application/json\n\n{\n  <span class="p">"success"</span>: <span class="k">true</span>,\n  <span class="p">"data"</span>: {\n    <span class="p">"id"</span>: <span class="s">"f9e8-7d6c-..."</span>,\n    <span class="p">"public_id"</span>: <span class="n">47</span>,\n    <span class="p">"title"</span>: <span class="s">"Adaptive Heat Sink"</span>\n  }\n}',
+
+  // 09 — Browser re-renders with new row
+  '<span class="c">// React Server Components revalidate</span>\nrouter.<span class="p">refresh</span>()<span class="o">;</span>\n\n<span class="c">// the new row appears in &lt;PatentList&gt;:</span>\n{ <span class="p">public_id</span>: <span class="n">47</span>, <span class="p">title</span>: <span class="s">"Adaptive Heat Sink"</span> }',
+];
+
+const PACKET_PLACEHOLDER = '<span class="c">// Press ▶ Play — the actual payload at each step appears here.</span>';
+
 let intv = null;
 let step = 0;
 const steps = document.querySelectorAll('.flow-step');
 const detail = document.getElementById('flow-detail');
+const packet = document.getElementById('flow-packet');
 const play = document.getElementById('flow-play');
 const reset = document.getElementById('flow-reset');
 const actorCards = document.querySelectorAll('.actor-card');
@@ -247,6 +317,7 @@ function show(i) {
   if (i < steps.length) {
     steps[i].classList.add('active');
     detail.innerHTML = FLOW[i];
+    packet.innerHTML = PACKETS[i];
     const prev = i > 0 ? STEP_ACTOR[i - 1] : null;
     setActor(STEP_ACTOR[i], prev);
   }
@@ -275,6 +346,7 @@ reset.addEventListener('click', () => {
   actorCards.forEach(c => c.classList.remove('active'));
   actorArrows.forEach(a => a.classList.remove('active'));
   detail.innerHTML = '<em style="color: var(--type-quiet);">Click ▶ Play to start, or click any step to read it directly.</em>';
+  packet.innerHTML = PACKET_PLACEHOLDER;
 });
 
 steps.forEach((s, i) => s.addEventListener('click', () => {
