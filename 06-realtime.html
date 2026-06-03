@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>06 · When the server talks first — TAP•IP Tour</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<style>
+  /* Two-actor track: Browser ⇄ Server (for animations 1 + 2) */
+  .actor-track-2 {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 12px;
+    align-items: stretch;
+    margin-bottom: 24px;
+  }
+  /* Four-actor track: Browser A | Server | Browser B | Browser C (for animation 3) */
+  .actor-track-4 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 12px;
+    align-items: stretch;
+    margin-bottom: 24px;
+  }
+  .actor-card {
+    padding: 18px 16px;
+    background: var(--bg-deep);
+    border: 1px solid var(--line-soft);
+    border-radius: 12px;
+    text-align: center;
+    transition: all .35s var(--ease-out);
+    opacity: 0.55;
+  }
+  .actor-card.active { opacity: 1; transform: translateY(-2px); }
+  .actor-card .ac-icon { font-size: 28px; line-height: 1; margin-bottom: 8px; }
+  .actor-card .ac-name { font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--type-primary); line-height: 1.1; }
+  .actor-card .ac-sub { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--type-tertiary); margin-top: 4px; }
+
+  .actor-card[data-actor="browser"].active,
+  .actor-card[data-actor="browserA"].active,
+  .actor-card[data-actor="browserB"].active,
+  .actor-card[data-actor="browserC"].active {
+    background: linear-gradient(135deg, rgba(34,211,238,0.18), rgba(34,211,238,0.04));
+    border-color: var(--cyan);
+    box-shadow: 0 0 30px -4px rgba(34,211,238,0.45);
+  }
+  .actor-card[data-actor="browser"].active .ac-sub,
+  .actor-card[data-actor="browserA"].active .ac-sub,
+  .actor-card[data-actor="browserB"].active .ac-sub,
+  .actor-card[data-actor="browserC"].active .ac-sub { color: var(--cyan); }
+
+  .actor-card[data-actor="server"].active {
+    background: linear-gradient(135deg, rgba(139,92,246,0.18), rgba(139,92,246,0.04));
+    border-color: var(--violet-glow);
+    box-shadow: 0 0 30px -4px rgba(139,92,246,0.45);
+  }
+  .actor-card[data-actor="server"].active .ac-sub { color: var(--violet-glow); }
+
+  .actor-arrow {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: var(--type-tertiary); padding: 0 4px; min-width: 48px;
+  }
+  .actor-arrow .lab {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--type-quiet); margin-bottom: 6px;
+  }
+  .actor-arrow .ar { font-size: 18px; color: var(--type-tertiary); transition: color .35s; }
+  .actor-arrow.active .ar { color: var(--violet-glow); }
+  .actor-arrow.active .lab { color: var(--cyan); }
+
+  @media (max-width: 768px) {
+    .actor-track-2, .actor-track-4 { grid-template-columns: 1fr; }
+    .actor-arrow { display: none; }
+  }
+
+  /* Per-block flow-steps grids — one per animation */
+  .anim-1 .flow-steps { grid-template-columns: repeat(7, 1fr) !important; }
+  .anim-2 .flow-steps { grid-template-columns: repeat(6, 1fr) !important; }
+  .anim-3 .flow-steps { grid-template-columns: repeat(7, 1fr) !important; }
+  @media (max-width: 768px) {
+    .anim-1 .flow-steps,
+    .anim-2 .flow-steps,
+    .anim-3 .flow-steps { grid-template-columns: repeat(3, 1fr) !important; }
+  }
+
+  /* Data packet panel — same look as chapter 05 */
+  .packet-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--violet-glow);
+    margin: 22px 0 8px;
+  }
+  .flow-packet {
+    background: var(--bg-deep);
+    border: 1px solid var(--line-soft);
+    border-left: 3px solid var(--violet-glow);
+    border-radius: 12px;
+    padding: 18px 22px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.75;
+    color: var(--type-secondary);
+    overflow-x: auto;
+    white-space: pre;
+    min-height: 60px;
+  }
+  .flow-packet .k { color: #A78BFA; }
+  .flow-packet .s { color: #67E8F9; }
+  .flow-packet .n { color: #FCD34D; }
+  .flow-packet .c { color: var(--type-tertiary); font-style: italic; }
+  .flow-packet .p { color: var(--cyan); }
+  .flow-packet .o { color: var(--type-tertiary); }
+  @media (max-width: 768px) {
+    .flow-packet { padding: 14px 16px; font-size: 11.5px; }
+  }
+
+  /* Section dividers between the three animations */
+  .anim-section {
+    background: linear-gradient(180deg, rgba(167,139,250,0.04), transparent);
+    border: 1px solid var(--line-soft);
+    border-radius: 16px;
+    padding: 32px 28px;
+    margin: 36px 0;
+  }
+  .anim-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--violet-glow);
+    background: rgba(167,139,250,0.12);
+    padding: 4px 12px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  .anim-tag.cyan { color: var(--cyan); background: rgba(34,211,238,0.12); }
+  .anim-tag.gold { color: var(--gold); background: rgba(252,211,77,0.12); }
+
+  /* The "in one breath" callout — reused style from chapter 03 */
+  .one-breath {
+    background: linear-gradient(180deg, rgba(167,139,250,0.10), rgba(34,211,238,0.04));
+    border: 1px solid rgba(167,139,250,0.4);
+    border-left: 3px solid var(--violet-glow);
+    border-radius: 14px;
+    padding: 26px 28px;
+    margin: 28px 0;
+  }
+  .one-breath .lbl {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--violet-glow);
+    margin-bottom: 10px;
+  }
+  .one-breath p {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--type-primary);
+    margin: 0;
+  }
+  .one-breath p strong {
+    font-style: normal;
+    font-weight: 600;
+    color: var(--cyan);
+  }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a><span class="dot"></span>
+    <a href="00-foundations.html">00</a>
+    <a href="01-the-product.html">01</a>
+    <a href="02-the-stack.html">02</a>
+    <a href="03-tenant-security.html">03</a>
+    <a href="04-frontend-layers.html">04</a>
+    <a href="05-request-flow.html">05</a>
+    <a href="06-realtime.html" class="current">06</a>
+    <a href="07-navigation.html">07</a>
+    <a href="08-platform.html">08</a>
+    <a href="09-lifecycle.html">09</a>
+    <a href="10-external.html">10</a>
+    <a href="11-daily-tools.html">11</a>
+    <a href="12-principles.html">12</a>
+    <a href="13-reference.html">13</a>
+    <a href="14-exercises.html">14</a>
+    <a href="15-glossary.html">15</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">06</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Chapter 06 · Interactive · ~15 minutes</div>
+      <h2 class="section-title">When the server <em>talks first</em>.</h2>
+      <p class="lede">Chapter 05 was a single request — user clicks, server answers. But real apps update <em>without you doing anything</em>. The whiteboard fills in your teammate's edits. The notification badge appears. How does that work? Three playback experiences, three architectures.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <div class="note">
+      <p style="margin: 0;"><strong>Why this matters.</strong> The internet was designed for one direction: browsers ASK servers for things, servers REPLY. Browsers can't be "called." Pushing updates the other way — server → browser — required clever tricks. Three tricks now dominate: <strong>polling</strong>, <strong>SSE</strong>, and <strong>WebSockets</strong>. Each animation below shows one in action.</p>
+    </div>
+  </section>
+
+  <hr/>
+
+  <!-- ANIMATION 1: POLLING -->
+  <section class="fade-in d3 anim-section anim-1" id="anim-polling">
+    <div class="anim-tag gold">Animation 1 of 3</div>
+    <h3 class="feature-title">Polling — <em>"anything new yet?"</em></h3>
+    <p>The simplest approach: the browser asks every few seconds. Mostly the server has nothing. Every once in a while, it has something. The browser feels lag — and the server gets pestered nonstop.</p>
+
+    <div class="flow">
+      <div class="flow-controls">
+        <button class="btn btn-primary" id="poll-play">▶ Play</button>
+        <button class="btn" id="poll-reset">⟲ Reset</button>
+      </div>
+
+      <div class="actor-track-2">
+        <div class="actor-card" data-actor="browser" data-track="poll">
+          <div class="ac-icon">🌐</div>
+          <div class="ac-name">Browser</div>
+          <div class="ac-sub">setInterval(fetch, 2000)</div>
+        </div>
+        <div class="actor-arrow" data-arrow="poll"><div class="lab">HTTP</div><div class="ar">⇄</div></div>
+        <div class="actor-card" data-actor="server" data-track="poll">
+          <div class="ac-icon">🖥️</div>
+          <div class="ac-name">Server</div>
+          <div class="ac-sub">GET /api/messages</div>
+        </div>
+      </div>
+
+      <div class="flow-steps" data-flow="poll">
+        <div class="flow-step" data-step="0"><span class="step-num">01</span>Poll<br/>nothing new</div>
+        <div class="flow-step" data-step="1"><span class="step-num">02</span>Empty<br/>200 []</div>
+        <div class="flow-step" data-step="2"><span class="step-num">03</span>Poll again<br/>2s later</div>
+        <div class="flow-step" data-step="3"><span class="step-num">04</span>Empty<br/>200 []</div>
+        <div class="flow-step" data-step="4"><span class="step-num">05</span>Poll #3<br/>4s later</div>
+        <div class="flow-step" data-step="5"><span class="step-num">06</span>Hit!<br/>1 message</div>
+        <div class="flow-step" data-step="6"><span class="step-num">07</span>Render<br/>UI updates</div>
+      </div>
+
+      <div class="flow-detail" data-detail="poll">
+        <em style="color: var(--type-quiet);">Click ▶ Play — watch the wasted HTTP calls.</em>
+      </div>
+
+      <div class="packet-label">↓ Data flowing forward</div>
+      <div class="flow-packet" data-packet="poll"><span class="c">// Press ▶ Play — the actual payload at each step appears here.</span></div>
+    </div>
+
+    <p style="margin-top: 22px; color: var(--type-tertiary);">Notice: 6 round-trips. 4 returned nothing. Multiply that across thousands of users and you have a scalability problem. Also: if something happens at second 1.9, the user finds out at second 2 (or 4). Latency varies by how often you poll.</p>
+  </section>
+
+  <hr/>
+
+  <!-- ANIMATION 2: SSE -->
+  <section class="fade-in d4 anim-section anim-2" id="anim-sse">
+    <div class="anim-tag cyan">Animation 2 of 3</div>
+    <h3 class="feature-title">SSE — <em>"I'll let you know"</em></h3>
+    <p>Server-Sent Events flip the script. The browser opens <em>one</em> long connection and waits. The server holds it open. When something happens, the server pushes an event. No more 2-second wait. No more wasted HTTP.</p>
+
+    <div class="flow">
+      <div class="flow-controls">
+        <button class="btn btn-primary" id="sse-play">▶ Play</button>
+        <button class="btn" id="sse-reset">⟲ Reset</button>
+      </div>
+
+      <div class="actor-track-2">
+        <div class="actor-card" data-actor="browser" data-track="sse">
+          <div class="ac-icon">🌐</div>
+          <div class="ac-name">Browser</div>
+          <div class="ac-sub">new EventSource()</div>
+        </div>
+        <div class="actor-arrow" data-arrow="sse"><div class="lab">SSE stream</div><div class="ar">→</div></div>
+        <div class="actor-card" data-actor="server" data-track="sse">
+          <div class="ac-icon">🖥️</div>
+          <div class="ac-name">Server</div>
+          <div class="ac-sub">/api/events</div>
+        </div>
+      </div>
+
+      <div class="flow-steps" data-flow="sse">
+        <div class="flow-step" data-step="0"><span class="step-num">01</span>Open<br/>EventSource</div>
+        <div class="flow-step" data-step="1"><span class="step-num">02</span>Server<br/>accepts stream</div>
+        <div class="flow-step" data-step="2"><span class="step-num">03</span>Idle<br/>connection open</div>
+        <div class="flow-step" data-step="3"><span class="step-num">04</span>Event<br/>happens server-side</div>
+        <div class="flow-step" data-step="4"><span class="step-num">05</span>Push<br/>data: { ... }</div>
+        <div class="flow-step" data-step="5"><span class="step-num">06</span>onmessage<br/>UI updates</div>
+      </div>
+
+      <div class="flow-detail" data-detail="sse">
+        <em style="color: var(--type-quiet);">Click ▶ Play — watch the server push.</em>
+      </div>
+
+      <div class="packet-label">↓ Data flowing forward</div>
+      <div class="flow-packet" data-packet="sse"><span class="c">// Press ▶ Play — the actual payload at each step appears here.</span></div>
+    </div>
+
+    <p style="margin-top: 22px; color: var(--type-tertiary);">One open connection. Zero wasted calls. Sub-second latency. <strong>TAP•IP uses SSE for the AI chat streaming</strong> — the model's tokens appear in your UI <em>as they're generated</em>, not after the whole response finishes. The <code>entity_changes</code> pipeline also fans out through SSE to update lists when other users add rows.</p>
+  </section>
+
+  <hr/>
+
+  <!-- ANIMATION 3: WEBSOCKETS / WHITEBOARD COLLAB -->
+  <section class="fade-in d5 anim-section anim-3" id="anim-whiteboard">
+    <div class="anim-tag">Animation 3 of 3</div>
+    <h3 class="feature-title">The whiteboard — <em>three users, one canvas</em>.</h3>
+    <p>SSE is one-way: server → browser. For real-time collaboration, the browser also needs to PUSH (your edits) and the server needs to FAN OUT (to all the other browsers). That's <span class="pill" data-term="websocket">WebSockets</span> — a bidirectional connection. TAP•IP's whiteboard uses <strong>Socket.IO</strong> (a WebSocket library) running in a separate "collab server" container.</p>
+
+    <p>User A draws a circle. Watch how it ends up on User B's and User C's screens — without anyone refreshing anything.</p>
+
+    <div class="flow">
+      <div class="flow-controls">
+        <button class="btn btn-primary" id="wb-play">▶ Play</button>
+        <button class="btn" id="wb-reset">⟲ Reset</button>
+      </div>
+
+      <div class="actor-track-4">
+        <div class="actor-card" data-actor="browserA" data-track="wb">
+          <div class="ac-icon">🌐</div>
+          <div class="ac-name">User A</div>
+          <div class="ac-sub">browser · drawing</div>
+        </div>
+        <div class="actor-card" data-actor="server" data-track="wb">
+          <div class="ac-icon">🖥️</div>
+          <div class="ac-name">Collab server</div>
+          <div class="ac-sub">Socket.IO</div>
+        </div>
+        <div class="actor-card" data-actor="browserB" data-track="wb">
+          <div class="ac-icon">🌐</div>
+          <div class="ac-name">User B</div>
+          <div class="ac-sub">browser · viewing</div>
+        </div>
+        <div class="actor-card" data-actor="browserC" data-track="wb">
+          <div class="ac-icon">🌐</div>
+          <div class="ac-name">User C</div>
+          <div class="ac-sub">browser · viewing</div>
+        </div>
+      </div>
+
+      <div class="flow-steps" data-flow="wb">
+        <div class="flow-step" data-step="0"><span class="step-num">01</span>User A<br/>draws circle</div>
+        <div class="flow-step" data-step="1"><span class="step-num">02</span>Browser A<br/>emits op</div>
+        <div class="flow-step" data-step="2"><span class="step-num">03</span>Collab server<br/>receives</div>
+        <div class="flow-step" data-step="3"><span class="step-num">04</span>Broadcast<br/>to room</div>
+        <div class="flow-step" data-step="4"><span class="step-num">05</span>User B<br/>receives</div>
+        <div class="flow-step" data-step="5"><span class="step-num">06</span>User C<br/>receives</div>
+        <div class="flow-step" data-step="6"><span class="step-num">07</span>Both render<br/>same circle</div>
+      </div>
+
+      <div class="flow-detail" data-detail="wb">
+        <em style="color: var(--type-quiet);">Click ▶ Play — watch the broadcast.</em>
+      </div>
+
+      <div class="packet-label">↓ Data flowing forward</div>
+      <div class="flow-packet" data-packet="wb"><span class="c">// Press ▶ Play — the actual payload at each step appears here.</span></div>
+    </div>
+
+    <p style="margin-top: 22px; color: var(--type-tertiary);">The collab server is a <strong>separate process</strong> from the Next.js app. Lives in its own Docker container, deployed as its own Railway service. Why? Because long-lived connections need different scaling than HTTP request handlers. Mixing them would make both worse.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d6">
+    <h3 class="feature-title">When to use what.</h3>
+    <div style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 22px;">
+      <div class="card" style="padding: 18px 22px; border-left: 3px solid var(--gold);">
+        <h4 style="margin: 0 0 6px; color: var(--gold);">Polling</h4>
+        <p style="font-size: 14px; margin: 0;">Good for: updates that can wait several seconds (refreshing a leaderboard, checking job status). Bad for: chat, presence, collab editing. Easy to implement — no special server infra. The default before SSE was widely supported.</p>
+      </div>
+      <div class="card" style="padding: 18px 22px; border-left: 3px solid var(--cyan);">
+        <h4 style="margin: 0 0 6px; color: var(--cyan);">SSE (Server-Sent Events)</h4>
+        <p style="font-size: 14px; margin: 0;">Good for: server → browser push, one-way. Notifications, live updates, AI token streaming, entity-change feeds. Auto-reconnects on disconnect. Works over plain HTTP — no protocol upgrade. <strong>TAP•IP uses SSE for AI streaming + the entity_changes pipeline.</strong></p>
+      </div>
+      <div class="card" style="padding: 18px 22px; border-left: 3px solid var(--violet-glow);">
+        <h4 style="margin: 0 0 6px; color: var(--violet-glow);">WebSockets (Socket.IO)</h4>
+        <p style="font-size: 14px; margin: 0;">Good for: bidirectional, low-latency. Collab editing, multiplayer games, real-time drawing. Both sides can push. Requires more infra (separate server process). <strong>TAP•IP uses Socket.IO for the whiteboard.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="fade-in d7">
+    <div class="one-breath">
+      <div class="lbl">In one breath</div>
+      <p><strong>Polling = browser pulls on a timer</strong> (simple, wasteful, laggy). <strong>SSE = server pushes one-way</strong> over a long-lived HTTP connection (efficient, auto-reconnects, great for notifications + AI streaming). <strong>WebSockets = both sides push</strong> over a bidirectional connection (great for collab editing). TAP•IP uses <em>SSE</em> for the AI chat streaming + the entity-change live updates, and <em>Socket.IO over WebSockets</em> for the whiteboard collab. The collab server is its own Railway service because long-lived connections scale differently than HTTP request handlers.</p>
+    </div>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="05-request-flow.html" class="foot-link prev">
+      <span class="lbl">← Previous</span>
+      <span class="tt">05 · Watch a request fly</span>
+    </a>
+    <a href="07-navigation.html" class="foot-link next">
+      <span class="lbl">Next chapter →</span>
+      <span class="tt">07 · Where things live</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+
+<script src="tour.js"></script>
+<script>
+/* ============================================================
+ * Three independent animations on this page.
+ * Each animation has its own controller wired to a unique data prefix.
+ * Pattern factored to avoid copy-paste — call createAnimation(prefix, FLOW, PACKETS, STEP_ACTOR, ARROW_RULE).
+ * ============================================================ */
+
+function createAnimation({ prefix, FLOW, PACKETS, STEP_ACTOR, intervalMs = 1500 }) {
+  const steps      = document.querySelectorAll(`[data-flow="${prefix}"] .flow-step`);
+  const detail     = document.querySelector(`[data-detail="${prefix}"]`);
+  const packet     = document.querySelector(`[data-packet="${prefix}"]`);
+  const playBtn    = document.getElementById(`${prefix}-play`);
+  const resetBtn   = document.getElementById(`${prefix}-reset`);
+  const actorCards = document.querySelectorAll(`[data-track="${prefix}"]`);
+  const actorArrow = document.querySelector(`[data-arrow="${prefix}"]`);
+
+  const PLACEHOLDER_DETAIL = detail.innerHTML;
+  const PLACEHOLDER_PACKET = packet.innerHTML;
+
+  let intv = null, step = 0;
+
+  function setActor(activeActor) {
+    actorCards.forEach(c => {
+      const isActive = Array.isArray(activeActor)
+        ? activeActor.includes(c.dataset.actor)
+        : c.dataset.actor === activeActor;
+      c.classList.toggle('active', isActive);
+    });
+    if (actorArrow) {
+      // Light arrow when active actor differs from server (i.e. cross-boundary)
+      const involvesNonServer = Array.isArray(activeActor)
+        ? activeActor.some(a => a !== 'server')
+        : activeActor !== 'server';
+      actorArrow.classList.toggle('active', !!activeActor && involvesNonServer);
+    }
+  }
+
+  function show(i) {
+    steps.forEach((s, idx) => {
+      s.classList.remove('active');
+      if (idx < i) s.classList.add('played'); else s.classList.remove('played');
+    });
+    if (i < steps.length) {
+      steps[i].classList.add('active');
+      detail.innerHTML = FLOW[i];
+      packet.innerHTML = PACKETS[i];
+      setActor(STEP_ACTOR[i]);
+    }
+  }
+
+  playBtn.addEventListener('click', () => {
+    if (intv) { clearInterval(intv); intv = null; playBtn.innerHTML = '▶ Play'; return; }
+    step = 0;
+    playBtn.innerHTML = '⏸ Pause';
+    show(step);
+    intv = setInterval(() => {
+      step++;
+      if (step >= steps.length) {
+        clearInterval(intv); intv = null; playBtn.innerHTML = '▶ Play';
+        steps.forEach(s => s.classList.add('played'));
+        steps[steps.length-1].classList.add('active');
+        return;
+      }
+      show(step);
+    }, intervalMs);
+  });
+
+  resetBtn.addEventListener('click', () => {
+    if (intv) { clearInterval(intv); intv = null; playBtn.innerHTML = '▶ Play'; }
+    steps.forEach(s => { s.classList.remove('active'); s.classList.remove('played'); });
+    actorCards.forEach(c => c.classList.remove('active'));
+    if (actorArrow) actorArrow.classList.remove('active');
+    detail.innerHTML = PLACEHOLDER_DETAIL;
+    packet.innerHTML = PLACEHOLDER_PACKET;
+  });
+
+  steps.forEach((s, i) => s.addEventListener('click', () => {
+    if (intv) { clearInterval(intv); intv = null; playBtn.innerHTML = '▶ Play'; }
+    show(i);
+  }));
+}
+
+/* ============================================================
+ * ANIMATION 1 — POLLING (7 steps)
+ * ============================================================ */
+createAnimation({
+  prefix: 'poll',
+  STEP_ACTOR: ['browser', 'server', 'browser', 'server', 'browser', 'server', 'browser'],
+  FLOW: [
+    '<strong>01 · Browser polls.</strong> <code>setInterval(() => fetch(\'/api/messages?since=t0\'), 2000)</code> — every 2 seconds, the browser asks "anything new since the last time I checked?"',
+    '<strong>02 · Server replies empty.</strong> Nothing changed. The server returns <code>200 OK</code> with <code>[]</code>. The browser waits another 2 seconds.',
+    '<strong>03 · Browser polls again.</strong> Same fetch fires. The user has done nothing. Just a timer doing its thing.',
+    '<strong>04 · Server replies empty again.</strong> Still nothing. Round-trip wasted. Multiply by every active user on the site — the server is spending real CPU and bandwidth on nothing.',
+    '<strong>05 · Browser polls a third time.</strong> 4 seconds since the user did anything. Imagine if you only checked your phone every 4 seconds.',
+    '<strong>06 · Hit! Server returns a new message.</strong> Someone else sent a chat. The server returns <code>200 OK</code> with <code>[{ id: 47, text: "hello" }]</code>.',
+    '<strong>07 · Browser renders.</strong> The UI updates with the new row. Total latency from event → user seeing it: up to 2 seconds (could be more if you poll less often). And: 4 wasted requests for every 1 useful one. Not great.',
+  ],
+  PACKETS: [
+    // 01 — browser fetches
+    '<span class="c">// Every 2 seconds, the browser fires:</span>\n<span class="k">fetch</span>(<span class="s">\'/api/messages?since=t0\'</span>)<span class="o">;</span>\n<span class="k">→</span> GET /api/messages?since=t0',
+
+    // 02 — server replies empty
+    'HTTP/2 <span class="n">200</span> OK\nContent-Length: <span class="n">2</span>\n\n<span class="o">[]</span>\n\n<span class="c">// nothing new — but a full round-trip happened</span>',
+
+    // 03 — browser fetches again
+    '<span class="c">// 2 seconds later — same fetch fires</span>\n<span class="k">fetch</span>(<span class="s">\'/api/messages?since=t0\'</span>)<span class="o">;</span>\n<span class="k">→</span> GET /api/messages?since=t0',
+
+    // 04 — empty again
+    'HTTP/2 <span class="n">200</span> OK\nContent-Length: <span class="n">2</span>\n\n<span class="o">[]</span>\n\n<span class="c">// still nothing — second wasted round-trip</span>',
+
+    // 05 — third poll
+    '<span class="c">// 4 seconds in — third poll fires</span>\n<span class="k">fetch</span>(<span class="s">\'/api/messages?since=t0\'</span>)<span class="o">;</span>',
+
+    // 06 — hit
+    'HTTP/2 <span class="n">200</span> OK\nContent-Type: application/json\n\n[\n  {\n    <span class="p">"id"</span>: <span class="n">47</span>,\n    <span class="p">"text"</span>: <span class="s">"hello"</span>,\n    <span class="p">"from"</span>: <span class="s">"alice"</span>\n  }\n]',
+
+    // 07 — render
+    '<span class="c">// React state update:</span>\nsetMessages([...prev, newMsg])<span class="o">;</span>\n\n<span class="c">// Total cost:\n//   6 round-trips · 4 empty · 2 useful</span>',
+  ],
+});
+
+/* ============================================================
+ * ANIMATION 2 — SSE (6 steps)
+ * ============================================================ */
+createAnimation({
+  prefix: 'sse',
+  STEP_ACTOR: ['browser', 'server', ['browser','server'], 'server', 'server', 'browser'],
+  FLOW: [
+    '<strong>01 · Browser opens an EventSource.</strong> <code>new EventSource(\'/api/events\')</code> — this looks like a normal HTTP GET, but the server keeps the connection open instead of closing it after responding.',
+    '<strong>02 · Server accepts the stream.</strong> Sends headers <code>Content-Type: text/event-stream</code> and then... waits. The connection stays open. No data flows yet.',
+    '<strong>03 · Idle — connection open.</strong> Maybe 10 seconds pass. Maybe 10 minutes. The browser is patient. The server is patient. No HTTP requests during this time.',
+    '<strong>04 · Something happens server-side.</strong> A teammate adds a new patent. The server\'s entity-change pipeline detects it.',
+    '<strong>05 · Server pushes an event.</strong> Down the still-open connection, the server writes <code>data: { "type": "patent:created", ... }\\n\\n</code> — the browser\'s <code>onmessage</code> handler fires.',
+    '<strong>06 · Browser updates UI.</strong> No fetch needed. No polling. The change appeared because the server pushed it. Latency: milliseconds.',
+  ],
+  PACKETS: [
+    // 01
+    '<span class="c">// Browser opens a one-way stream:</span>\n<span class="k">const</span> es = <span class="k">new</span> <span class="p">EventSource</span>(<span class="s">\'/api/events\'</span>)<span class="o">;</span>\nes.<span class="p">onmessage</span> = (e) => {\n  <span class="c">// fires when server pushes</span>\n}<span class="o">;</span>',
+
+    // 02
+    'HTTP/2 <span class="n">200</span> OK\nContent-Type: text/event-stream\nCache-Control: no-cache\nConnection: keep-alive\n\n<span class="c">// (connection stays open — no body yet)</span>',
+
+    // 03
+    '<span class="c">// ... seconds pass, then minutes ...\n// no HTTP traffic in either direction\n// browser idle, server idle, connection alive</span>',
+
+    // 04
+    '<span class="c">// Server-side, the entity-change publisher fires:</span>\n<span class="p">pgNotify</span>(<span class="s">\'entity_changes\'</span>, {\n  <span class="p">action</span>: <span class="s">"create"</span>,\n  <span class="p">entityType</span>: <span class="s">"patent"</span>,\n  <span class="p">entityId</span>: <span class="s">"abc-..."</span>\n})<span class="o">;</span>',
+
+    // 05
+    '<span class="c">// Server pushes one event frame:</span>\ndata: {<span class="p">"type"</span>:<span class="s">"patent:created"</span>,<span class="p">"id"</span>:<span class="s">"abc-..."</span>}\n\n<span class="c">// Two newlines = end of one event\n// connection stays open for the next</span>',
+
+    // 06
+    '<span class="c">// Browser onmessage handler fires:</span>\nes.<span class="p">onmessage</span>(e) {\n  <span class="k">const</span> msg = <span class="p">JSON</span>.<span class="p">parse</span>(e.data)<span class="o">;</span>\n  router.<span class="p">refresh</span>()<span class="o">;</span>  <span class="c">// re-fetch the list</span>\n}',
+  ],
+});
+
+/* ============================================================
+ * ANIMATION 3 — WHITEBOARD COLLAB (7 steps)
+ * ============================================================ */
+createAnimation({
+  prefix: 'wb',
+  STEP_ACTOR: ['browserA', 'browserA', 'server', 'server', 'browserB', 'browserC', ['browserB','browserC']],
+  FLOW: [
+    '<strong>01 · User A draws.</strong> User A is on the whiteboard at <code>/lab/notebook/wb-42</code>. They drag a circle onto the canvas. Excalidraw fires a local "scene change" event.',
+    '<strong>02 · Browser A emits over the socket.</strong> The whiteboard wrapper calls <code>socket.emit(\'scene_update\', { boardId, op, element })</code>. The op flies up the WebSocket to the collab server.',
+    '<strong>03 · Collab server receives.</strong> Socket.IO routes the incoming op to the handler for room <code>wb-42</code>. The server doesn\'t persist this op (the canvas itself is autosaved separately) — it just relays.',
+    '<strong>04 · Server broadcasts to the room.</strong> The collab server emits <code>scene_update</code> to <em>every other socket</em> in room <code>wb-42</code> — that\'s users B and C. User A is excluded from the broadcast (they already have the change locally).',
+    '<strong>05 · Browser B receives.</strong> User B\'s <code>socket.on(\'scene_update\')</code> fires. The handler hands the op to Excalidraw\'s scene-reconciliation logic.',
+    '<strong>06 · Browser C receives.</strong> Same event, same instant. User C\'s screen also gets the op.',
+    '<strong>07 · Both render the circle.</strong> Within milliseconds, both User B and User C see the same circle User A drew. Without refreshing. Without clicking anything. That\'s real-time collab.',
+  ],
+  PACKETS: [
+    // 01 — user draws
+    '<span class="c">// Excalidraw scene-change handler fires:</span>\n{\n  <span class="p">type</span>: <span class="s">"add"</span>,\n  <span class="p">element</span>: {\n    <span class="p">type</span>: <span class="s">"ellipse"</span>,\n    <span class="p">x</span>: <span class="n">340</span>, <span class="p">y</span>: <span class="n">220</span>,\n    <span class="p">width</span>: <span class="n">120</span>, <span class="p">height</span>: <span class="n">120</span>\n  }\n}',
+
+    // 02 — browser emits over socket
+    '<span class="c">// Browser A's whiteboard wrapper:</span>\nsocket.<span class="p">emit</span>(<span class="s">\'scene_update\'</span>, {\n  <span class="p">boardId</span>: <span class="s">"wb-42"</span>,\n  <span class="p">userId</span>: <span class="n">42</span>,\n  <span class="p">op</span>: { <span class="p">type</span>: <span class="s">"add"</span>, <span class="p">element</span>: {...} }\n})<span class="o">;</span>\n<span class="c">// → WebSocket frame to collab server</span>',
+
+    // 03 — collab server receives
+    '<span class="c">// collab-server/index.ts (Socket.IO):</span>\nsocket.<span class="p">on</span>(<span class="s">\'scene_update\'</span>, (msg) => {\n  <span class="c">// msg arrives here\n  // no DB write — pure relay</span>\n  <span class="c">// route to broadcaster ↓</span>\n})<span class="o">;</span>',
+
+    // 04 — broadcast to room
+    '<span class="c">// Broadcast to everyone in the room\n// EXCEPT the sender (User A):</span>\nsocket.<span class="p">to</span>(<span class="s">\'wb-42\'</span>)\n      .<span class="p">emit</span>(<span class="s">\'scene_update\'</span>, msg)<span class="o">;</span>\n\n<span class="c">// → fans out to User B + User C</span>',
+
+    // 05 — browser B receives
+    '<span class="c">// User B\'s browser handler:</span>\nsocket.<span class="p">on</span>(<span class="s">\'scene_update\'</span>, (msg) => {\n  excalidraw.<span class="p">updateScene</span>({\n    <span class="p">elements</span>: [...current, msg.op.element]\n  })<span class="o">;</span>\n})<span class="o">;</span>',
+
+    // 06 — browser C receives
+    '<span class="c">// User C\'s browser handler — same code, different machine:</span>\nsocket.<span class="p">on</span>(<span class="s">\'scene_update\'</span>, (msg) => {\n  excalidraw.<span class="p">updateScene</span>({\n    <span class="p">elements</span>: [...current, msg.op.element]\n  })<span class="o">;</span>\n})<span class="o">;</span>',
+
+    // 07 — both render
+    '<span class="c">// User B + User C both see:</span>\n\n  ⬭   <span class="c">← circle, same x/y/size as User A drew</span>\n\n<span class="c">// Time from User A\'s drag → B + C seeing it: ~30ms</span>',
+  ],
+});
+</script>
+</body>
+</html>
