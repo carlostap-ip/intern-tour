@@ -29,6 +29,14 @@
     align-items: stretch;
     margin-bottom: 24px;
   }
+  /* Five-actor track: Server | Publisher | DB | Collab | Browser (for animation 4) */
+  .actor-track-5 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 12px;
+    align-items: stretch;
+    margin-bottom: 24px;
+  }
   .actor-card {
     padding: 18px 16px;
     background: var(--bg-deep);
@@ -63,6 +71,37 @@
   }
   .actor-card[data-actor="server"].active .ac-sub { color: var(--violet-glow); }
 
+  /* New actor colors for animations 4 + 5 */
+  .actor-card[data-actor="publisher"].active,
+  .actor-card[data-actor="collab"].active {
+    background: linear-gradient(135deg, rgba(167,139,250,0.18), rgba(167,139,250,0.04));
+    border-color: #C4B5FD;
+    box-shadow: 0 0 30px -4px rgba(167,139,250,0.45);
+  }
+  .actor-card[data-actor="publisher"].active .ac-sub,
+  .actor-card[data-actor="collab"].active .ac-sub { color: #C4B5FD; }
+
+  .actor-card[data-actor="db"].active {
+    background: linear-gradient(135deg, rgba(252,211,77,0.15), rgba(252,211,77,0.04));
+    border-color: var(--gold);
+    box-shadow: 0 0 30px -4px rgba(252,211,77,0.45);
+  }
+  .actor-card[data-actor="db"].active .ac-sub { color: var(--gold); }
+
+  .actor-card[data-actor="customer"].active {
+    background: linear-gradient(135deg, rgba(34,211,238,0.15), rgba(34,211,238,0.04));
+    border-color: var(--cyan);
+    box-shadow: 0 0 30px -4px rgba(34,211,238,0.45);
+  }
+  .actor-card[data-actor="customer"].active .ac-sub { color: var(--cyan); }
+
+  .actor-card[data-actor="stripe"].active {
+    background: linear-gradient(135deg, rgba(99,91,255,0.18), rgba(99,91,255,0.04));
+    border-color: #818CF8;
+    box-shadow: 0 0 30px -4px rgba(99,91,255,0.45);
+  }
+  .actor-card[data-actor="stripe"].active .ac-sub { color: #818CF8; }
+
   .actor-arrow {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     color: var(--type-tertiary); padding: 0 4px; min-width: 48px;
@@ -84,10 +123,17 @@
   .anim-1 .flow-steps { grid-template-columns: repeat(7, 1fr) !important; }
   .anim-2 .flow-steps { grid-template-columns: repeat(6, 1fr) !important; }
   .anim-3 .flow-steps { grid-template-columns: repeat(7, 1fr) !important; }
+  .anim-4 .flow-steps { grid-template-columns: repeat(8, 1fr) !important; }
+  .anim-5 .flow-steps { grid-template-columns: repeat(6, 1fr) !important; }
   @media (max-width: 768px) {
     .anim-1 .flow-steps,
     .anim-2 .flow-steps,
-    .anim-3 .flow-steps { grid-template-columns: repeat(3, 1fr) !important; }
+    .anim-3 .flow-steps,
+    .anim-4 .flow-steps,
+    .anim-5 .flow-steps { grid-template-columns: repeat(3, 1fr) !important; }
+  }
+  @media (max-width: 1024px) {
+    .actor-track-5 { grid-template-columns: 1fr 1fr 1fr; }
   }
 
   /* Data packet panel — same look as chapter 05 */
@@ -214,15 +260,15 @@
   <header class="chapter-head fade-in d1">
     <div class="chapter-num">06</div>
     <div class="chapter-info">
-      <div class="eyebrow">Chapter 06 · Interactive · ~15 minutes</div>
+      <div class="eyebrow">Chapter 06 · Interactive · ~22 minutes</div>
       <h2 class="section-title">When the server <em>talks first</em>.</h2>
-      <p class="lede">Chapter 05 was a single request — user clicks, server answers. But real apps update <em>without you doing anything</em>. The whiteboard fills in your teammate's edits. The notification badge appears. How does that work? Three playback experiences, three architectures.</p>
+      <p class="lede">Chapter 05 was a single request — user clicks, server answers. But real apps update <em>without you doing anything</em>. The whiteboard fills in your teammate's edits. The notification badge appears. The Stripe receipt confirms a payment. <strong>Five</strong> playback experiences across the patterns that make all of this work.</p>
     </div>
   </header>
 
   <section class="fade-in d2">
     <div class="note">
-      <p style="margin: 0;"><strong>Why this matters.</strong> The internet was designed for one direction: browsers ASK servers for things, servers REPLY. Browsers can't be "called." Pushing updates the other way — server → browser — required clever tricks. Three tricks now dominate: <span class="pill" data-term="polling">polling</span>, <span class="pill" data-term="sse">SSE</span>, and <span class="pill" data-term="websocket">WebSockets</span>. Each animation below shows one in action.</p>
+      <p style="margin: 0;"><strong>Why this matters.</strong> The internet was designed for one direction: browsers ASK servers for things, servers REPLY. Browsers can't be "called." Pushing updates the other way — server → browser — required clever tricks. Two questions to keep in mind: <em>(a) how does data get from server to browser?</em> Answers: <span class="pill" data-term="polling">polling</span>, <span class="pill" data-term="sse">SSE</span>, <span class="pill" data-term="websocket">WebSockets</span>. <em>(b) how does the server-side code know an event happened at all?</em> Answers: <span class="pill" data-term="pubsub">pub/sub</span> (internally) and <span class="pill" data-term="webhook">webhooks</span> (when external services tell us). All five animations below.</p>
     </div>
   </section>
 
@@ -230,7 +276,7 @@
 
   <!-- ANIMATION 1: POLLING -->
   <section class="fade-in d3 anim-section anim-1" id="anim-polling">
-    <div class="anim-tag gold">Animation 1 of 3</div>
+    <div class="anim-tag gold">Animation 1 of 5</div>
     <h3 class="feature-title">Polling — <em>"anything new yet?"</em></h3>
     <p>The simplest approach: the browser asks every few seconds. Mostly the server has nothing. Every once in a while, it has something. The browser feels lag — and the server gets pestered nonstop.</p>
 
@@ -279,7 +325,7 @@
 
   <!-- ANIMATION 2: SSE -->
   <section class="fade-in d4 anim-section anim-2" id="anim-sse">
-    <div class="anim-tag cyan">Animation 2 of 3</div>
+    <div class="anim-tag cyan">Animation 2 of 5</div>
     <h3 class="feature-title">SSE — <em>"I'll let you know"</em></h3>
     <p>Server-Sent Events flip the script. The browser opens <em>one</em> long connection and waits. The server holds it open. When something happens, the server pushes an event. No more 2-second wait. No more wasted HTTP.</p>
 
@@ -327,7 +373,7 @@
 
   <!-- ANIMATION 3: WEBSOCKETS / WHITEBOARD COLLAB -->
   <section class="fade-in d5 anim-section anim-3" id="anim-whiteboard">
-    <div class="anim-tag">Animation 3 of 3</div>
+    <div class="anim-tag">Animation 3 of 5</div>
     <h3 class="feature-title">The whiteboard — <em>three users, one canvas</em>.</h3>
     <p>SSE is one-way: server → browser. For real-time collaboration, the browser also needs to PUSH (your edits) and the server needs to <span class="pill" data-term="fanout">fan out</span> (to all the other browsers). That's <span class="pill" data-term="websocket">WebSockets</span> — a bidirectional connection. TAP•IP's whiteboard uses <span class="pill" data-term="socketio">Socket.IO</span> (a WebSocket library) running in a separate "collab server" container.</p>
 
@@ -385,7 +431,284 @@
 
   <hr/>
 
-  <section class="fade-in d6">
+  <!-- ANIMATION 4: PUB/SUB — Behind the curtain -->
+  <section class="fade-in d6 anim-section anim-4" id="anim-pubsub">
+    <div class="anim-tag">Animation 4 of 5</div>
+    <h3 class="feature-title">Behind the curtain — <em>how the server knows to push</em>.</h3>
+    <p>Animation 2 (SSE) showed the browser receiving an event from the server. But how does the SERVER know an event happened? You wrote a server action that inserts a patent. How does the server <em>also</em> know to tell every other browser in the tenant about it?</p>
+    <p>Answer: <span class="pill" data-term="pubsub">pub/sub</span> — short for "publish/subscribe." One piece of code <strong>publishes</strong> an event to a named channel. Other pieces of code <strong>subscribe</strong> to that channel and react. They don't know about each other. They don't import each other. They communicate through the channel.</p>
+    <p>TAP•IP's pub/sub uses <span class="pill" data-term="pg_notify">Postgres NOTIFY/LISTEN</span> — a tiny pub/sub feature built into the same database that already stores the data. Watch a single patent-create flow all the way through.</p>
+
+    <div style="background: linear-gradient(180deg, rgba(34,211,238,0.06), rgba(34,211,238,0.01)); border: 1px solid rgba(34,211,238,0.3); border-left: 3px solid var(--cyan); border-radius: 12px; padding: 18px 22px; margin: 18px 0;">
+      <div class="eyebrow" style="color: var(--cyan); margin-bottom: 8px;">Setup the animation assumes</div>
+      <p style="font-size: 14px; margin: 0 0 8px;">The collab server you just met in animation 3 (whiteboard) <strong>also handles entity-change broadcasts</strong>. It's a single Socket.IO container that runs multiple feeds.</p>
+      <p style="font-size: 14px; margin: 0 0 8px;">When the user logged in and the React app booted, the browser opened <em>one</em> Socket.IO connection to the collab server. After auth, the server joined that connection to the room <code style="font-size: 12px;">entity-changes:{tenantId}:all</code> — the general feed for this tenant. If the user navigates to a whiteboard, the SAME connection also joins a <code style="font-size: 12px;">whiteboard:{boardId}</code> room. One pipe, multiple rooms.</p>
+      <p style="font-size: 14px; margin: 0;">By the time the animation starts, that connection has been sitting open for minutes. The browser is silently waiting. Now watch what happens when a teammate creates a patent.</p>
+    </div>
+
+    <div class="flow">
+      <div class="flow-controls">
+        <button class="btn btn-primary" id="pubsub-play">▶ Play</button>
+        <button class="btn" id="pubsub-reset">⟲ Reset</button>
+      </div>
+
+      <div class="actor-track-5">
+        <div class="actor-card" data-actor="server" data-track="pubsub">
+          <div class="ac-icon">🧑‍💻</div>
+          <div class="ac-name">Server action</div>
+          <div class="ac-sub">writes the row</div>
+        </div>
+        <div class="actor-card" data-actor="publisher" data-track="pubsub">
+          <div class="ac-icon">📡</div>
+          <div class="ac-name">Publisher</div>
+          <div class="ac-sub">CompositePublisher</div>
+        </div>
+        <div class="actor-card" data-actor="db" data-track="pubsub">
+          <div class="ac-icon">💾</div>
+          <div class="ac-name">Postgres</div>
+          <div class="ac-sub">NOTIFY channel</div>
+        </div>
+        <div class="actor-card" data-actor="collab" data-track="pubsub">
+          <div class="ac-icon">🔌</div>
+          <div class="ac-name">Collab server</div>
+          <div class="ac-sub">LISTEN + Socket.IO</div>
+        </div>
+        <div class="actor-card" data-actor="browser" data-track="pubsub">
+          <div class="ac-icon">🌐</div>
+          <div class="ac-name">Browser</div>
+          <div class="ac-sub">router.refresh()</div>
+        </div>
+      </div>
+
+      <div class="flow-steps" data-flow="pubsub">
+        <div class="flow-step" data-step="0"><span class="step-num">01</span>Write<br/>+ publish()</div>
+        <div class="flow-step" data-step="1"><span class="step-num">02</span>Composite<br/>fan-out</div>
+        <div class="flow-step" data-step="2"><span class="step-num">03</span>pgNotify<br/>publisher</div>
+        <div class="flow-step" data-step="3"><span class="step-num">04</span>(parallel)<br/>audit log</div>
+        <div class="flow-step" data-step="4"><span class="step-num">05</span>NOTIFY<br/>fires</div>
+        <div class="flow-step" data-step="5"><span class="step-num">06</span>LISTEN<br/>receives</div>
+        <div class="flow-step" data-step="6"><span class="step-num">07</span>Socket.IO<br/>tenant room</div>
+        <div class="flow-step" data-step="7"><span class="step-num">08</span>Browser<br/>refreshes</div>
+      </div>
+
+      <div class="flow-detail" data-detail="pubsub">
+        <em style="color: var(--type-quiet);">Click ▶ Play — watch one event ripple through five services.</em>
+      </div>
+
+      <div class="packet-label">↓ Data flowing forward</div>
+      <div class="flow-packet" data-packet="pubsub"><span class="c">// Press ▶ Play — the actual payload at each step appears here.</span></div>
+    </div>
+
+    <p style="margin-top: 22px; color: var(--type-tertiary);">Three things this teaches:</p>
+    <ul style="color: var(--type-tertiary); font-size: 14px;">
+      <li><strong>Decoupling.</strong> The server action doesn't <code>import</code> the collab server. Doesn't know it exists. Just calls <code>publish()</code>.</li>
+      <li><strong>One channel, many subscribers.</strong> Today only the collab server LISTENs. Tomorrow we could add a Slack notifier, a search-index updater, an analytics warehouse — without touching the publisher.</li>
+      <li><strong>Why pg_notify and not Redis?</strong> Postgres is already there. One fewer system to deploy + monitor. Trade-off: the NOTIFY payload is capped at 8KB (we enforce 8000 bytes with a margin). For TAP•IP's events that's plenty; for video frames it wouldn't be.</li>
+    </ul>
+  </section>
+
+  <hr/>
+
+  <!-- ANIMATION 5: WEBHOOKS -->
+  <section class="fade-in d7 anim-section anim-5" id="anim-webhook">
+    <div class="anim-tag cyan">Animation 5 of 5</div>
+    <h3 class="feature-title">Webhooks — <em>when someone else needs to tell us</em>.</h3>
+    <p>Animation 4 was internal: TAP•IP code talking to TAP•IP code. But sometimes an <em>external</em> service has news for us. Stripe finishes processing a payment. GitHub merges a PR. SendGrid bounces an email. We're not going to poll Stripe every 2 seconds asking "is the payment done yet?" — and Stripe can't open a long-lived SSE connection to our app.</p>
+    <p>The answer is a <span class="pill" data-term="webhook">webhook</span>: we register a URL with Stripe, and when they have news for us, <strong>they POST to that URL</strong>. It's the inverse of chapter 05's request flow — instead of us calling them, they call us.</p>
+    <p>TAP•IP doesn't use webhooks yet — but every product you build that takes payments, integrates with GitHub, sends emails, or talks to any modern SaaS will use them. Here's the flow.</p>
+
+    <div class="flow">
+      <div class="flow-controls">
+        <button class="btn btn-primary" id="webhook-play">▶ Play</button>
+        <button class="btn" id="webhook-reset">⟲ Reset</button>
+      </div>
+
+      <div class="actor-track-4">
+        <div class="actor-card" data-actor="customer" data-track="webhook">
+          <div class="ac-icon">👤</div>
+          <div class="ac-name">Customer</div>
+          <div class="ac-sub">Stripe Checkout</div>
+        </div>
+        <div class="actor-card" data-actor="stripe" data-track="webhook">
+          <div class="ac-icon">💳</div>
+          <div class="ac-name">Stripe</div>
+          <div class="ac-sub">external service</div>
+        </div>
+        <div class="actor-card" data-actor="server" data-track="webhook">
+          <div class="ac-icon">🧑‍💻</div>
+          <div class="ac-name">Your server</div>
+          <div class="ac-sub">/webhooks/stripe</div>
+        </div>
+        <div class="actor-card" data-actor="db" data-track="webhook">
+          <div class="ac-icon">💾</div>
+          <div class="ac-name">Your DB</div>
+          <div class="ac-sub">subscriptions</div>
+        </div>
+      </div>
+
+      <div class="flow-steps" data-flow="webhook">
+        <div class="flow-step" data-step="0"><span class="step-num">01</span>Customer<br/>pays</div>
+        <div class="flow-step" data-step="1"><span class="step-num">02</span>Stripe<br/>processes</div>
+        <div class="flow-step" data-step="2"><span class="step-num">03</span>POST<br/>to our URL</div>
+        <div class="flow-step" data-step="3"><span class="step-num">04</span>Verify<br/>signature</div>
+        <div class="flow-step" data-step="4"><span class="step-num">05</span>Update<br/>DB</div>
+        <div class="flow-step" data-step="5"><span class="step-num">06</span>200 OK<br/>back to Stripe</div>
+      </div>
+
+      <div class="flow-detail" data-detail="webhook">
+        <em style="color: var(--type-quiet);">Click ▶ Play — watch an external service push to us.</em>
+      </div>
+
+      <div class="packet-label">↓ Data flowing forward</div>
+      <div class="flow-packet" data-packet="webhook"><span class="c">// Press ▶ Play — the actual payload at each step appears here.</span></div>
+    </div>
+
+    <p style="margin-top: 22px; color: var(--type-tertiary);">Three rules you can't break with webhooks:</p>
+    <ul style="color: var(--type-tertiary); font-size: 14px;">
+      <li><strong>Signature verification is mandatory.</strong> Stripe signs every POST with an HMAC of the body using a secret only you and Stripe know. Skip the check and anyone on the internet can forge a "payment received" message and grant themselves a subscription.</li>
+      <li><strong>Return 200 fast.</strong> If Stripe doesn't get a 200 within ~10 seconds, they assume failure and retry — with exponential backoff for up to 3 days. Don't do slow work inside the handler. Take the message, queue it, return 200, do the work elsewhere.</li>
+      <li><strong>Be idempotent.</strong> Retries mean you may receive the same event twice. Check the event ID against a "seen" list; ignore duplicates.</li>
+    </ul>
+
+    <p style="color: var(--type-tertiary); font-size: 14px; font-style: italic; margin-top: 18px;">Bridge to chapter 06 in one breath: once the webhook handler updates the DB, it can also call <code>publish()</code> — the same pub/sub mechanism from animation 4. So a Stripe webhook can drive an SSE push to the user's browser, and the user sees "Plan upgraded ✓" without refreshing. <strong>That's the whole chapter, in one feature.</strong></p>
+  </section>
+
+  <hr/>
+
+  <!-- THE WEBHOOK PATTERN GENERALIZES -->
+  <section class="fade-in d8" id="webhook-pattern-wild">
+    <div class="anim-tag" style="background: rgba(252,211,77,0.12); color: var(--gold);">Same pattern, different events</div>
+    <h3 class="feature-title">The webhook pattern <em>in the wild</em>.</h3>
+    <p>Animation 5 used Stripe. The shape — external service POSTs to your registered URL → you verify signature → you update state → you return 200 — is identical for almost every modern SaaS you'll integrate with. Only the event names and payload shapes differ.</p>
+
+    <style>
+      .wh-card { padding: 18px 20px; }
+      .wh-card h4 { margin: 0 0 12px; font-size: 14px; }
+      .wh-card .ev { display: grid; grid-template-columns: minmax(0, auto) 1fr; gap: 6px 14px; align-items: baseline; font-size: 13px; }
+      .wh-card .ev code { white-space: nowrap; }
+      .wh-card .ev span { color: var(--type-tertiary); }
+    </style>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 28px 0;">
+
+      <div class="card wh-card">
+        <h4>💳 Stripe / payments</h4>
+        <div class="ev">
+          <code>checkout.session.completed</code><span>Customer just paid for the first time</span>
+          <code>invoice.paid</code><span>Recurring subscription payment cleared</span>
+          <code>customer.subscription.deleted</code><span>Customer canceled their subscription</span>
+          <code>charge.refunded</code><span>You refunded a payment</span>
+        </div>
+      </div>
+
+      <div class="card wh-card">
+        <h4>📧 Resend / SendGrid / Mailgun</h4>
+        <div class="ev">
+          <code>email.delivered</code><span>Made it to the recipient's inbox</span>
+          <code>email.bounced</code><span>Bad address — <strong>must stop sending</strong></span>
+          <code>email.opened</code><span>Recipient opened it (pixel tracker)</span>
+          <code>email.complained</code><span>Marked as spam — <strong>must suppress</strong></span>
+          <code>email.unsubscribed</code><span>Clicked unsubscribe — <strong>must honor</strong></span>
+        </div>
+      </div>
+
+      <div class="card wh-card">
+        <h4>🐙 GitHub</h4>
+        <div class="ev">
+          <code>push</code><span>Someone pushed commits (trigger CI)</span>
+          <code>pull_request.merged</code><span>PR was merged (deploy, notify)</span>
+          <code>issue.opened</code><span>Someone filed a bug or feature ticket</span>
+          <code>workflow_run.completed</code><span>A CI run finished — pass or fail</span>
+        </div>
+      </div>
+
+      <div class="card wh-card">
+        <h4>💬 Slack</h4>
+        <div class="ev">
+          <code>slash_command</code><span>User typed <code style="white-space:nowrap;">/yourapp foo</code> in a channel</span>
+          <code>block_actions</code><span>User clicked a button in your message</span>
+          <code>app_installed</code><span>Someone added your app to their workspace</span>
+          <code>reaction_added</code><span>User reacted to a message with emoji</span>
+        </div>
+      </div>
+
+      <div class="card wh-card">
+        <h4>🛒 Shopify</h4>
+        <div class="ev">
+          <code>orders/create</code><span>Customer placed an order</span>
+          <code>orders/paid</code><span>Order was paid for</span>
+          <code>checkouts/create</code><span>Cart created (track abandoned carts)</span>
+          <code>products/update</code><span>Store owner edited a product</span>
+        </div>
+      </div>
+
+      <div class="card wh-card">
+        <h4>🚛 Twilio / Shippo / Calendly</h4>
+        <div class="ev">
+          <code>sms.delivered</code><span>Text message reached the phone</span>
+          <code>sms.failed</code><span>Couldn't deliver (bad number, blocked)</span>
+          <code>shipment.in_transit</code><span>Package picked up by carrier</span>
+          <code>invitee.created</code><span>Someone booked a meeting on Calendly</span>
+        </div>
+      </div>
+
+    </div>
+
+    <p style="color: var(--type-tertiary); font-size: 14px; font-style: italic;">Skim the list. The event names look intimidating but they all describe ordinary business events — "someone paid," "email bounced," "someone clicked something." Every modern SaaS lists their events on a page called "Webhook events" in their docs. You'll look this up when you're ready, not memorize it now.</p>
+
+    <h4 style="margin-top: 32px;">Zoom: the email case (it's the one you can't avoid).</h4>
+    <p>Sending email looks simple — you call the API, it returns 200. But "the API accepted your message" is not "the user received it." The events that happen <em>after</em> the send only reach you through webhooks. And some of them have legal must-handle implications.</p>
+
+    <div style="background: var(--bg-deep); border: 1px solid var(--line-soft); border-left: 3px solid var(--gold); border-radius: 12px; padding: 18px 22px; margin: 20px 0;">
+      <div class="eyebrow" style="color: var(--gold); margin-bottom: 8px;">Legal must-handles</div>
+      <p style="margin: 0 0 6px; font-size: 14px;"><strong><code>email.bounced</code></strong> — the address is invalid. <em>You MUST stop sending to it</em>, or Gmail / Outlook tank your sender reputation and your other emails start landing in spam for everyone.</p>
+      <p style="margin: 0 0 6px; font-size: 14px;"><strong><code>email.complained</code></strong> — recipient marked your email as spam. <em>You MUST add them to a suppression list</em> — required by CAN-SPAM (US) and PECR (UK).</p>
+      <p style="margin: 0; font-size: 14px;"><strong><code>email.unsubscribed</code></strong> — recipient clicked unsubscribe. <em>You MUST honor within 10 business days</em> — CAN-SPAM federal law. Each violation = up to $51,744 fine.</p>
+    </div>
+
+    <p>The flow for a typical bounce, end to end:</p>
+
+    <div style="background: var(--bg-deep); border: 1px solid var(--line-soft); border-radius: 12px; padding: 20px 22px; margin: 20px 0; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.75; overflow-x: auto; white-space: pre; color: var(--type-secondary);"><span style="color: #FCD34D;">1.</span> <span style="color: var(--type-tertiary);">// User clicks "Forgot password"</span>
+   Your server <span style="color: #A78BFA;">→</span> POST https://api.resend.com/emails
+                  { <span style="color: #67E8F9;">to</span>: <span style="color: #67E8F9;">"alic@example.com"</span>, <span style="color: var(--type-tertiary);">// typo last month at signup</span>
+                    <span style="color: #67E8F9;">subject</span>: <span style="color: #67E8F9;">"Reset your password"</span>, ... }
+   Resend       <span style="color: #A78BFA;">←</span> 200 OK  { id: <span style="color: #67E8F9;">"msg_abc123"</span> }
+   <span style="color: var(--type-tertiary);">// Resend queued it. NOT delivered yet.</span>
+
+<span style="color: #FCD34D;">2.</span> <span style="color: var(--type-tertiary);">// Resend attempts SMTP delivery to example.com</span>
+   Resend       <span style="color: #A78BFA;">→</span> example.com SMTP: RCPT TO:alic@example.com
+   example.com  <span style="color: #A78BFA;">←</span> 550 5.1.1 User unknown
+
+<span style="color: #FCD34D;">3.</span> <span style="color: var(--type-tertiary);">// Resend POSTs a webhook to YOUR pre-registered URL</span>
+   Resend       <span style="color: #A78BFA;">→</span> POST https://app.tap-ip.com/api/webhooks/resend
+                  Resend-Signature: t=1733180000,v1=...
+                  {
+                    <span style="color: #67E8F9;">"type"</span>: <span style="color: #67E8F9;">"email.bounced"</span>,
+                    <span style="color: #67E8F9;">"data"</span>: {
+                      <span style="color: #67E8F9;">"email_id"</span>: <span style="color: #67E8F9;">"msg_abc123"</span>,
+                      <span style="color: #67E8F9;">"to"</span>: <span style="color: #67E8F9;">"alic@example.com"</span>,
+                      <span style="color: #67E8F9;">"bounce_type"</span>: <span style="color: #67E8F9;">"hard"</span>,
+                      <span style="color: #67E8F9;">"reason"</span>: <span style="color: #67E8F9;">"User unknown"</span>
+                    }
+                  }
+
+<span style="color: #FCD34D;">4.</span> <span style="color: var(--type-tertiary);">// Your server:</span>
+   • Verifies signature  <span style="color: var(--type-tertiary);">// same HMAC pattern as Stripe</span>
+   • Marks alic@example.com as bounced=true in DB
+   • Returns 200 OK to Resend
+   • Next "send to alic@example.com" call → SKIP
+     <span style="color: var(--type-tertiary);">// no wasted send, no reputation damage</span></div>
+
+    <p style="color: var(--type-tertiary); font-size: 14px;"><strong>The shape mirrors the Stripe flow exactly</strong> — the only differences are <em>which</em> events and <em>which</em> DB columns. Once you understand one webhook integration, you understand them all.</p>
+
+    <div class="card" style="border-color: var(--violet-glow); background: linear-gradient(180deg, rgba(139,92,246,0.06), rgba(34,211,238,0.02)); margin-top: 28px;">
+      <div class="eyebrow" style="margin-bottom: 10px;">For your own product</div>
+      <p style="font-size: 14px; margin: 0;">Every email-sending SaaS pays the webhook tax. You don't get a choice. The moment your product sends real emails to real users, you'll need a <code>/api/webhooks/resend</code> route handler (or whichever provider you use) doing exactly the flow above. Build it on day 1, not when you get your first bounce-related Gmail reputation drop.</p>
+    </div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d9">
     <h3 class="feature-title">When to use what.</h3>
     <div style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 22px;">
       <div class="card" style="padding: 18px 22px; border-left: 3px solid var(--gold);">
@@ -400,13 +723,21 @@
         <h4 style="margin: 0 0 6px; color: var(--violet-glow);">WebSockets (Socket.IO)</h4>
         <p style="font-size: 14px; margin: 0;">Good for: bidirectional, low-latency. Collab editing, multiplayer games, real-time drawing. Both sides can push. Requires more infra (separate server process). <strong>TAP•IP uses Socket.IO for the whiteboard.</strong></p>
       </div>
+      <div class="card" style="padding: 18px 22px; border-left: 3px solid #C4B5FD;">
+        <h4 style="margin: 0 0 6px; color: #C4B5FD;">Pub/Sub (internal)</h4>
+        <p style="font-size: 14px; margin: 0;">Good for: server-side code that needs to notify other server-side code without coupling. Decouples producers from consumers. Sits underneath SSE/WebSocket — answers "how did the server know to push?" <strong>TAP•IP uses <code>pg_notify</code> + LISTEN inside the collab server.</strong></p>
+      </div>
+      <div class="card" style="padding: 18px 22px; border-left: 3px solid #818CF8;">
+        <h4 style="margin: 0 0 6px; color: #818CF8;">Webhooks (external)</h4>
+        <p style="font-size: 14px; margin: 0;">Good for: external services pushing news to us. Stripe payment completed, GitHub merged a PR, SendGrid bounced an email. The external service POSTs to a URL we pre-registered. Always verify the signature. Always return 200 fast.</p>
+      </div>
     </div>
   </section>
 
-  <section class="fade-in d7">
+  <section class="fade-in d10">
     <div class="one-breath">
       <div class="lbl">In one breath</div>
-      <p><strong>Polling = browser pulls on a timer</strong> (simple, wasteful, laggy). <strong>SSE = server pushes one-way</strong> over a long-lived HTTP connection (efficient, auto-reconnects, great for notifications + AI streaming). <strong>WebSockets = both sides push</strong> over a bidirectional connection (great for collab editing). TAP•IP uses <em>SSE</em> for the AI chat streaming + the entity-change live updates, and <em>Socket.IO over WebSockets</em> for the whiteboard collab. The collab server is its own Railway service because long-lived connections scale differently than HTTP request handlers.</p>
+      <p><strong>Browser pulling on a timer = polling</strong> (simple, wasteful, laggy). <strong>Server pushing one-way over a held-open connection = SSE</strong> (efficient, auto-reconnects, great for notifications + AI streaming). <strong>Bidirectional, both sides push = WebSocket</strong> (great for collab editing). <strong>Internal pub/sub = how the server-side code knows an event happened in the first place</strong> — one component publishes, others subscribe, nobody imports anybody. <strong>Webhooks = the external version of pub/sub</strong> — Stripe / GitHub / SendGrid POSTs to a URL we registered. TAP•IP uses <em>SSE</em> for AI streaming + entity-change feeds, <em>Socket.IO</em> for whiteboard collab, and <em>pg_notify</em> as the pub/sub channel underneath. Webhooks aren't in TAP•IP yet — but they're in every product you'll ever build.</p>
     </div>
   </section>
 
@@ -617,6 +948,86 @@ createAnimation({
 
     // 07 — both render
     '<span class="c">// User B + User C both see:</span>\n\n  ⬭   <span class="c">← circle, same x/y/size as User A drew</span>\n\n<span class="c">// Time from User A\'s drag → B + C seeing it: ~30ms</span>',
+  ],
+});
+
+/* ============================================================
+ * ANIMATION 4 — PUB/SUB (8 steps)
+ * Behind the curtain: how the server-side code knows to push
+ * ============================================================ */
+createAnimation({
+  prefix: 'pubsub',
+  STEP_ACTOR: ['server', 'publisher', 'publisher', 'publisher', 'db', 'collab', 'collab', 'browser'],
+  FLOW: [
+    '<strong>01 · Server action writes the row.</strong> <code>createPatent()</code> just inserted a new patent. Before returning, it calls <code>repo.publish(\'create\', \'patent\', patentId)</code> — kicking off the pub/sub chain.',
+    '<strong>02 · Composite Publisher fans out.</strong> The <code>CompositePublisher</code> takes the event and dispatches it to every registered publisher in parallel (<code>Promise.allSettled</code>). One failure can\'t block the others. Today there are two: pg-notify (live) and entity-activity-log (durable audit).',
+    '<strong>03 · pgNotifyPublisher emits.</strong> First subscriber: <code>SELECT pg_notify(\'entity_changes\', json)</code>. Just a SQL statement — but Postgres treats <code>NOTIFY</code> specially: any client that has <code>LISTEN entity_changes</code> open gets the payload pushed at them.',
+    '<strong>04 · (Parallel) entityActivityLogPublisher writes the audit row.</strong> Second subscriber: <code>INSERT INTO entity_activity_log</code>. Durable, queryable, used for compliance reports. Runs at the same time as step 03 — they don\'t block each other.',
+    '<strong>05 · Postgres NOTIFY fires.</strong> The database broadcasts the payload to every connection currently LISTENing on <code>entity_changes</code>. No table involved. No row stored. Just a signal flying through.',
+    '<strong>06 · Collab server receives via LISTEN.</strong> The collab-server container has held a persistent connection open with <code>LISTEN entity_changes</code>. Its <code>notification</code> handler fires the moment Postgres pushes. Parses the JSON, identifies the tenant.',
+    '<strong>07 · Socket.IO fans out to the tenant room.</strong> <code>io.to(\`entity-changes:${tenantId}:all\`).emit(\'entity-change\', event)</code>. Every browser currently logged into that tenant gets the event over its existing Socket.IO connection.',
+    '<strong>08 · Browser refreshes.</strong> The browser\'s <code>socket.on(\'entity-change\')</code> handler fires. Calls <code>router.refresh()</code>. Next.js re-fetches the page data. The new patent appears in the list — without anyone touching anything.',
+  ],
+  PACKETS: [
+    // 01 — publish() called
+    '<span class="c">// frontend/src/lib/repositories/base.ts</span>\n<span class="k">await</span> repo.<span class="p">publish</span>(<span class="s">\'create\'</span>, <span class="s">\'patent\'</span>, patentId)<span class="o">;</span>\n\n<span class="c">// Constructs EntityChangeEvent:</span>\n{\n  <span class="p">action</span>: <span class="s">"create"</span>,\n  <span class="p">entityType</span>: <span class="s">"patent"</span>,\n  <span class="p">entityId</span>: <span class="s">"abc-..."</span>,\n  <span class="p">tenantId</span>: <span class="s">"a1b2-..."</span>,\n  <span class="p">performedBy</span>: <span class="n">42</span>,\n  <span class="p">timestamp</span>: <span class="s">"2026-06-02T22:30:00Z"</span>\n}',
+
+    // 02 — CompositePublisher fan-out
+    '<span class="c">// frontend/src/lib/events/composite-publisher.ts</span>\n<span class="k">async</span> <span class="p">emit</span>(event) {\n  <span class="k">const</span> results = <span class="k">await</span> <span class="p">Promise</span>.<span class="p">allSettled</span>(\n    <span class="k">this</span>.publishers.<span class="p">map</span>((p) => p.<span class="p">emit</span>(event))\n  )<span class="o">;</span>\n  <span class="c">// fans to ALL publishers in parallel</span>\n}',
+
+    // 03 — pg_notify SQL
+    '<span class="c">// frontend/src/lib/repositories/pg-notify-publisher.ts</span>\n<span class="k">const</span> payload = <span class="p">JSON</span>.<span class="p">stringify</span>(event)<span class="o">;</span>\n\n<span class="k">await</span> db.<span class="p">execute</span>(sql<span class="s">`</span>\n  <span class="k">SELECT</span> <span class="p">pg_notify</span>(\n    <span class="s">\'entity_changes\'</span>,\n    ${payload}\n  )\n<span class="s">`</span>)<span class="o">;</span>\n<span class="c">// payload cap: 8000 bytes</span>',
+
+    // 04 — audit log INSERT (parallel)
+    '<span class="c">// frontend/src/lib/repositories/entity-activity-log-publisher.ts\n// (runs in parallel with step 03)</span>\n<span class="k">await</span> db.<span class="p">insert</span>(entityActivityLog).<span class="p">values</span>({\n  <span class="p">tenantId</span>: event.tenantId,\n  <span class="p">action</span>: event.action,\n  <span class="p">entityType</span>: event.entityType,\n  <span class="p">entityId</span>: event.entityId,\n  <span class="p">performedBy</span>: event.performedBy,\n  <span class="p">occurredAt</span>: event.timestamp,\n})<span class="o">;</span>\n<span class="c">// → durable row in entity_activity_log</span>',
+
+    // 05 — Postgres NOTIFY fires
+    '<span class="c">-- inside Postgres, no table involved:</span>\n<span class="k">NOTIFY</span> entity_changes, <span class="s">\'{</span>\n<span class="s">  "action":"create",</span>\n<span class="s">  "entityType":"patent",</span>\n<span class="s">  "entityId":"abc-...",</span>\n<span class="s">  "tenantId":"a1b2-..."</span>\n<span class="s">}\'</span><span class="o">;</span>\n<span class="c">-- broadcast to every LISTENer</span>',
+
+    // 06 — collab-server LISTEN receives
+    '<span class="c">// collab-server/entity-listener.js</span>\nclient.<span class="p">on</span>(<span class="s">\'notification\'</span>, (msg) => {\n  <span class="k">const</span> event = <span class="p">JSON</span>.<span class="p">parse</span>(msg.payload)<span class="o">;</span>\n  <span class="k">const</span> room = <span class="s">`entity-changes:${event.tenantId}:all`</span><span class="o">;</span>\n  <span class="c">// route to right tenant\'s room ↓</span>\n})<span class="o">;</span>',
+
+    // 07 — Socket.IO emit
+    '<span class="c">// Socket.IO fan-out:</span>\nio.<span class="p">to</span>(<span class="s">"entity-changes:a1b2-...:all"</span>)\n  .<span class="p">emit</span>(<span class="s">"entity-change"</span>, event)<span class="o">;</span>\n\n<span class="c">// → broadcast to every browser\n//   currently in that tenant\'s room\n//   over their existing Socket.IO conn</span>',
+
+    // 08 — browser refreshes
+    '<span class="c">// browser-side handler:</span>\nsocket.<span class="p">on</span>(<span class="s">"entity-change"</span>, (event) => {\n  <span class="k">if</span> (event.entityType === <span class="s">"patent"</span>) {\n    router.<span class="p">refresh</span>()<span class="o">;</span>  <span class="c">// Next.js re-fetches</span>\n  }\n})<span class="o">;</span>\n\n<span class="c">// → new patent row appears in the list</span>',
+  ],
+});
+
+/* ============================================================
+ * ANIMATION 5 — WEBHOOKS (6 steps)
+ * External service POSTs to us when something happens on their end
+ * ============================================================ */
+createAnimation({
+  prefix: 'webhook',
+  STEP_ACTOR: ['customer', 'stripe', ['stripe','server'], 'server', ['server','db'], ['server','stripe']],
+  FLOW: [
+    '<strong>01 · Customer enters card details.</strong> They\'re on Stripe Checkout (a Stripe-hosted payment page), not your site. You never touch the card number — that\'s the whole point of using Stripe.',
+    '<strong>02 · Stripe processes the payment.</strong> Their servers talk to Visa / Mastercard / the bank. Takes a few seconds. The customer sees a spinner.',
+    '<strong>03 · Stripe POSTs to our webhook URL.</strong> We registered <code>https://app.tap-ip.com/api/webhooks/stripe</code> in the Stripe dashboard months ago. Now, the moment the payment clears, Stripe sends a JSON POST to that URL with the event payload.',
+    '<strong>04 · Our server verifies the signature.</strong> The POST has a <code>Stripe-Signature</code> header — an HMAC of the body using a secret only we and Stripe know. We re-compute the HMAC, compare. If it doesn\'t match, reject with 400. Without this check, anyone on the internet could forge a "payment received" message.',
+    '<strong>05 · Our server updates the DB.</strong> Find the user by <code>customer_id</code>, set their <code>subscription_status</code> to <code>active</code>, log the payment. This is the "what just happened" persisted.',
+    '<strong>06 · Our server returns 200 OK to Stripe.</strong> Within ~10 seconds, or Stripe assumes failure and retries (exponential backoff, up to 3 days). Don\'t do slow work here — queue it for a background job and return 200 fast.',
+  ],
+  PACKETS: [
+    // 01 — customer pays
+    '<span class="c">// On Stripe\'s checkout page (not your site):</span>\n{\n  <span class="p">customer_email</span>: <span class="s">"alice@example.com"</span>,\n  <span class="p">card_number</span>: <span class="s">"4242 4242 4242 4242"</span>,\n  <span class="p">amount</span>: <span class="n">2000</span>  <span class="c">// $20.00 in cents</span>\n}\n\n<span class="c">// → submits to Stripe\'s servers</span>',
+
+    // 02 — Stripe processes
+    '<span class="c">// Inside Stripe (we never see this):</span>\n<span class="p">processPayment</span>({\n  card: <span class="s">"4242..."</span>,\n  amount: <span class="n">2000</span>,\n  currency: <span class="s">"usd"</span>\n})<span class="o">;</span>\n<span class="c">// → bank approves, payment settles\n// → Stripe creates a payment_intent record</span>',
+
+    // 03 — Stripe POSTs to our URL
+    'POST https://app.tap-ip.com/api/webhooks/stripe\nContent-Type: application/json\nStripe-Signature: t=1733180000,v1=4f8e3...\n\n{\n  <span class="p">"id"</span>: <span class="s">"evt_1QXyZ..."</span>,\n  <span class="p">"type"</span>: <span class="s">"checkout.session.completed"</span>,\n  <span class="p">"data"</span>: {\n    <span class="p">"object"</span>: {\n      <span class="p">"id"</span>: <span class="s">"cs_..."</span>,\n      <span class="p">"customer"</span>: <span class="s">"cus_..."</span>,\n      <span class="p">"amount_total"</span>: <span class="n">2000</span>\n    }\n  }\n}',
+
+    // 04 — verify signature
+    '<span class="c">// app/api/webhooks/stripe/route.ts</span>\n<span class="k">const</span> sig = req.headers.<span class="p">get</span>(<span class="s">"Stripe-Signature"</span>)<span class="o">;</span>\n<span class="k">const</span> body = <span class="k">await</span> req.<span class="p">text</span>()<span class="o">;</span>\n\n<span class="k">const</span> event = stripe.webhooks.<span class="p">constructEvent</span>(\n  body, sig, <span class="p">process</span>.env.STRIPE_WEBHOOK_SECRET\n)<span class="o">;</span>\n<span class="c">// throws if HMAC mismatch → return 400</span>',
+
+    // 05 — update DB
+    '<span class="k">await</span> db.<span class="p">update</span>(users)\n  .<span class="p">set</span>({\n    <span class="p">subscription_status</span>: <span class="s">"active"</span>,\n    <span class="p">stripe_customer_id</span>: event.data.object.customer,\n    <span class="p">last_payment_at</span>: <span class="k">new</span> <span class="p">Date</span>(),\n  })\n  .<span class="p">where</span>(<span class="p">eq</span>(users.email, customer_email))<span class="o">;</span>\n<span class="c">// → row updated</span>',
+
+    // 06 — 200 OK back to Stripe
+    'HTTP/2 <span class="n">200</span> OK\nContent-Type: application/json\n\n{ <span class="p">"received"</span>: <span class="k">true</span> }\n\n<span class="c">// Stripe marks webhook delivered\n// If we returned anything else, Stripe retries:\n//   1st retry: ~5s\n//   2nd retry: ~5min\n//   ...up to 3 days, exponential backoff</span>',
   ],
 });
 </script>

@@ -31,6 +31,11 @@ const GLOSSARY = {
   socketio: { term: 'Socket.IO', short: 'A JavaScript library built on WebSockets that adds rooms, automatic reconnection, and fallbacks. TAP•IP\'s whiteboard collab uses it.' },
   fanout: { term: 'Fan-out', short: 'When one input becomes many outputs. A server "fans out" a single event to every connected browser in a room — one message becomes N broadcasts.' },
   broadcast: { term: 'Broadcast', short: 'Sending one message to many recipients at once. The Socket.IO server broadcasts a draw op to every other user in the room so they all see the same canvas.' },
+  pubsub: { term: 'Pub/Sub (Publish/Subscribe)', short: 'Pattern where senders emit events to a channel without knowing the receivers. Receivers subscribe to channels they care about. Decouples producers from consumers — they don\'t even import each other.' },
+  pg_notify: { term: 'pg_notify (Postgres NOTIFY/LISTEN)', short: 'A pub/sub channel built into Postgres. One side runs SELECT pg_notify(\'channel\', payload). Anyone with LISTEN open gets the payload pushed. 8KB cap per message. TAP•IP uses it so we don\'t need Redis.' },
+  webhook: { term: 'Webhook', short: 'When one server pushes data to another over HTTP. The receiver pre-registers a URL. The sender POSTs there when something happens. Inverse of an API call: instead of us asking them, they POST to us.' },
+  messagequeue: { term: 'Message queue', short: 'A buffer between producers and consumers for async work. Producer enqueues a job; worker pulls and runs it. Different from pub/sub: each message goes to one consumer, not broadcast.' },
+  celery: { term: 'Celery', short: 'Python task queue library. Workers read jobs from Redis or RabbitMQ. TAP•IP uses Celery for document processing (virus scan, text extraction, thumbnails, indexing).' },
 };
 
 // Pill tooltips — delegated so pills created later (animation FLOW/PACKETS) also work
