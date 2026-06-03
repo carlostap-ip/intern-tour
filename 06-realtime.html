@@ -222,7 +222,7 @@
 
   <section class="fade-in d2">
     <div class="note">
-      <p style="margin: 0;"><strong>Why this matters.</strong> The internet was designed for one direction: browsers ASK servers for things, servers REPLY. Browsers can't be "called." Pushing updates the other way — server → browser — required clever tricks. Three tricks now dominate: <strong>polling</strong>, <strong>SSE</strong>, and <strong>WebSockets</strong>. Each animation below shows one in action.</p>
+      <p style="margin: 0;"><strong>Why this matters.</strong> The internet was designed for one direction: browsers ASK servers for things, servers REPLY. Browsers can't be "called." Pushing updates the other way — server → browser — required clever tricks. Three tricks now dominate: <span class="pill" data-term="polling">polling</span>, <span class="pill" data-term="sse">SSE</span>, and <span class="pill" data-term="websocket">WebSockets</span>. Each animation below shows one in action.</p>
     </div>
   </section>
 
@@ -320,7 +320,7 @@
       <div class="flow-packet" data-packet="sse"><span class="c">// Press ▶ Play — the actual payload at each step appears here.</span></div>
     </div>
 
-    <p style="margin-top: 22px; color: var(--type-tertiary);">One open connection. Zero wasted calls. Sub-second latency. <strong>TAP•IP uses SSE for the AI chat streaming</strong> — the model's tokens appear in your UI <em>as they're generated</em>, not after the whole response finishes. The <code>entity_changes</code> pipeline also fans out through SSE to update lists when other users add rows.</p>
+    <p style="margin-top: 22px; color: var(--type-tertiary);">One open connection. Zero wasted calls. Sub-second latency. <strong>TAP•IP uses SSE for the AI chat streaming</strong> — the model's tokens appear in your UI <em>as they're generated</em>, not after the whole response finishes. The <code>entity_changes</code> pipeline also <span class="pill" data-term="fanout">fans out</span> through SSE to update lists when other users add rows.</p>
   </section>
 
   <hr/>
@@ -329,7 +329,7 @@
   <section class="fade-in d5 anim-section anim-3" id="anim-whiteboard">
     <div class="anim-tag">Animation 3 of 3</div>
     <h3 class="feature-title">The whiteboard — <em>three users, one canvas</em>.</h3>
-    <p>SSE is one-way: server → browser. For real-time collaboration, the browser also needs to PUSH (your edits) and the server needs to FAN OUT (to all the other browsers). That's <span class="pill" data-term="websocket">WebSockets</span> — a bidirectional connection. TAP•IP's whiteboard uses <strong>Socket.IO</strong> (a WebSocket library) running in a separate "collab server" container.</p>
+    <p>SSE is one-way: server → browser. For real-time collaboration, the browser also needs to PUSH (your edits) and the server needs to <span class="pill" data-term="fanout">fan out</span> (to all the other browsers). That's <span class="pill" data-term="websocket">WebSockets</span> — a bidirectional connection. TAP•IP's whiteboard uses <span class="pill" data-term="socketio">Socket.IO</span> (a WebSocket library) running in a separate "collab server" container.</p>
 
     <p>User A draws a circle. Watch how it ends up on User B's and User C's screens — without anyone refreshing anything.</p>
 
@@ -591,7 +591,7 @@ createAnimation({
     '<strong>01 · User A draws.</strong> User A is on the whiteboard at <code>/lab/notebook/wb-42</code>. They drag a circle onto the canvas. Excalidraw fires a local "scene change" event.',
     '<strong>02 · Browser A emits over the socket.</strong> The whiteboard wrapper calls <code>socket.emit(\'scene_update\', { boardId, op, element })</code>. The op flies up the WebSocket to the collab server.',
     '<strong>03 · Collab server receives.</strong> Socket.IO routes the incoming op to the handler for room <code>wb-42</code>. The server doesn\'t persist this op (the canvas itself is autosaved separately) — it just relays.',
-    '<strong>04 · Server broadcasts to the room.</strong> The collab server emits <code>scene_update</code> to <em>every other socket</em> in room <code>wb-42</code> — that\'s users B and C. User A is excluded from the broadcast (they already have the change locally).',
+    '<strong>04 · Server <span class="pill" data-term="broadcast">broadcasts</span> to the room.</strong> The collab server emits <code>scene_update</code> to <em>every other socket</em> in room <code>wb-42</code> — that\'s users B and C. User A is excluded from the broadcast (they already have the change locally).',
     '<strong>05 · Browser B receives.</strong> User B\'s <code>socket.on(\'scene_update\')</code> fires. The handler hands the op to Excalidraw\'s scene-reconciliation logic.',
     '<strong>06 · Browser C receives.</strong> Same event, same instant. User C\'s screen also gets the op.',
     '<strong>07 · Both render the circle.</strong> Within milliseconds, both User B and User C see the same circle User A drew. Without refreshing. Without clicking anything. That\'s real-time collab.',
@@ -601,7 +601,7 @@ createAnimation({
     '<span class="c">// Excalidraw scene-change handler fires:</span>\n{\n  <span class="p">type</span>: <span class="s">"add"</span>,\n  <span class="p">element</span>: {\n    <span class="p">type</span>: <span class="s">"ellipse"</span>,\n    <span class="p">x</span>: <span class="n">340</span>, <span class="p">y</span>: <span class="n">220</span>,\n    <span class="p">width</span>: <span class="n">120</span>, <span class="p">height</span>: <span class="n">120</span>\n  }\n}',
 
     // 02 — browser emits over socket
-    '<span class="c">// Browser A's whiteboard wrapper:</span>\nsocket.<span class="p">emit</span>(<span class="s">\'scene_update\'</span>, {\n  <span class="p">boardId</span>: <span class="s">"wb-42"</span>,\n  <span class="p">userId</span>: <span class="n">42</span>,\n  <span class="p">op</span>: { <span class="p">type</span>: <span class="s">"add"</span>, <span class="p">element</span>: {...} }\n})<span class="o">;</span>\n<span class="c">// → WebSocket frame to collab server</span>',
+    '<span class="c">// Browser A\'s whiteboard wrapper:</span>\nsocket.<span class="p">emit</span>(<span class="s">\'scene_update\'</span>, {\n  <span class="p">boardId</span>: <span class="s">"wb-42"</span>,\n  <span class="p">userId</span>: <span class="n">42</span>,\n  <span class="p">op</span>: { <span class="p">type</span>: <span class="s">"add"</span>, <span class="p">element</span>: {...} }\n})<span class="o">;</span>\n<span class="c">// → WebSocket frame to collab server</span>',
 
     // 03 — collab server receives
     '<span class="c">// collab-server/index.ts (Socket.IO):</span>\nsocket.<span class="p">on</span>(<span class="s">\'scene_update\'</span>, (msg) => {\n  <span class="c">// msg arrives here\n  // no DB write — pure relay</span>\n  <span class="c">// route to broadcaster ↓</span>\n})<span class="o">;</span>',

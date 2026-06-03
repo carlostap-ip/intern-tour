@@ -25,14 +25,55 @@ const GLOSSARY = {
   typescript: { term: 'TypeScript', short: 'JavaScript with type annotations. The compiler catches type bugs before code runs.' },
   frontend: { term: 'Frontend', short: 'Code that runs in the browser. What the user sees and clicks.' },
   backend: { term: 'Backend', short: 'Code that runs on the server. Talks to the database, runs business logic.' },
+  polling: { term: 'Polling', short: 'The browser asks the server "anything new?" every few seconds. Simple but wasteful — most polls return nothing.' },
+  sse: { term: 'SSE (Server-Sent Events)', short: 'A long-lived HTTP connection where the server pushes events to the browser when they happen. One-way: server → browser.' },
+  websocket: { term: 'WebSocket', short: 'A full-duplex connection between browser and server. Both sides can push at any time. Used for chat, collab editing, multiplayer games.' },
+  socketio: { term: 'Socket.IO', short: 'A JavaScript library built on WebSockets that adds rooms, automatic reconnection, and fallbacks. TAP•IP\'s whiteboard collab uses it.' },
+  fanout: { term: 'Fan-out', short: 'When one input becomes many outputs. A server "fans out" a single event to every connected browser in a room — one message becomes N broadcasts.' },
+  broadcast: { term: 'Broadcast', short: 'Sending one message to many recipients at once. The Socket.IO server broadcasts a draw op to every other user in the room so they all see the same canvas.' },
 };
 
-// Pill tooltips
+// Pill tooltips — delegated so pills created later (animation FLOW/PACKETS) also work
 (function initPills() {
   const tip = document.createElement('div');
   tip.className = 'tooltip';
   document.body.appendChild(tip);
 
+  const showFor = (pill) => {
+    const k = pill.getAttribute('data-term');
+    const entry = GLOSSARY[k];
+    if (!entry) return;
+    tip.textContent = entry.short;
+    const r = pill.getBoundingClientRect();
+    tip.style.left = (r.left + window.scrollX) + 'px';
+    tip.style.top = (r.bottom + window.scrollY + 8) + 'px';
+    tip.classList.add('show');
+  };
+  const hide = () => tip.classList.remove('show');
+
+  // Delegated mouse/focus events handle both static and dynamically-created pills
+  document.body.addEventListener('mouseover', (e) => {
+    const pill = e.target.closest && e.target.closest('.pill');
+    if (pill) showFor(pill);
+  });
+  document.body.addEventListener('mouseout', (e) => {
+    if (e.target.closest && e.target.closest('.pill')) hide();
+  });
+  document.body.addEventListener('focusin', (e) => {
+    const pill = e.target.closest && e.target.closest('.pill');
+    if (pill) showFor(pill);
+  });
+  document.body.addEventListener('focusout', (e) => {
+    if (e.target.closest && e.target.closest('.pill')) hide();
+  });
+  document.body.addEventListener('click', (e) => {
+    const pill = e.target.closest && e.target.closest('.pill');
+    if (!pill) return;
+    const k = pill.getAttribute('data-term');
+    if (GLOSSARY[k]) window.location.href = `15-glossary.html#gloss-${k}`;
+  });
+
+  // Add accessibility attributes to any static pills present at load time
   document.querySelectorAll('.pill').forEach(pill => {
     const k = pill.getAttribute('data-term');
     const entry = GLOSSARY[k];
@@ -40,21 +81,6 @@ const GLOSSARY = {
     pill.setAttribute('tabindex', '0');
     pill.setAttribute('role', 'button');
     pill.setAttribute('aria-label', `Glossary: ${entry.term}`);
-    const show = () => {
-      tip.textContent = entry.short;
-      const r = pill.getBoundingClientRect();
-      tip.style.left = (r.left + window.scrollX) + 'px';
-      tip.style.top = (r.bottom + window.scrollY + 8) + 'px';
-      tip.classList.add('show');
-    };
-    const hide = () => tip.classList.remove('show');
-    pill.addEventListener('mouseenter', show);
-    pill.addEventListener('focus', show);
-    pill.addEventListener('mouseleave', hide);
-    pill.addEventListener('blur', hide);
-    pill.addEventListener('click', () => {
-      window.location.href = `13-glossary.html#gloss-${k}`;
-    });
   });
 })();
 
