@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="robots" content="noindex, nofollow" />
-<title>D5 · Why the lakehouse wins — TAP•IP Tour</title>
+<title>D6 · Why the lakehouse wins — TAP•IP Tour</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 <link rel="icon" type="image/x-icon" href="favicon.ico" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
@@ -48,14 +48,15 @@
     <a href="d2-pipeline.html">D2</a>
     <a href="d3-cube.html">D3</a>
     <a href="d4-entity-resolution.html">D4</a>
-    <a href="d5-why-lakehouse.html" class="current">D5</a>
+    <a href="d5-semantic-search.html">D5</a>
+    <a href="d6-why-lakehouse.html" class="current">D6</a>
   </nav>
 </header>
 
 <main>
 
   <header class="chapter-head fade-in d1">
-    <div class="chapter-num">D5</div>
+    <div class="chapter-num">D6</div>
     <div class="chapter-info">
       <div class="eyebrow">Track II · The data engine · ~6 min</div>
       <h2 class="section-title">Why the modern lakehouse <em>wins</em>.</h2>
@@ -91,7 +92,7 @@
       <div class="card" style="border-color: rgba(99,102,241,0.3); background: linear-gradient(180deg, rgba(99,102,241,0.05), transparent);">
         <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--indigo); margin-bottom: 10px;">Idea 4</div>
         <div style="font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--type-primary); margin-bottom: 10px;">Right engine per query shape.</div>
-        <p style="font-size: 14px; margin: 0;">No single engine is best at everything. <span class="pill" data-term="tantivy">Tantivy</span> handles full-text search (inverted-index queries); <span class="pill" data-term="duckdb">DuckDB</span> handles analytics and point lookups (columnar scans and GROUP BYs). Routing queries to the right engine is what makes each one fast — and avoids the trap of forcing one tool to do everything.</p>
+        <p style="font-size: 14px; margin: 0;">No single engine is best at everything. <span class="pill" data-term="tantivy">Tantivy</span> handles full-text search (inverted-index queries); <span class="pill" data-term="sqlite">SQLite</span> handles point lookups and family/citation joins (B-tree index seeks); <span class="pill" data-term="duckdb">DuckDB</span> handles analytics (columnar scans and GROUP BYs). Routing each query to the right engine is what makes each one fast — and avoids the trap of forcing one tool to do everything.</p>
       </div>
 
       <div class="card" style="border-color: rgba(139,92,246,0.3); background: linear-gradient(180deg, rgba(139,92,246,0.05), transparent); grid-column: span 1;">
@@ -142,9 +143,9 @@
   </section>
 
   <nav class="chapter-foot">
-    <a href="d4-entity-resolution.html" class="foot-link prev">
+    <a href="d5-semantic-search.html" class="foot-link prev">
       <span class="lbl">← Previous</span>
-      <span class="tt">D4 · Entity resolution</span>
+      <span class="tt">D5 · Semantic search</span>
     </a>
     <a href="index.html#data-track" class="foot-link next">
       <span class="lbl">Back to the index →</span>

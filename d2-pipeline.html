@@ -59,7 +59,8 @@
     <a href="d2-pipeline.html" class="current">D2</a>
     <a href="d3-cube.html">D3</a>
     <a href="d4-entity-resolution.html">D4</a>
-    <a href="d5-why-lakehouse.html">D5</a>
+    <a href="d5-semantic-search.html">D5</a>
+    <a href="d6-why-lakehouse.html">D6</a>
   </nav>
 </header>
 
@@ -176,8 +177,8 @@ flowchart LR
       </div>
       <div class="card" style="border-color: rgba(34,211,238,0.25); background: linear-gradient(180deg, rgba(34,211,238,0.05), transparent);">
         <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); margin-bottom: 10px;">Artifact 2</div>
-        <div style="font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--type-primary); margin-bottom: 8px;">Lean lookup DB.</div>
-        <p style="font-size: 14px; margin: 0;">Answers: "give me everything about patent EP1234567." Point lookups by patent number, plus citation graph edges and family groupings. Optimized for narrow, known-key reads.</p>
+        <div style="font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--type-primary); margin-bottom: 8px;">Lean lookup DB <span style="font-family: var(--font-mono); font-size: 12px; font-style: normal; color: var(--cyan);">· SQLite</span></div>
+        <p style="font-size: 14px; margin: 0;">Answers: "give me everything about patent EP1234567." Point lookups by patent number, plus citation graph edges and family groupings. A <span class="pill" data-term="sqlite">SQLite</span> file with B-tree <span class="pill" data-term="dbindex">indexes</span> — built so a query jumps straight to the row instead of scanning. (DuckDB builds this file; SQLite serves it.)
       </div>
       <div class="card" style="border-color: rgba(99,102,241,0.25); background: linear-gradient(180deg, rgba(99,102,241,0.05), transparent);">
         <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--indigo); margin-bottom: 10px;">Artifact 3</div>

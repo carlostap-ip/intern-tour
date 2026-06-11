@@ -59,7 +59,8 @@
     <a href="d2-pipeline.html">D2</a>
     <a href="d3-cube.html">D3</a>
     <a href="d4-entity-resolution.html">D4</a>
-    <a href="d5-why-lakehouse.html">D5</a>
+    <a href="d5-semantic-search.html">D5</a>
+    <a href="d6-why-lakehouse.html">D6</a>
   </nav>
 </header>
 
@@ -173,14 +174,14 @@ flowchart LR
 </pre>
     </div>
 
-    <p>Raw patent data arrives from <strong>EPO BDDS</strong> (free public area, no auth) and <strong>USPTO</strong> bulk data. It lands in Cloudflare R2 as <span class="pill" data-term="parquet">Parquet</span> files — the lake. A build step uses <span class="pill" data-term="duckdb">DuckDB</span> to transform, deduplicate, and pre-aggregate the data into four serving artifacts: a <span class="pill" data-term="tantivy">Tantivy</span> full-text search index, a lean lookup DB, a slim analytics table, and the <span class="pill" data-term="cube">cube</span>. Those artifacts power the API that the TAP•IP app calls.</p>
+    <p>Raw patent data arrives from <strong>EPO BDDS</strong> (free public area, no auth) and <strong>USPTO</strong> bulk data. It lands in Cloudflare R2 as <span class="pill" data-term="parquet">Parquet</span> files — the lake. A build step uses <span class="pill" data-term="duckdb">DuckDB</span> to transform, deduplicate, and pre-aggregate the data into four serving artifacts: a <span class="pill" data-term="tantivy">Tantivy</span> full-text search index, a lean <span class="pill" data-term="sqlite">SQLite</span> lookup DB, a slim analytics table, and the <span class="pill" data-term="cube">cube</span>. Those artifacts power the API that the TAP•IP app calls.</p>
   </section>
 
   <hr/>
 
   <section class="fade-in d6">
     <div class="note">
-      <p style="margin: 0;"><strong>Each box gets its own page next.</strong> <a href="d2-pipeline.html">D2</a> walks the full ingest pipeline — how raw XML from the patent offices becomes clean Parquet on R2. <a href="d3-cube.html">D3</a> explains what the <span class="pill" data-term="cube">cube</span> is and why pre-aggregation matters. <a href="d4-entity-resolution.html">D4</a> covers <span class="pill" data-term="entityresolution">entity resolution</span> — how we figure out that "Samsung Electronics Co., Ltd." and "SAMSUNG ELECTRONICS" are the same company. <a href="d5-why-lakehouse.html">D5</a> closes the loop on why this whole approach wins over a traditional warehouse at our scale.</p>
+      <p style="margin: 0;"><strong>Each box gets its own page next.</strong> <a href="d2-pipeline.html">D2</a> walks the full ingest pipeline — how raw XML from the patent offices becomes clean Parquet on R2. <a href="d3-cube.html">D3</a> explains what the <span class="pill" data-term="cube">cube</span> is and why pre-aggregation matters. <a href="d4-entity-resolution.html">D4</a> covers <span class="pill" data-term="entityresolution">entity resolution</span> — how we figure out that "Samsung Electronics Co., Ltd." and "SAMSUNG ELECTRONICS" are the same company. <a href="d5-semantic-search.html">D5</a> looks at semantic search — finding patents by meaning, not just keywords. <a href="d6-why-lakehouse.html">D6</a> closes the loop on why this whole approach wins over a traditional warehouse at our scale.</p>
     </div>
   </section>
 
