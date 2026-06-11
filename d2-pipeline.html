@@ -178,7 +178,7 @@ flowchart LR
       <div class="card" style="border-color: rgba(34,211,238,0.25); background: linear-gradient(180deg, rgba(34,211,238,0.05), transparent);">
         <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); margin-bottom: 10px;">Artifact 2</div>
         <div style="font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--type-primary); margin-bottom: 8px;">Lean lookup DB <span style="font-family: var(--font-mono); font-size: 12px; font-style: normal; color: var(--cyan);">· SQLite</span></div>
-        <p style="font-size: 14px; margin: 0;">Answers: "give me everything about patent EP1234567." Point lookups by patent number, plus citation graph edges and family groupings. A <span class="pill" data-term="sqlite">SQLite</span> file with B-tree <span class="pill" data-term="dbindex">indexes</span> — built so a query jumps straight to the row instead of scanning. (DuckDB builds this file; SQLite serves it.)</p>
+        <p style="font-size: 14px; margin: 0;">Answers: "give me everything about patent EP1234567." Point lookups by patent number, plus citation graph edges and family groupings. A <span class="pill" data-term="sqlite">SQLite</span> file with B-tree <span class="pill" data-term="dbindex">indexes</span> — built so a query jumps straight to the row instead of scanning. It deliberately leaves out the bulky text (like the abstract); when someone needs that, it's fetched from the <span class="pill" data-term="parquet">Parquet</span> lake on demand. That's the <em>lean</em> — it keeps the file small enough to sit on the serve box. (DuckDB builds this file; SQLite serves it.)</p>
       </div>
       <div class="card" style="border-color: rgba(99,102,241,0.25); background: linear-gradient(180deg, rgba(99,102,241,0.05), transparent);">
         <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--indigo); margin-bottom: 10px;">Artifact 3</div>
@@ -193,6 +193,8 @@ flowchart LR
     </div>
 
     <p>Each artifact is built once during the rebuild cycle, then published to R2. The always-on serve box pulls them and uses them to answer queries without ever touching the raw lake again.</p>
+
+    <p style="color: var(--type-tertiary); font-size: 14px;">(In practice the serve box carries a little more than four files — for example a second small <span class="pill" data-term="sqlite">SQLite</span> sidecar that stores a pre-computed "strength" score for each patent. But these four are the load-bearing ones; the rest follow the same build-once-then-serve pattern.)</p>
   </section>
 
   <hr/>
