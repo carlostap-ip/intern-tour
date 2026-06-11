@@ -40,6 +40,147 @@
   .service-row .meta { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); margin-bottom: 8px; }
   .service-row p { margin: 0; font-size: 14px; }
   .service-row p + p { margin-top: 8px; }
+
+  /* ── Actor cards (pipeline widget) ───────────────────────── */
+  .actor-track-5 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 12px;
+    align-items: stretch;
+    margin-bottom: 24px;
+  }
+  .actor-track-4 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 12px;
+    align-items: stretch;
+    margin-bottom: 24px;
+  }
+  .actor-card {
+    padding: 18px 16px;
+    background: var(--bg-deep);
+    border: 1px solid var(--line-soft);
+    border-radius: 12px;
+    text-align: center;
+    transition: all .35s var(--ease-out);
+    opacity: 0.55;
+  }
+  .actor-card.active { opacity: 1; transform: translateY(-2px); }
+  .actor-card .ac-icon { font-size: 28px; line-height: 1; margin-bottom: 8px; }
+  .actor-card .ac-name { font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--type-primary); line-height: 1.1; }
+  .actor-card .ac-sub  { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--type-tertiary); margin-top: 4px; }
+
+  /* Per-actor active colors — embed widget */
+  .actor-card[data-actor="text"].active {
+    background: linear-gradient(135deg, rgba(34,211,238,0.18), rgba(34,211,238,0.04));
+    border-color: var(--cyan);
+    box-shadow: 0 0 30px -4px rgba(34,211,238,0.45);
+  }
+  .actor-card[data-actor="text"].active .ac-sub { color: var(--cyan); }
+
+  .actor-card[data-actor="model"].active {
+    background: linear-gradient(135deg, rgba(139,92,246,0.18), rgba(139,92,246,0.04));
+    border-color: var(--violet-glow);
+    box-shadow: 0 0 30px -4px rgba(139,92,246,0.45);
+  }
+  .actor-card[data-actor="model"].active .ac-sub { color: var(--violet-glow); }
+
+  .actor-card[data-actor="vector"].active {
+    background: linear-gradient(135deg, rgba(252,211,77,0.15), rgba(252,211,77,0.04));
+    border-color: var(--gold);
+    box-shadow: 0 0 30px -4px rgba(252,211,77,0.45);
+  }
+  .actor-card[data-actor="vector"].active .ac-sub { color: var(--gold); }
+
+  .actor-card[data-actor="space"].active {
+    background: linear-gradient(135deg, rgba(196,181,253,0.18), rgba(196,181,253,0.04));
+    border-color: #C4B5FD;
+    box-shadow: 0 0 30px -4px rgba(196,181,253,0.45);
+  }
+  .actor-card[data-actor="space"].active .ac-sub { color: #C4B5FD; }
+
+  /* Per-actor active colors — search widget */
+  .actor-card[data-actor="query"].active {
+    background: linear-gradient(135deg, rgba(34,211,238,0.18), rgba(34,211,238,0.04));
+    border-color: var(--cyan);
+    box-shadow: 0 0 30px -4px rgba(34,211,238,0.45);
+  }
+  .actor-card[data-actor="query"].active .ac-sub { color: var(--cyan); }
+
+  .actor-card[data-actor="qmodel"].active {
+    background: linear-gradient(135deg, rgba(139,92,246,0.18), rgba(139,92,246,0.04));
+    border-color: var(--violet-glow);
+    box-shadow: 0 0 30px -4px rgba(139,92,246,0.45);
+  }
+  .actor-card[data-actor="qmodel"].active .ac-sub { color: var(--violet-glow); }
+
+  .actor-card[data-actor="qvector"].active {
+    background: linear-gradient(135deg, rgba(252,211,77,0.15), rgba(252,211,77,0.04));
+    border-color: var(--gold);
+    box-shadow: 0 0 30px -4px rgba(252,211,77,0.45);
+  }
+  .actor-card[data-actor="qvector"].active .ac-sub { color: var(--gold); }
+
+  .actor-card[data-actor="annindex"].active {
+    background: linear-gradient(135deg, rgba(129,140,248,0.18), rgba(129,140,248,0.04));
+    border-color: #818CF8;
+    box-shadow: 0 0 30px -4px rgba(129,140,248,0.45);
+  }
+  .actor-card[data-actor="annindex"].active .ac-sub { color: #818CF8; }
+
+  .actor-card[data-actor="results"].active {
+    background: linear-gradient(135deg, rgba(34,211,238,0.15), rgba(34,211,238,0.04));
+    border-color: var(--cyan);
+    box-shadow: 0 0 30px -4px rgba(34,211,238,0.45);
+  }
+  .actor-card[data-actor="results"].active .ac-sub { color: var(--cyan); }
+
+  @media (max-width: 1024px) {
+    .actor-track-5 { grid-template-columns: 1fr 1fr 1fr; }
+    .actor-track-4 { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 768px) {
+    .actor-track-5 { grid-template-columns: 1fr; }
+    .actor-track-4 { grid-template-columns: 1fr; }
+  }
+
+  /* ── Data packet panel ──────────────────────────────────── */
+  .packet-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--violet-glow);
+    margin: 22px 0 8px;
+  }
+  .flow-packet {
+    background: var(--bg-deep);
+    border: 1px solid var(--line-soft);
+    border-left: 3px solid var(--violet-glow);
+    border-radius: 12px;
+    padding: 18px 22px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.75;
+    color: var(--type-secondary);
+    overflow-x: auto;
+    white-space: pre;
+    min-height: 60px;
+  }
+  .flow-packet .k { color: #A78BFA; }
+  .flow-packet .s { color: #67E8F9; }
+  .flow-packet .n { color: #FCD34D; }
+  .flow-packet .c { color: var(--type-tertiary); font-style: italic; }
+  .flow-packet .p { color: var(--cyan); }
+  .flow-packet .o { color: var(--type-tertiary); }
+  @media (max-width: 768px) { .flow-packet { padding: 14px 16px; font-size: 11.5px; } }
+
+  /* ── Flow-steps column overrides for D5 widgets ── */
+  .embed-anim .flow-steps { grid-template-columns: repeat(5, 1fr) !important; }
+  @media (max-width: 768px) { .embed-anim .flow-steps { grid-template-columns: repeat(3, 1fr) !important; } }
+
+  .search-anim .flow-steps { grid-template-columns: repeat(6, 1fr) !important; }
+  @media (max-width: 768px) { .search-anim .flow-steps { grid-template-columns: repeat(3, 1fr) !important; } }
 </style>
 </head>
 <body>
@@ -69,7 +210,7 @@
   <header class="chapter-head fade-in d1">
     <div class="chapter-num">D5</div>
     <div class="chapter-info">
-      <div class="eyebrow">Track II · The data engine · ~8 min</div>
+      <div class="eyebrow">Track II · The data engine · ~11 min</div>
       <h2 class="section-title">Semantic search — <em>finding by meaning</em>.</h2>
       <p class="lede">Keyword search finds the words you typed. Semantic search finds what you meant — even when the patent never uses your words.</p>
     </div>
@@ -97,6 +238,51 @@
     <p>An <span class="pill" data-term="embedding">embedding</span> is a list of numbers — a vector — that a model produces by reading a piece of text. The key property: texts with similar meaning get vectors that sit close together in that numeric space; texts with unrelated meaning sit far apart. The model has been trained to place meaning into geometry.</p>
 
     <p>Think of it this way: every patent is placed as a point in a huge space with many dimensions. Patents about electrochemical energy storage cluster in one region. Patents about autonomous vehicle control cluster in another. When two patents are about related inventions — even if they use completely different words — they land near each other. Vocabulary no longer matters; only meaning does.</p>
+
+    <!-- TASK 1: "What is a vector?" instructive SVG visual -->
+    <div style="background: var(--bg-surface); border: 1px solid var(--line-soft); border-radius: 14px; padding: 28px 24px; margin: 28px auto; max-width: 540px;">
+      <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--type-tertiary); margin-bottom: 16px;">Meaning space — a 2-D slice</div>
+      <svg viewBox="0 0 520 300" width="100%" style="display:block; overflow:visible;" aria-label="2-D meaning space showing patent points by semantic similarity">
+        <!-- Grid lines (subtle) -->
+        <defs>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+          </pattern>
+        </defs>
+        <rect width="520" height="300" fill="url(#grid)" rx="8"/>
+
+        <!-- Axis labels (decorative, faint) -->
+        <text x="260" y="292" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="9" fill="rgba(255,255,255,0.2)" letter-spacing="0.12em">← materials ·············· mechanical →</text>
+        <text x="10" y="150" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="9" fill="rgba(255,255,255,0.2)" letter-spacing="0.10em" transform="rotate(-90 10 150)">← energy ·· control →</text>
+
+        <!-- Proximity arc between the two similar patents -->
+        <path d="M 148 108 Q 178 88 210 106" fill="none" stroke="rgba(34,211,238,0.25)" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+        <!-- Point: self-healing polymer -->
+        <circle cx="148" cy="110" r="6" fill="var(--cyan)" opacity="0.9"/>
+        <text x="155" y="100" font-family="'Geist Mono', monospace" font-size="10" fill="var(--cyan)">"self-healing polymer"</text>
+
+        <!-- Point: autonomously repairing elastomer (close neighbor) -->
+        <circle cx="212" cy="108" r="6" fill="var(--cyan)" opacity="0.75"/>
+        <text x="220" y="98" font-family="'Geist Mono', monospace" font-size="10" fill="var(--cyan)">"autonomously repairing elastomer"</text>
+
+        <!-- "neighbor" callout -->
+        <text x="178" y="82" text-anchor="middle" font-family="'Geist Mono', monospace" font-size="9" fill="rgba(34,211,238,0.55)">neighbors ↑</text>
+
+        <!-- Point: lithium battery cathode -->
+        <circle cx="90" cy="195" r="6" fill="#A78BFA" opacity="0.9"/>
+        <text x="98" y="193" font-family="'Geist Mono', monospace" font-size="10" fill="#A78BFA">"lithium battery cathode"</text>
+
+        <!-- Point: wind-turbine gearbox -->
+        <circle cx="390" cy="155" r="6" fill="#FCD34D" opacity="0.9"/>
+        <text x="398" y="153" font-family="'Geist Mono', monospace" font-size="10" fill="#FCD34D">"wind-turbine gearbox"</text>
+
+        <!-- Point: diesel fuel injector -->
+        <circle cx="360" cy="225" r="6" fill="rgba(255,255,255,0.35)" opacity="0.9"/>
+        <text x="368" y="223" font-family="'Geist Mono', monospace" font-size="10" fill="rgba(255,255,255,0.4)">"diesel fuel injector"</text>
+      </svg>
+      <p style="margin: 14px 0 0; font-family: var(--font-mono); font-size: 11px; color: var(--type-tertiary); line-height: 1.6; text-align: center;">Every patent becomes a point. Closeness = similar meaning. The model places them; nobody picks the axes by hand.</p>
+    </div>
 
     <p>The embedding model we use is <strong>PaECTER</strong>, a patent-domain text-embedding model released under the Apache-2.0 license. Because PaECTER was trained specifically on patent literature, it understands the vocabulary and writing conventions of patents — claim language, technical jargon, the particular structure of abstracts — far better than a general-purpose model would. Every patent in the corpus is passed through PaECTER to produce its embedding vector.</p>
 
@@ -126,6 +312,54 @@ flowchart LR
     </div>
 
     <p>The same model processes both patent text at build time and user queries at search time. This is essential — vectors are only comparable when they come from the same embedding space. Use two different models (or two different versions of the same model) and the coordinates are incommensurable.</p>
+
+    <!-- TASK 2: Playable "From text to a vector" widget -->
+    <p style="margin-top: 32px; color: var(--type-tertiary);">Press ▶ Play to watch a patent's words become a vector.</p>
+
+    <div class="flow embed-anim">
+      <div class="flow-controls">
+        <button class="btn btn-primary" id="embed-play">▶ Play</button>
+        <button class="btn" id="embed-reset">⟲ Reset</button>
+      </div>
+
+      <div class="actor-track-4">
+        <div class="actor-card" data-actor="text" data-track="embed">
+          <div class="ac-icon">📄</div>
+          <div class="ac-name">Patent text</div>
+          <div class="ac-sub">title + abstract</div>
+        </div>
+        <div class="actor-card" data-actor="model" data-track="embed">
+          <div class="ac-icon">🧠</div>
+          <div class="ac-name">PaECTER</div>
+          <div class="ac-sub">embedding model</div>
+        </div>
+        <div class="actor-card" data-actor="vector" data-track="embed">
+          <div class="ac-icon">🔢</div>
+          <div class="ac-name">Vector</div>
+          <div class="ac-sub">list of numbers</div>
+        </div>
+        <div class="actor-card" data-actor="space" data-track="embed">
+          <div class="ac-icon">🌌</div>
+          <div class="ac-name">Meaning space</div>
+          <div class="ac-sub">nearby = similar</div>
+        </div>
+      </div>
+
+      <div class="flow-steps" data-flow="embed">
+        <div class="flow-step" data-step="0"><span class="step-num">01</span>Patent<br/>words</div>
+        <div class="flow-step" data-step="1"><span class="step-num">02</span>Feed to<br/>model</div>
+        <div class="flow-step" data-step="2"><span class="step-num">03</span>Output<br/>vector</div>
+        <div class="flow-step" data-step="3"><span class="step-num">04</span>One<br/>point</div>
+        <div class="flow-step" data-step="4"><span class="step-num">05</span>Near<br/>neighbors</div>
+      </div>
+
+      <div class="flow-detail" data-detail="embed">
+        <em>Press ▶ Play to watch a patent's words become a vector.</em>
+      </div>
+
+      <div class="packet-label">↓ Data at this stage</div>
+      <div class="flow-packet" data-packet="embed"><span class="c">// Press ▶ Play — the data at each stage appears here.</span></div>
+    </div>
   </section>
 
   <hr/>
@@ -140,6 +374,60 @@ flowchart LR
     <p>In practice, approximate nearest-neighbor (ANN) search trades a sliver of accuracy for a large reduction in compute. ANN indexes build a data structure over the vectors at index time that allows the engine to quickly identify a good-enough set of close neighbors without checking every vector. The accuracy loss is typically imperceptible to users — the top results are correct and relevant; a handful of borderline-rank candidates may be slightly mis-ordered. The speed gain is what makes the approach practical at corpus scale.</p>
 
     <p>The result is a retrieval engine that ranks documents by meaning-closeness to the query — the semantic layer sitting alongside the keyword layer from D3.</p>
+
+    <!-- TASK 3: Playable "Searching by meaning" widget -->
+    <p style="margin-top: 32px; color: var(--type-tertiary);">Press ▶ Play to watch a search find patents by meaning.</p>
+
+    <div class="flow search-anim">
+      <div class="flow-controls">
+        <button class="btn btn-primary" id="search-play">▶ Play</button>
+        <button class="btn" id="search-reset">⟲ Reset</button>
+      </div>
+
+      <div class="actor-track-5">
+        <div class="actor-card" data-actor="query" data-track="search">
+          <div class="ac-icon">🔎</div>
+          <div class="ac-name">Your query</div>
+          <div class="ac-sub">self-healing polymer</div>
+        </div>
+        <div class="actor-card" data-actor="qmodel" data-track="search">
+          <div class="ac-icon">🧠</div>
+          <div class="ac-name">PaECTER</div>
+          <div class="ac-sub">same model</div>
+        </div>
+        <div class="actor-card" data-actor="qvector" data-track="search">
+          <div class="ac-icon">🔢</div>
+          <div class="ac-name">Query vector</div>
+          <div class="ac-sub">a point too</div>
+        </div>
+        <div class="actor-card" data-actor="annindex" data-track="search">
+          <div class="ac-icon">🗂️</div>
+          <div class="ac-name">Vector index</div>
+          <div class="ac-sub">ANN</div>
+        </div>
+        <div class="actor-card" data-actor="results" data-track="search">
+          <div class="ac-icon">📋</div>
+          <div class="ac-name">Results</div>
+          <div class="ac-sub">ranked by closeness</div>
+        </div>
+      </div>
+
+      <div class="flow-steps" data-flow="search">
+        <div class="flow-step" data-step="0"><span class="step-num">01</span>You<br/>search</div>
+        <div class="flow-step" data-step="1"><span class="step-num">02</span>Same<br/>model</div>
+        <div class="flow-step" data-step="2"><span class="step-num">03</span>Query<br/>vector</div>
+        <div class="flow-step" data-step="3"><span class="step-num">04</span>Find<br/>nearest</div>
+        <div class="flow-step" data-step="4"><span class="step-num">05</span>ANN<br/>fast</div>
+        <div class="flow-step" data-step="5"><span class="step-num">06</span>Ranked<br/>results</div>
+      </div>
+
+      <div class="flow-detail" data-detail="search">
+        <em>Press ▶ Play to watch a search find patents by meaning.</em>
+      </div>
+
+      <div class="packet-label">↓ Data at this stage</div>
+      <div class="flow-packet" data-packet="search"><span class="c">// Press ▶ Play — the data at each stage appears here.</span></div>
+    </div>
   </section>
 
   <hr/>
@@ -150,6 +438,43 @@ flowchart LR
     <p>Here is the catch. Each embedding vector from PaECTER is stored as a sequence of 32-bit floating-point numbers — four bytes per dimension. Across hundreds of millions of patents, that adds up to tens of gigabytes of vector data — potentially more storage than everything else on the serve box combined, for this one artifact alone.</p>
 
     <p><span class="pill" data-term="quantization">Quantization</span> is the answer. Instead of storing each vector element as a full 32-bit float, quantization compresses it down to a much smaller representation: an 8-bit integer (int8) or even a single bit (1-bit). The compression ratio is many-fold — int8 cuts storage to one-quarter of float32; 1-bit cuts it to one-thirty-second. With a well-calibrated quantization scheme, the loss in retrieval accuracy is small: the top results remain correct; only the very finest distinctions in similarity ranking are affected.</p>
+
+    <!-- TASK 4: Precision ladder visual -->
+    <div style="background: var(--bg-surface); border: 1px solid var(--line-soft); border-radius: 14px; padding: 28px 28px 24px; margin: 28px 0;">
+      <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--type-tertiary); margin-bottom: 20px;">Precision ladder — same vector, less precision per number</div>
+
+      <!-- float32 row -->
+      <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
+        <div style="width: 64px; text-align: right; font-family: var(--font-mono); font-size: 11px; color: var(--type-secondary); flex-shrink: 0;">float32</div>
+        <div style="flex: 1; background: var(--bg-deep); border-radius: 6px; height: 24px; overflow: hidden;">
+          <div style="width: 100%; height: 100%; background: linear-gradient(90deg, var(--cyan), rgba(34,211,238,0.6)); border-radius: 6px;"></div>
+        </div>
+        <div style="width: 36px; font-family: var(--font-mono); font-size: 11px; color: var(--cyan); flex-shrink: 0;">×1</div>
+        <div style="width: 160px; font-family: var(--font-mono); font-size: 10px; color: var(--type-tertiary); flex-shrink: 0;">full precision</div>
+      </div>
+
+      <!-- int8 row -->
+      <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
+        <div style="width: 64px; text-align: right; font-family: var(--font-mono); font-size: 11px; color: var(--type-secondary); flex-shrink: 0;">int8</div>
+        <div style="flex: 1; background: var(--bg-deep); border-radius: 6px; height: 24px; overflow: hidden;">
+          <div style="width: 25%; height: 100%; background: linear-gradient(90deg, var(--violet-glow), rgba(139,92,246,0.6)); border-radius: 6px;"></div>
+        </div>
+        <div style="width: 36px; font-family: var(--font-mono); font-size: 11px; color: var(--violet-glow); flex-shrink: 0;">¼</div>
+        <div style="width: 160px; font-family: var(--font-mono); font-size: 10px; color: var(--type-tertiary); flex-shrink: 0;">4× smaller</div>
+      </div>
+
+      <!-- 1-bit row -->
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <div style="width: 64px; text-align: right; font-family: var(--font-mono); font-size: 11px; color: var(--type-secondary); flex-shrink: 0;">1-bit</div>
+        <div style="flex: 1; background: var(--bg-deep); border-radius: 6px; height: 24px; overflow: hidden;">
+          <div style="width: 3.125%; height: 100%; background: linear-gradient(90deg, rgba(139,92,246,0.55), rgba(34,211,238,0.35)); border-radius: 6px;"></div>
+        </div>
+        <div style="width: 36px; font-family: var(--font-mono); font-size: 11px; color: var(--type-tertiary); flex-shrink: 0;">1⁄32</div>
+        <div style="width: 160px; font-family: var(--font-mono); font-size: 10px; color: var(--type-tertiary); flex-shrink: 0;">32× smaller, still good enough to rank</div>
+      </div>
+
+      <p style="margin: 20px 0 0; font-family: var(--font-mono); font-size: 11px; color: var(--type-tertiary); line-height: 1.65;">Same vector, less precision per number. The ranking barely changes; the storage collapses — which is what lets the whole corpus's vectors fit on the serve box.</p>
+    </div>
 
     <p>That compression is what lets the entire corpus's vector index live on the same modest always-on serve box as the <span class="pill" data-term="sqlite">SQLite</span> point-lookup database, the <span class="pill" data-term="duckdb">DuckDB</span> analytics layer, and the <span class="pill" data-term="tantivy">Tantivy</span> keyword index. No specialized vector-database hardware. No separate expensive service. The vectors fit because they are small.</p>
 
@@ -253,5 +578,132 @@ flowchart LR
   });
 </script>
 <script src="tour.js"></script>
+<script>
+/* ============================================================
+ * Pipeline animation — copied verbatim from 06-realtime.html
+ * createAnimation({ prefix, FLOW, PACKETS, STEP_ACTOR, intervalMs })
+ * ============================================================ */
+
+function createAnimation({ prefix, FLOW, PACKETS, STEP_ACTOR, intervalMs = 1500 }) {
+  const steps      = document.querySelectorAll(`[data-flow="${prefix}"] .flow-step`);
+  const detail     = document.querySelector(`[data-detail="${prefix}"]`);
+  const packet     = document.querySelector(`[data-packet="${prefix}"]`);
+  const playBtn    = document.getElementById(`${prefix}-play`);
+  const resetBtn   = document.getElementById(`${prefix}-reset`);
+  const actorCards = document.querySelectorAll(`[data-track="${prefix}"]`);
+  const actorArrow = document.querySelector(`[data-arrow="${prefix}"]`);
+
+  const PLACEHOLDER_DETAIL = detail.innerHTML;
+  const PLACEHOLDER_PACKET = packet.innerHTML;
+
+  let intv = null, step = 0;
+
+  function setActor(activeActor) {
+    actorCards.forEach(c => {
+      const isActive = Array.isArray(activeActor)
+        ? activeActor.includes(c.dataset.actor)
+        : c.dataset.actor === activeActor;
+      c.classList.toggle('active', isActive);
+    });
+    if (actorArrow) {
+      // Light arrow when active actor differs from server (i.e. cross-boundary)
+      const involvesNonServer = Array.isArray(activeActor)
+        ? activeActor.some(a => a !== 'server')
+        : activeActor !== 'server';
+      actorArrow.classList.toggle('active', !!activeActor && involvesNonServer);
+    }
+  }
+
+  function show(i) {
+    steps.forEach((s, idx) => {
+      s.classList.remove('active');
+      if (idx < i) s.classList.add('played'); else s.classList.remove('played');
+    });
+    if (i < steps.length) {
+      steps[i].classList.add('active');
+      detail.innerHTML = FLOW[i];
+      packet.innerHTML = PACKETS[i];
+      setActor(STEP_ACTOR[i]);
+    }
+  }
+
+  playBtn.addEventListener('click', () => {
+    if (intv) { clearInterval(intv); intv = null; playBtn.innerHTML = '▶ Play'; return; }
+    step = 0;
+    playBtn.innerHTML = '⏸ Pause';
+    show(step);
+    intv = setInterval(() => {
+      step++;
+      if (step >= steps.length) {
+        clearInterval(intv); intv = null; playBtn.innerHTML = '▶ Play';
+        steps.forEach(s => s.classList.add('played'));
+        steps[steps.length-1].classList.add('active');
+        return;
+      }
+      show(step);
+    }, intervalMs);
+  });
+
+  resetBtn.addEventListener('click', () => {
+    if (intv) { clearInterval(intv); intv = null; playBtn.innerHTML = '▶ Play'; }
+    steps.forEach(s => { s.classList.remove('active'); s.classList.remove('played'); });
+    actorCards.forEach(c => c.classList.remove('active'));
+    if (actorArrow) actorArrow.classList.remove('active');
+    detail.innerHTML = PLACEHOLDER_DETAIL;
+    packet.innerHTML = PLACEHOLDER_PACKET;
+  });
+
+  steps.forEach((s, i) => s.addEventListener('click', () => {
+    if (intv) { clearInterval(intv); intv = null; playBtn.innerHTML = '▶ Play'; }
+    show(i);
+  }));
+}
+
+/* ============================================================
+ * ANIMATION — EMBED (5 steps): text → vector
+ * ============================================================ */
+createAnimation({
+  prefix: 'embed',
+  STEP_ACTOR: ['text', ['text','model'], ['model','vector'], 'vector', ['vector','space']],
+  FLOW: [
+    '<strong>01 ·</strong> Start with a patent\'s words — its title and abstract. To a computer this is just text; it can\'t compare <em>meanings</em> yet.',
+    '<strong>02 ·</strong> Feed the text to an <span class="pill" data-term="embedding">embedding</span> model — we use PaECTER, trained on patents. It reads the whole passage, not just keywords.',
+    '<strong>03 ·</strong> The model outputs a fixed-length list of numbers — the embedding, or <strong>vector</strong>. Same length for every patent, however long the text.',
+    '<strong>04 ·</strong> Think of each number as a coordinate. The vector is a single <em>point</em> in a high-dimensional "meaning space" — the patent\'s location by what it\'s about.',
+    '<strong>05 ·</strong> Patents about similar things land near each other. "Self-healing polymer" and "autonomously repairing elastomer" end up neighbors — with no shared words.',
+  ],
+  PACKETS: [
+    '<span class="c">// the patent\'s words</span>\n<span class="s">"A self-healing polymer composition that\n autonomously repairs cracks over time…"</span>',
+    '<span class="c">// PaECTER reads the whole passage</span>\ntext → [tokens] → neural network → …',
+    '<span class="c">// out comes a fixed-length vector:</span>\n[ <span class="n">0.04</span>, <span class="n">-0.91</span>, <span class="n">0.37</span>, <span class="n">0.12</span>, <span class="n">-0.05</span>, … ]\n<span class="c">// hundreds of numbers — same length for every patent</span>',
+    '<span class="c">// each number = one coordinate</span>\n<span class="c">// the whole vector = ONE point in "meaning space"</span>',
+    '<span class="c">// nearby points mean similar meaning:</span>\n"self-healing polymer"            ●\n"autonomously repairing elastomer" ●  <span class="c">← neighbor</span>\n"diesel fuel injector"            ●  <span class="c">← far away</span>',
+  ],
+});
+
+/* ============================================================
+ * ANIMATION — SEARCH (6 steps): query → ranked results
+ * ============================================================ */
+createAnimation({
+  prefix: 'search',
+  STEP_ACTOR: ['query', ['query','qmodel'], ['qmodel','qvector'], ['qvector','annindex'], 'annindex', ['annindex','results']],
+  FLOW: [
+    '<strong>01 ·</strong> You type a search: "self-healing polymer." Keyword search (<span class="pill" data-term="tantivy">Tantivy</span>) would only find patents using those exact words.',
+    '<strong>02 ·</strong> We run your query through the <em>same</em> <span class="pill" data-term="embedding">embedding</span> model that embedded every patent.',
+    '<strong>03 ·</strong> Now your query is a vector too — a point in the same meaning space as all the patents.',
+    '<strong>04 ·</strong> Find the patent points closest to your query point. That\'s <span class="pill" data-term="vectorsearch">vector search</span> — nearest-neighbor.',
+    '<strong>05 ·</strong> Comparing against hundreds of millions of points exactly is slow, so an ANN index finds the closest ones approximately — but fast.',
+    '<strong>06 ·</strong> Rank by closeness. The top hits include a patent that says "autonomously repairing elastomer" — never your words, but exactly your meaning.',
+  ],
+  PACKETS: [
+    '<span class="c">// you search for:</span>\n<span class="s">"self-healing polymer"</span>',
+    '<span class="c">// same model as the patents went through</span>\nquery text → PaECTER →',
+    '<span class="c">// query is now a vector — a point:</span>\n[ <span class="n">0.05</span>, <span class="n">-0.88</span>, <span class="n">0.41</span>, … ]',
+    '<span class="c">// find the nearest patent points</span>\ndistance(query, patent) → smaller = closer',
+    '<span class="c">// ANN index: approximate, but fast</span>\n<span class="c">// skip most points; check the likely-close ones</span>',
+    '<span class="c">// ranked by closeness:</span>\n1. <span class="s">"autonomously repairing elastomer…"</span>  <span class="c">← no shared words!</span>\n2. <span class="s">"self-repairing polymer network…"</span>\n3. <span class="s">"microcapsule healing coating…"</span>',
+  ],
+});
+</script>
 </body>
 </html>
