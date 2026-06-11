@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>D4 · Entity resolution — TAP•IP Tour</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<style>
+  .mermaid-wrap {
+    background: var(--bg-surface);
+    border: 1px solid var(--line-soft);
+    border-radius: 14px;
+    padding: 28px 24px;
+    margin: 24px 0;
+    overflow-x: auto;
+  }
+  .mermaid-wrap .mermaid { background: transparent !important; }
+  .mermaid-wrap svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+
+  .service-row {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 18px;
+    padding: 20px 22px;
+    background: var(--bg-surface);
+    border: 1px solid var(--line-soft);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    align-items: start;
+  }
+  .service-row .ic { font-size: 30px; line-height: 1; text-align: center; }
+  .service-row h4 { margin: 0 0 4px; font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--type-primary); }
+  .service-row .meta { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); margin-bottom: 8px; }
+  .service-row p { margin: 0; font-size: 14px; }
+  .service-row p + p { margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a><span class="dot"></span>
+    <a href="index.html#data-track" style="color: var(--cyan);">Data</a><span class="dot"></span>
+    <a href="d1-data-engine.html">D1</a>
+    <a href="d2-pipeline.html">D2</a>
+    <a href="d3-cube.html">D3</a>
+    <a href="d4-entity-resolution.html" class="current">D4</a>
+    <a href="d5-why-lakehouse.html">D5</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">D4</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Track II · The data engine · ~8 min</div>
+      <h2 class="section-title">Entity resolution — <em>the spine</em>.</h2>
+      <p class="lede">Ask "who files the most patents?" and the raw data lies to you. Fixing that lie is the single biggest credibility win in the product.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <div class="eyebrow">The problem</div>
+    <h3 class="feature-title" style="margin-top: 12px;">The raw data doesn't know what a <em>company</em> is.</h3>
+    <p>Patent offices record whatever an applicant writes in the assignee field when they file. There is no global registry, no canonical company ID, no enforcement of consistent naming. The result: the same real company shows up as a dozen or more different strings across the corpus.</p>
+
+    <p>Take one of the world's largest patent filers. In the raw data, what should be a single entity appears as approximately ~15 different assignee strings — subsidiaries, suffix variants, spelling variants, and native-script names. For example:</p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin: 24px 0;">
+      <div style="padding: 10px 14px; background: var(--bg-surface); border: 1px solid var(--line-soft); border-radius: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--type-secondary);">SAMSUNG ELECTRONICS CO LTD</div>
+      <div style="padding: 10px 14px; background: var(--bg-surface); border: 1px solid var(--line-soft); border-radius: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--type-secondary);">Samsung Electronics Co., Ltd.</div>
+      <div style="padding: 10px 14px; background: var(--bg-surface); border: 1px solid var(--line-soft); border-radius: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--type-secondary);">Samsung Electronics</div>
+      <div style="padding: 10px 14px; background: var(--bg-surface); border: 1px solid var(--line-soft); border-radius: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--type-secondary);">삼성전자주식회사</div>
+      <div style="padding: 10px 14px; background: var(--bg-surface); border: 1px solid var(--line-soft); border-radius: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--type-secondary);">SAMSUNG ELECTRO-MECHANICS</div>
+      <div style="padding: 10px 14px; background: var(--bg-surface); border: 1px solid var(--line-soft); border-radius: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--type-secondary);">Samsung Display Co., Ltd.</div>
+    </div>
+    <p style="font-size: 13px; color: var(--type-quiet); margin-top: -8px; margin-bottom: 24px;">Examples only — illustrating the shape of the problem. The ~15 total includes subsidiaries, suffix variations, and native-script forms not shown here.</p>
+
+    <p>Counted naively, a company that belongs in the #2 spot on a global leaderboard scatters into a dozen also-rans — none of them dominant enough to catch the eye. The ranking is wrong. The insight is invisible.</p>
+
+    <p>There is a second, subtler problem: banks frequently appear in patent filings as collateral agents — lenders who hold a security interest in a patent portfolio as loan collateral. Their names land in the assignee field right alongside genuine inventors and corporate owners. Counted naively, a major bank appears to be a prolific patent filer when in fact it holds zero patents as an innovator. Without flagging and filtering these records, ownership rankings are polluted.</p>
+
+    <p><span class="pill" data-term="entityresolution">Entity resolution</span> is the process of deciding which records refer to the same real-world entity. In this context: mapping every assignee string to one canonical company (or flagging it as a non-owner). It is the foundational data-quality step that makes every company-level number in the product trustworthy.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d3">
+    <div class="eyebrow">Step A</div>
+    <h3 class="feature-title" style="margin-top: 12px;">Normalize the strings. <em>Cheap, deterministic, catches the easy cases.</em></h3>
+    <p>The first pass is purely mechanical: strip company suffixes, punctuation, and casing. The same company often differs only in whether it wrote "CO LTD" vs "Co., Ltd." vs nothing at all. A short list of rules catches a large fraction of duplicates for free — no AI required, no external lookup.</p>
+
+    <p>The rules applied in order:</p>
+    <ol style="font-size: 14px; line-height: 1.8; color: var(--type-secondary);">
+      <li>Lowercase everything.</li>
+      <li>Strip legal suffixes: <span style="font-family: var(--font-mono); font-size: 12px; color: var(--cyan);">CO, LTD, INC, CORP, GMBH, KK, LLC, PLC, SA, SPA, BV, AG, AB</span> and their dot variants.</li>
+      <li>Remove all punctuation (commas, periods, parentheses, hyphens).</li>
+      <li>Collapse whitespace; trim.</li>
+    </ol>
+
+    <p>Here is a before-and-after for the Samsung example:</p>
+
+    <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; margin: 28px 0; align-items: center;">
+      <div>
+        <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--type-quiet); margin-bottom: 10px;">Raw strings (three of ~15)</div>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="padding: 9px 14px; background: rgba(139,92,246,0.07); border: 1px solid rgba(139,92,246,0.2); border-radius: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--type-secondary);">SAMSUNG ELECTRONICS CO LTD</div>
+          <div style="padding: 9px 14px; background: rgba(139,92,246,0.07); border: 1px solid rgba(139,92,246,0.2); border-radius: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--type-secondary);">Samsung Electronics Co., Ltd.</div>
+          <div style="padding: 9px 14px; background: rgba(139,92,246,0.07); border: 1px solid rgba(139,92,246,0.2); border-radius: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--type-secondary);">SAMSUNG ELECTRONICS INC</div>
+        </div>
+      </div>
+      <div style="font-size: 24px; color: var(--cyan); text-align: center;">→</div>
+      <div>
+        <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); margin-bottom: 10px;">After normalization (all three)</div>
+        <div style="padding: 22px 14px; background: rgba(34,211,238,0.07); border: 1px solid rgba(34,211,238,0.3); border-radius: 8px; font-family: var(--font-mono); font-size: 14px; color: var(--cyan); font-weight: 600; text-align: center;">samsung electronics</div>
+      </div>
+    </div>
+
+    <p>Three different raw strings collapse to one canonical form. Across the full corpus this step alone reconciles a substantial share of easy duplicates — suffixes and punctuation are the most common source of variation. But it is not sufficient on its own: a subsidiary like "Samsung Display" normalizes to "samsung display", not "samsung electronics". Step B handles the hierarchical parent–child relationship.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d4">
+    <div class="eyebrow">Step B</div>
+    <h3 class="feature-title" style="margin-top: 12px;">Roll up to the ultimate parent. <em>Subsidiaries should count toward the parent.</em></h3>
+    <p>Normalization handles spelling. But "Samsung Display Co., Ltd." and "Samsung Electro-Mechanics Co., Ltd." are genuinely different legal entities — they will normalize to different strings. Yet for the purpose of "how many patents does Samsung file?", they should count toward Samsung Electronics. The question is not about legal entities; it is about consolidated companies.</p>
+
+    <p>This is where <strong>GLEIF</strong> comes in. GLEIF — the Global Legal Entity Identifier Foundation — maintains a global registry of Legal Entity Identifiers (LEIs): unique codes that identify companies worldwide. More importantly for our purposes, it publishes "ultimately consolidated by" edges: for each entity, which entity is at the top of the ownership chain.</p>
+
+    <p>We built a name-to-ultimate-parent map from these edges — approximately <strong>~129,818 ultimate-parent edges</strong> constructed and verified, with the Samsung rollup confirmed. The map gives us: subsidiary name → ultimate parent canonical name.</p>
+
+    <p>The Mermaid diagram below shows the rollup structure for a handful of Samsung subsidiaries:</p>
+
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart TB
+  D["Samsung Display Co., Ltd."]
+  EM["Samsung Electro-Mechanics"]
+  SDS["Samsung SDS Co., Ltd."]
+  SDI["Samsung SDI Co., Ltd."]
+  PARENT["Samsung Electronics Co., Ltd.<br/><em>(ultimate parent)</em>"]
+
+  D --> PARENT
+  EM --> PARENT
+  SDS --> PARENT
+  SDI --> PARENT
+</pre>
+    </div>
+
+    <p>After GLEIF rollup, all four subsidiary strings resolve to the same ultimate parent node. Every patent filed by any of them is credited to Samsung Electronics in the analytics <span class="pill" data-term="cube">cube</span>. The leaderboard now reflects economic reality, not filing-office bureaucracy.</p>
+
+    <p>The GLEIF rollup is particularly powerful because it handles corporate structure changes — spin-offs, acquisitions, reorganizations — as long as the registry is kept current. It is a maintained, authoritative dataset, not a hand-curated list that drifts stale.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d5">
+    <div class="eyebrow">Step C</div>
+    <h3 class="feature-title" style="margin-top: 12px;">The hard cases — <em>a proposer–skeptic pass.</em></h3>
+    <p>Normalization handles spelling variants. GLEIF handles known subsidiaries. But a long tail of names remains: typos, abbreviations, transliterations, historical names, holding companies with opaque names. For these, neither rule nor registry gives a confident answer.</p>
+
+    <p>For this residual set we run a two-agent pass:</p>
+
+    <div class="service-row" style="margin-top: 28px; border-color: rgba(34,211,238,0.3);">
+      <div class="ic">💡</div>
+      <div>
+        <div class="meta">Agent 1 — Proposer</div>
+        <h4>Suggests a canonical entity.</h4>
+        <p>Given the ambiguous assignee string, the Proposer generates a hypothesis: "this looks like it refers to <em>X</em>." It draws on any contextual signal available — co-filing patterns, known parent names, common abbreviations.</p>
+      </div>
+    </div>
+
+    <div class="service-row" style="border-color: rgba(139,92,246,0.3);">
+      <div class="ic">🔍</div>
+      <div>
+        <div class="meta">Agent 2 — Skeptic</div>
+        <h4>Tries to reject the proposal.</h4>
+        <p>The Skeptic — a different model, deliberately chosen to be heterogeneous — evaluates the Proposer's suggestion and actively looks for reasons it is wrong. Could this name be a different company entirely? Is the evidence actually ambiguous? If the Skeptic can't definitively reject the merge, it says so.</p>
+      </div>
+    </div>
+
+    <div class="service-row" style="border-color: rgba(251,146,60,0.3);">
+      <div class="ic">⚠️</div>
+      <div>
+        <div class="meta">Uncertain → safe fallback</div>
+        <h4>When in doubt, leave it as-is.</h4>
+        <p>If the Proposer and Skeptic can't reach a confident answer, the record falls back to its normalized string — no merge is made. This is the deliberate, conservative default.</p>
+        <p style="margin-top: 8px; color: var(--type-tertiary);">The bias is intentional: <strong>never merge two genuinely different companies</strong>. A missed merge is recoverable — you can discover it later and fix it. A wrong merge silently corrupts counts, and you may never know the leaderboard was lying.</p>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top: 24px;">
+      <p style="margin: 0;">The heterogeneity of Proposer and Skeptic matters. Using two instances of the same model tends to produce agreement by construction — both models share the same biases and blind spots. A different model as Skeptic genuinely challenges the proposal rather than just ratifying it.</p>
+    </div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d6">
+    <div class="eyebrow">Why it matters</div>
+    <h3 class="feature-title" style="margin-top: 12px;">Every company-level number in the <span class="pill" data-term="cube">cube</span> rides on this map.</h3>
+    <p>Return to the <span class="pill" data-term="cube">cube</span> from D3: it pre-aggregates measures across <span class="pill" data-term="dimension">dimensions</span>. One of those dimensions is <em>company</em>. If the company dimension is wrong — if Samsung's patents scatter across fifteen bins instead of one — then every leaderboard, every trend chart, every "top filers by year" query returns wrong numbers. The cube looks authoritative. The numbers are fast. And they are wrong.</p>
+
+    <p>That is worse than no analytics. A slow query that produces a correct number at least reveals the truth. A fast pre-computed answer that looks confident while being wrong misleads every decision that depends on it. <span class="pill" data-term="entityresolution">Entity resolution</span> is what makes the cube's company numbers trustworthy.</p>
+
+    <p>This is why entity resolution is "the spine": it is not a feature of the analytics layer. It is a precondition for the analytics layer being worth anything at all.</p>
+
+    <p style="color: var(--type-tertiary); font-size: 14px;">One sentence on scope: the entity map built here is also the join point for future non-patent signals — financial disclosures, R&D spend data, trade-secret proxies. Those signals are indexed by company; entity resolution is how they connect to the same canonical entities. That's a broader topic; the important point here is that getting the map right once pays dividends across every future data layer.</p>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="d3-cube.html" class="foot-link prev">
+      <span class="lbl">← Previous</span>
+      <span class="tt">D3 · The cube</span>
+    </a>
+    <a href="d5-why-lakehouse.html" class="foot-link next">
+      <span class="lbl">Next chapter →</span>
+      <span class="tt">D5 · Why the lakehouse wins</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    securityLevel: 'loose',
+    themeVariables: {
+      background: 'transparent',
+      mainBkg: '#161C3A',
+      secondBkg: '#1A2147',
+      tertiaryColor: '#11162E',
+      primaryBorderColor: '#A78BFA',
+      secondaryBorderColor: '#67E8F9',
+      tertiaryBorderColor: '#818CF8',
+      lineColor: '#67E8F9',
+      primaryTextColor: '#ECEEFB',
+      secondaryTextColor: '#ECEEFB',
+      tertiaryTextColor: '#ECEEFB',
+      textColor: '#ECEEFB',
+      titleColor: '#ECEEFB',
+      labelTextColor: '#ECEEFB',
+      clusterBkg: '#0B0F23',
+      clusterBorder: '#232C56',
+      fontFamily: '"Geist", "Söhne", system-ui, sans-serif',
+      fontSize: '14px',
+    },
+    flowchart: { curve: 'basis', useMaxWidth: true, htmlLabels: true, padding: 16 },
+  });
+</script>
+<script src="tour.js"></script>
+</body>
+</html>
