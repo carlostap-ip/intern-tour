@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>D2 · The pipeline — TAP•IP Tour</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<style>
+  .mermaid-wrap {
+    background: var(--bg-surface);
+    border: 1px solid var(--line-soft);
+    border-radius: 14px;
+    padding: 28px 24px;
+    margin: 24px 0;
+    overflow-x: auto;
+  }
+  .mermaid-wrap .mermaid { background: transparent !important; }
+  .mermaid-wrap svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+
+  .service-row {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 18px;
+    padding: 20px 22px;
+    background: var(--bg-surface);
+    border: 1px solid var(--line-soft);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    align-items: start;
+  }
+  .service-row .ic { font-size: 30px; line-height: 1; text-align: center; }
+  .service-row h4 { margin: 0 0 4px; font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--type-primary); }
+  .service-row .meta { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); margin-bottom: 8px; }
+  .service-row p { margin: 0; font-size: 14px; }
+  .service-row p + p { margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a><span class="dot"></span>
+    <a href="index.html#data-track" style="color: var(--cyan);">Data</a><span class="dot"></span>
+    <a href="d1-data-engine.html">D1</a>
+    <a href="d2-pipeline.html" class="current">D2</a>
+    <a href="d3-cube.html">D3</a>
+    <a href="d4-entity-resolution.html">D4</a>
+    <a href="d5-why-lakehouse.html">D5</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">D2</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Track II · The data engine · ~8 min</div>
+      <h2 class="section-title">The pipeline, <em>stage by stage</em>.</h2>
+      <p class="lede">Raw patent data goes in one end; four query-ready artifacts come out the other. Here's each stage.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <div class="eyebrow">Overview</div>
+    <h3 class="feature-title" style="margin-top: 12px;">Five stages, two machines, one clean result.</h3>
+    <p>The pipeline isn't a single script — it's a sequence of well-defined stages. Each stage has one job, a clear input, and a clear output. Understanding them separately makes it easy to debug when something goes wrong, and easy to re-run just the stage that changed.</p>
+
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+  SRC["🏛️ Sources<br/>EPO BDDS · USPTO"]
+  NORM["🔧 Normalize<br/>one common shape"]
+  LAKE["☁️ Land to lake<br/>Parquet on R2"]
+  BUILD["⚙️ Build artifacts<br/>search · lookup · analytics · cube"]
+  SERVE["📦 Serve<br/>API answers queries"]
+  SRC --> NORM
+  NORM --> LAKE
+  LAKE --> BUILD
+  BUILD --> SERVE
+</pre>
+    </div>
+
+    <p>The next sections walk each stage in order. By the end you'll see exactly why each step exists and how they fit together into the <span class="pill" data-term="lakehouse">lakehouse</span> pattern introduced in D1.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d3">
+    <div class="eyebrow">Stage 1 — Ingest</div>
+    <h3 class="feature-title" style="margin-top: 12px;">Pull the whole corpus, <em>not one record at a time</em>.</h3>
+    <p>The first job is simple to describe: get the data. But the how matters a lot. We don't call a live per-record API, asking "give me patent #1, give me patent #2 …" — that would take years and would hammer the patent offices' servers. Instead, we pull <strong>bulk data packages</strong>: large files that each contain millions of records, published by the patent offices specifically for this purpose.</p>
+
+    <p>Two sources feed the pipeline today:</p>
+
+    <div class="service-row" style="margin-top: 28px;">
+      <div class="ic">🇪🇺</div>
+      <div>
+        <div class="meta">EPO BDDS · public area</div>
+        <h4>European Patent Office — bulk DOCDB data.</h4>
+        <p>The EPO's Bulk Data Delivery Service (BDDS) has a <strong>public area that requires no authentication</strong> and has been free since 2025. It publishes DOCDB-style bibliographic data — titles, abstracts, applicants, classifications — in large structured packages covering the whole EPO corpus.</p>
+        <p style="color: var(--type-tertiary);">Because it's anonymous and free, we can automate pulls without worrying about token rotation or rate-limit accounts. The public endpoint is stable and designed for bulk use.</p>
+      </div>
+    </div>
+
+    <div class="service-row">
+      <div class="ic">🇺🇸</div>
+      <div>
+        <div class="meta">USPTO · bulk data</div>
+        <h4>United States Patent and Trademark Office — bulk XML.</h4>
+        <p>The USPTO publishes weekly bulk data dumps covering granted patents and published applications. Each dump is a large XML file — or a set of them — representing everything granted or published that week. We pull these packages rather than using the live per-record search API.</p>
+        <p style="color: var(--type-tertiary);">Pulling bulk packages means one transfer brings in tens of thousands of records at once, with no per-record overhead and no risk of hitting query rate limits.</p>
+      </div>
+    </div>
+
+    <p>The key principle: <strong>we are consumers of bulk data publications, not scrapers</strong>. Both EPO and USPTO maintain these packages for exactly this use case — researchers and services that need the full corpus.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d4">
+    <div class="eyebrow">Stage 2 — Normalize &amp; resolve</div>
+    <h3 class="feature-title" style="margin-top: 12px;">Many formats → <em>one common shape</em>.</h3>
+    <p>EPO and USPTO don't use the same data format. EPO BDDS gives us structured bibliographic XML in DOCDB style. USPTO gives us its own XML schema that's evolved over decades and has its quirks. A record from the EPO and a record from the USPTO describing the same invention look completely different on disk.</p>
+
+    <p>Normalization is the stage that fixes this. Every incoming record — regardless of source — gets mapped to a single internal schema: a common set of fields with consistent names, consistent date formats, consistent classification codes. After this stage, downstream code doesn't need to know whether a record came from EPO or USPTO.</p>
+
+    <p>Alongside normalization, this stage is also where the <strong><span class="pill" data-term="entityresolution">entity-resolution</span> spine attaches</strong>. "Samsung Electronics Co., Ltd." and "SAMSUNG ELECTRONICS CO LTD" and "Samsung Electronics" are the same company — but they appear as different strings in the raw data. The entity-resolution layer (covered in depth in <a href="d4-entity-resolution.html">D4</a>) resolves these into a single canonical identity, so analytics can roll up all of a company's filings regardless of how the name was spelled in each jurisdiction.</p>
+
+    <p>This stage is deliberately kept simple: clean, map to schema, attach entity spine. Nothing fancy. The next two stages do the heavy analytical work.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d5">
+    <div class="eyebrow">Stage 3 — Land it in the lake</div>
+    <h3 class="feature-title" style="margin-top: 12px;">Write <span class="pill" data-term="parquet">Parquet</span> to the <span class="pill" data-term="objectstore">object store</span>. That's the source of truth.</h3>
+    <p>Once a record is normalized, we write it to <strong>Cloudflare R2</strong> as a <span class="pill" data-term="parquet">Parquet</span> file. Parquet is the standard <span class="pill" data-term="columnar">columnar</span> file format for analytics data: it stores each column separately, compresses well, and lets query engines skip columns they don't need. An analytics engine reading "filing year" and "company name" doesn't have to touch the abstract text — it just skips that column entirely.</p>
+
+    <p>This is the <strong><span class="pill" data-term="elt">ELT</span></strong> pattern: <strong>Extract, Load, Transform</strong> — land first, transform in place with SQL afterward. It's the opposite of old-school ETL (transform before loading). Why ELT?</p>
+
+    <ul>
+      <li><strong>Cheap to land.</strong> Raw Parquet on R2 costs very little. You're not paying an expensive warehouse to ingest it.</li>
+      <li><strong>Re-runnable.</strong> If a transform step has a bug, you fix the SQL and re-run it against the files already in the lake. You don't need to re-pull everything from the source.</li>
+      <li><strong>Files are the source of truth.</strong> The lake is the ground truth. Every serving artifact downstream is built from these files and can be rebuilt at any time. If the serve box explodes, you rebuild from the lake — nothing is lost.</li>
+    </ul>
+
+    <p>Think of R2 as the master copy and everything downstream as derived. You can always re-derive the derived things; you can't re-derive the source.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d6">
+    <div class="eyebrow">Stage 4 — Build the serving artifacts</div>
+    <h3 class="feature-title" style="margin-top: 12px;">Four specialized artifacts. <em>Each answers a different kind of question.</em></h3>
+    <p>The lake is the source of truth but it's not optimized for serving queries at speed. One build step (running on a big rented machine — more on that in the next section) reads the Parquet files and produces four specialized artifacts, each tuned for a different query pattern:</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 28px 0;">
+      <div class="card" style="border-color: rgba(139,92,246,0.25); background: linear-gradient(180deg, rgba(139,92,246,0.05), transparent);">
+        <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--violet-glow); margin-bottom: 10px;">Artifact 1</div>
+        <div style="font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--type-primary); margin-bottom: 8px;"><span class="pill" data-term="tantivy">Tantivy</span> search index.</div>
+        <p style="font-size: 14px; margin: 0;">Answers: "find me patents about battery thermal management." Full-text keyword search across hundreds of millions of titles and abstracts — the kind of query that needs an inverted index, not a database scan.</p>
+      </div>
+      <div class="card" style="border-color: rgba(34,211,238,0.25); background: linear-gradient(180deg, rgba(34,211,238,0.05), transparent);">
+        <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); margin-bottom: 10px;">Artifact 2</div>
+        <div style="font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--type-primary); margin-bottom: 8px;">Lean lookup DB.</div>
+        <p style="font-size: 14px; margin: 0;">Answers: "give me everything about patent EP1234567." Point lookups by patent number, plus citation graph edges and family groupings. Optimized for narrow, known-key reads.</p>
+      </div>
+      <div class="card" style="border-color: rgba(99,102,241,0.25); background: linear-gradient(180deg, rgba(99,102,241,0.05), transparent);">
+        <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--indigo); margin-bottom: 10px;">Artifact 3</div>
+        <div style="font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--type-primary); margin-bottom: 8px;">Slim analytics table.</div>
+        <p style="font-size: 14px; margin: 0;">Answers: ad-hoc analytical queries — GROUP BY, filters, time-series — that don't fit the pre-aggregated cube. A lean, <span class="pill" data-term="columnar">columnar</span> table with only the fields analytics needs, stripped of the heavy text columns.</p>
+      </div>
+      <div class="card" style="border-color: rgba(34,211,238,0.3); background: linear-gradient(180deg, rgba(34,211,238,0.07), transparent);">
+        <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); margin-bottom: 10px;">Artifact 4</div>
+        <div style="font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--type-primary); margin-bottom: 8px;">The <span class="pill" data-term="cube">cube</span>.</div>
+        <p style="font-size: 14px; margin: 0;">Answers: "rank every company by filings per year, by country." Pre-aggregated totals across all the <span class="pill" data-term="dimension">dimensions</span> people filter on. Covered in depth in <a href="d3-cube.html">D3</a> — the fastest path from question to leaderboard.</p>
+      </div>
+    </div>
+
+    <p>Each artifact is built once during the rebuild cycle, then published to R2. The always-on serve box pulls them and uses them to answer queries without ever touching the raw lake again.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d7">
+    <div class="eyebrow">Build vs serve — two different machines</div>
+    <h3 class="feature-title" style="margin-top: 12px;">A big ephemeral box builds. A small always-on box serves.</h3>
+    <p>This is the key operational idea behind the pipeline, and it flows directly from the <span class="pill" data-term="lakehouse">lakehouse</span> principle: <strong>separation of storage and compute</strong>.</p>
+
+    <p>Building the serving artifacts requires a lot of memory and disk — you're reading hundreds of millions of rows, joining tables, building a full-text index. That's an expensive machine to leave running all the time, especially when you only need to rebuild once a week. So we don't leave it running.</p>
+
+    <p>Instead, we <strong>rent a big machine only while building</strong>. When the rebuild starts, a large ephemeral box spins up, reads the Parquet files from R2, builds all four artifacts, publishes them back to R2, and then shuts down. The whole thing runs while you're not watching and costs only for the hours it actually runs.</p>
+
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+  BUILDBOX["⚙️ Build box<br/>(ephemeral, big)<br/>lots of RAM + disk<br/>on only while building"]
+  R2["☁️ R2<br/>Parquet lake<br/>+ built artifacts"]
+  SERVEBOX["📦 Serve box<br/>(small, always-on)<br/>pulls artifacts,<br/>answers queries"]
+  API["🔌 API<br/>analytics + search<br/>+ lookup"]
+  BUILDBOX -- builds &amp; publishes artifacts --> R2
+  R2 -- pulls artifacts on start --> SERVEBOX
+  SERVEBOX --> API
+</pre>
+    </div>
+
+    <p>The serve box is small because it doesn't need to rebuild anything — it just loads pre-built artifacts into memory and answers queries against them. Its job is fast reads, not heavy computation.</p>
+
+    <p>R2 is the shared storage layer between the two machines. That's what makes this work: the build box and serve box never need to be running at the same time. The object store is the handoff point. Build, publish to R2, shut down. Serve box notices new artifacts on next startup, swaps them in. Clean separation.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d8">
+    <div class="note">
+      <p style="margin: 0;"><strong>Reproducible rebuilds.</strong> Because the <span class="pill" data-term="datalake">lake</span> files are the source of truth and every build step is just SQL over <span class="pill" data-term="parquet">Parquet</span>, the entire serving layer can be torn down and rebuilt from scratch at any time. That's exactly what the weekly refresh does: spin up the build box, re-run the pipeline end to end, publish fresh artifacts, shut down. Nothing is special-cased or hand-maintained. If a bug is found in the build logic, you fix the SQL, re-run, and the artifacts are correct. No manual patching of a live database.</p>
+    </div>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="d1-data-engine.html" class="foot-link prev">
+      <span class="lbl">← Previous</span>
+      <span class="tt">D1 · The data engine</span>
+    </a>
+    <a href="d3-cube.html" class="foot-link next">
+      <span class="lbl">Next chapter →</span>
+      <span class="tt">D3 · The cube</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    securityLevel: 'loose',
+    themeVariables: {
+      background: 'transparent',
+      mainBkg: '#161C3A',
+      secondBkg: '#1A2147',
+      tertiaryColor: '#11162E',
+      primaryBorderColor: '#A78BFA',
+      secondaryBorderColor: '#67E8F9',
+      tertiaryBorderColor: '#818CF8',
+      lineColor: '#67E8F9',
+      primaryTextColor: '#ECEEFB',
+      secondaryTextColor: '#ECEEFB',
+      tertiaryTextColor: '#ECEEFB',
+      textColor: '#ECEEFB',
+      titleColor: '#ECEEFB',
+      labelTextColor: '#ECEEFB',
+      clusterBkg: '#0B0F23',
+      clusterBorder: '#232C56',
+      fontFamily: '"Geist", "Söhne", system-ui, sans-serif',
+      fontSize: '14px',
+    },
+    flowchart: { curve: 'basis', useMaxWidth: true, htmlLabels: true, padding: 16 },
+  });
+</script>
+<script src="tour.js"></script>
+</body>
+</html>
