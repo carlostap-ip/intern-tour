@@ -210,7 +210,7 @@
   <header class="chapter-head fade-in d1">
     <div class="chapter-num">D5</div>
     <div class="chapter-info">
-      <div class="eyebrow">Track II · The data engine · ~11 min</div>
+      <div class="eyebrow">Track II · The data engine · ~13 min</div>
       <h2 class="section-title">Semantic search — <em>finding by meaning</em>.</h2>
       <p class="lede">Keyword search finds the words you typed. Semantic search finds what you meant — even when the patent never uses your words.</p>
     </div>
@@ -360,6 +360,44 @@ flowchart LR
       <div class="packet-label">↓ Data at this stage</div>
       <div class="flow-packet" data-packet="embed"><span class="c">// Press ▶ Play — the data at each stage appears here.</span></div>
     </div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d4">
+    <div class="eyebrow">The models behind it</div>
+    <h3 class="feature-title" style="margin-top: 12px;">Pre-trained models, LLMs, and the <em>GPUs</em> that run them.</h3>
+    <p>We just leaned on PaECTER to turn patents into vectors. It's worth a beat on what that model actually <em>is</em> — and the hardware behind it — because the same ideas power the entity-resolution step in <a href="d4-entity-resolution.html">D4</a>.</p>
+
+    <div class="service-row" style="margin-top: 28px;">
+      <div class="ic">🎓</div>
+      <div>
+        <div class="meta">We use it — we don't train it</div>
+        <h4>Pre-trained models.</h4>
+        <p>Training a capable model from scratch takes enormous data, compute, and time — so usually you don't. You grab a <span class="pill" data-term="pretrained">pre-trained</span> model someone has already trained and published, and use it as-is. PaECTER is exactly that: a patent-domain <span class="pill" data-term="embedding">embedding</span> model, open-source (Apache-2.0), trained by researchers on millions of patents. We download it and run it. Standing on a model someone else trained is the norm in modern machine learning.</p>
+      </div>
+    </div>
+
+    <div class="service-row">
+      <div class="ic">💬</div>
+      <div>
+        <div class="meta">A different model, a different job</div>
+        <h4>LLMs — large language models.</h4>
+        <p>PaECTER is small and specialized: it only makes <span class="pill" data-term="embedding">embeddings</span> (text → vectors). The <em>other</em> AI in the pipeline is a <span class="pill" data-term="llm">large language model</span> — the same family as ChatGPT and Claude — which reasons in words. We use one in <span class="pill" data-term="entityresolution">entity resolution</span> (<a href="d4-entity-resolution.html">D4</a>): a "proposer" LLM suggests that two company-name strings are the same firm, and a "skeptic" LLM tries to refute it. The split is clean — <strong>embedding model</strong>: turn text into vectors; <strong>LLM</strong>: read and reason in language.</p>
+      </div>
+    </div>
+
+    <div class="service-row" style="border-color: rgba(252,211,77,0.3);">
+      <div class="ic">⚡</div>
+      <div>
+        <div class="meta">The hardware that makes it feasible</div>
+        <h4>GPUs.</h4>
+        <p>Both kinds of model do mountains of parallel math (matrix multiplication). A <span class="pill" data-term="gpu">GPU</span> — a graphics chip repurposed for math — does that orders of magnitude faster than an ordinary CPU. To embed hundreds of millions of patents, or run the LLM over thousands of company names, we rent a GPU machine for the few hours it takes, then release it. The always-on serve box has no GPU at all.</p>
+        <p style="font-family: var(--font-mono); font-size: 12px; color: var(--type-tertiary); margin-top: 10px;">rent a GPU&nbsp; →&nbsp; run the model (hours)&nbsp; →&nbsp; release it&nbsp; →&nbsp; results baked into the artifacts</p>
+      </div>
+    </div>
+
+    <p style="margin-top: 24px;">Notice the pattern: the GPU work is <strong>build-time and ephemeral</strong>, exactly like the big <span class="pill" data-term="duckdb">DuckDB</span> build box in <a href="d2-pipeline.html">D2</a>. Rent the expensive hardware only while you need it; bake the results — the vectors, the resolved company names — into the cheap, always-on artifacts. It's the same rent-big-serve-small principle, applied to AI.</p>
   </section>
 
   <hr/>

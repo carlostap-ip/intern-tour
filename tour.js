@@ -61,6 +61,9 @@ const GLOSSARY = {
   semanticsearch: { term: 'Semantic search', short: 'Search by meaning rather than exact words. The query is turned into an embedding and matched against document embeddings by similarity — so "self-healing polymer" can surface a patent that says "autonomously repairing elastomer."' },
   vectorsearch: { term: 'Vector search (ANN)', short: 'Finding the nearest vectors to a query vector — approximate nearest-neighbor search. The engine behind semantic search: it ranks documents by how close their embeddings sit to the query\'s.' },
   quantization: { term: 'Quantization', short: 'Shrinking embeddings from big 32-bit floats to small int8 or 1-bit values, cutting their storage many-fold with little accuracy loss. The unlock that lets the whole corpus\'s vectors fit on a modest serve box.' },
+  pretrained: { term: 'Pre-trained model', short: 'A model someone else already trained on a huge dataset, which you download and use as-is instead of training your own. Training is slow and costly; reuse is instant. PaECTER — our patent-embedding model — is pre-trained and open-source (Apache-2.0).' },
+  llm: { term: 'LLM (large language model)', short: 'A big neural model trained to read and write natural language — the family behind ChatGPT and Claude. We use one in entity resolution: it reasons about whether two company-name strings refer to the same company.' },
+  gpu: { term: 'GPU', short: 'A graphics chip repurposed for math: it does thousands of multiplications at once, so neural models (embeddings, LLMs) run orders of magnitude faster on a GPU than a CPU. We rent GPU machines for the hours a model run takes, then release them — the serve box has no GPU.' },
 };
 
 // Pill tooltips — delegated so pills created later (animation FLOW/PACKETS) also work

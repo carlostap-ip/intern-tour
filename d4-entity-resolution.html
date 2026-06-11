@@ -176,7 +176,7 @@ flowchart TB
     <h3 class="feature-title" style="margin-top: 12px;">The hard cases — <em>a proposer–skeptic pass.</em></h3>
     <p>Normalization handles spelling variants. GLEIF handles known subsidiaries. But a long tail of names remains: typos, abbreviations, transliterations, historical names, holding companies with opaque names. For these, neither rule nor registry gives a confident answer.</p>
 
-    <p>For this residual set we run a two-agent pass:</p>
+    <p>For this residual set we run a two-agent pass. Both agents are <span class="pill" data-term="llm">large language models</span> (explained in <a href="d5-semantic-search.html">D5</a>) — run on a rented <span class="pill" data-term="gpu">GPU</span> at build time, never on the serve box:</p>
 
     <div class="service-row" style="margin-top: 28px; border-color: rgba(34,211,238,0.3);">
       <div class="ic">💡</div>
