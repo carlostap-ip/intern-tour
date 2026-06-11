@@ -938,3 +938,19 @@ hr {
   .expand-body, .ws-detail { display: block !important; }
   .chapter-num { -webkit-text-stroke-color: #888; color: transparent; }
 }
+
+/* Mermaid edge (arrow) labels — Mermaid's default label background is light,
+   which renders light-on-light and is unreadable on this dark theme. Force a
+   dark pill behind edge labels with light text, everywhere .mermaid-wrap is used. */
+.mermaid-wrap .edgeLabel,
+.mermaid-wrap .edgeLabel p,
+.mermaid-wrap .edgeLabel span,
+.mermaid-wrap .edgeLabels div {
+  background-color: #11162E !important;
+  color: #ECEEFB !important;
+}
+.mermaid-wrap .edgeLabel rect,
+.mermaid-wrap .edgeLabel .label-container {
+  fill: #11162E !important;
+  opacity: 1 !important;
+}
