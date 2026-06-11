@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>D5 · Why the lakehouse wins — TAP•IP Tour</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<style>
+  .service-row {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 18px;
+    padding: 20px 22px;
+    background: var(--bg-surface);
+    border: 1px solid var(--line-soft);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    align-items: start;
+  }
+  .service-row .ic { font-size: 30px; line-height: 1; text-align: center; }
+  .service-row h4 { margin: 0 0 4px; font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--type-primary); }
+  .service-row .meta { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); margin-bottom: 8px; }
+  .service-row p { margin: 0; font-size: 14px; }
+  .service-row p + p { margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a><span class="dot"></span>
+    <a href="index.html#data-track" style="color: var(--cyan);">Data</a><span class="dot"></span>
+    <a href="d1-data-engine.html">D1</a>
+    <a href="d2-pipeline.html">D2</a>
+    <a href="d3-cube.html">D3</a>
+    <a href="d4-entity-resolution.html">D4</a>
+    <a href="d5-why-lakehouse.html" class="current">D5</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">D5</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Track II · The data engine · ~6 min</div>
+      <h2 class="section-title">Why the modern lakehouse <em>wins</em>.</h2>
+      <p class="lede">Pull the threads together: why this architecture, and not a giant database, is the modern default — and what to steal for your own work.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <div class="eyebrow">Five things that make it work</div>
+    <h3 class="feature-title" style="margin-top: 12px;">The <span class="pill" data-term="lakehouse">lakehouse</span> isn't magic. <em>It's five ideas working together.</em></h3>
+    <p>Each of the previous pages in this track introduced one piece of the architecture. Here they are as a set — because the power is in how they fit together, not in any single piece alone.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin: 32px 0;">
+
+      <div class="card" style="border-color: rgba(34,211,238,0.3); background: linear-gradient(180deg, rgba(34,211,238,0.05), transparent);">
+        <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); margin-bottom: 10px;">Idea 1</div>
+        <div style="font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--type-primary); margin-bottom: 10px;">Cheap storage is the source of truth.</div>
+        <p style="font-size: 14px; margin: 0;">The <span class="pill" data-term="objectstore">object store</span> (Cloudflare R2) holds all the raw <span class="pill" data-term="parquet">Parquet</span> files. It costs little, scales without effort, and doesn't go down. Everything else is derived from these files and can be thrown away and rebuilt. <em>The lake is permanent; the serving layer is disposable.</em></p>
+      </div>
+
+      <div class="card" style="border-color: rgba(139,92,246,0.3); background: linear-gradient(180deg, rgba(139,92,246,0.05), transparent);">
+        <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--violet-glow); margin-bottom: 10px;">Idea 2</div>
+        <div style="font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--type-primary); margin-bottom: 10px;">Columnar files make scans cheap.</div>
+        <p style="font-size: 14px; margin: 0;"><span class="pill" data-term="columnar">Columnar</span> <span class="pill" data-term="parquet">Parquet</span> means an engine like <span class="pill" data-term="duckdb">DuckDB</span> reads only the columns a query needs and skips the rest. Scanning hundreds of millions of filing-year values doesn't require touching the abstract text sitting next to them on disk. Column pruning + compression makes this fast.</p>
+      </div>
+
+      <div class="card" style="border-color: rgba(34,211,238,0.3); background: linear-gradient(180deg, rgba(34,211,238,0.05), transparent);">
+        <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); margin-bottom: 10px;">Idea 3</div>
+        <div style="font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--type-primary); margin-bottom: 10px;">Pre-aggregate the hot queries.</div>
+        <p style="font-size: 14px; margin: 0;">Even fast scans take time across hundreds of millions of rows. <span class="pill" data-term="preaggregation">Pre-aggregation</span> — building the <span class="pill" data-term="cube">cube</span> once at build time — means the most common analytical questions (leaderboards, breakdowns by year and country) are answered by a single row lookup, not a full scan. Build once, read instantly.</p>
+      </div>
+
+      <div class="card" style="border-color: rgba(99,102,241,0.3); background: linear-gradient(180deg, rgba(99,102,241,0.05), transparent);">
+        <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--indigo); margin-bottom: 10px;">Idea 4</div>
+        <div style="font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--type-primary); margin-bottom: 10px;">Right engine per query shape.</div>
+        <p style="font-size: 14px; margin: 0;">No single engine is best at everything. <span class="pill" data-term="tantivy">Tantivy</span> handles full-text search (inverted-index queries); <span class="pill" data-term="duckdb">DuckDB</span> handles analytics and point lookups (columnar scans and GROUP BYs). Routing queries to the right engine is what makes each one fast — and avoids the trap of forcing one tool to do everything.</p>
+      </div>
+
+      <div class="card" style="border-color: rgba(139,92,246,0.3); background: linear-gradient(180deg, rgba(139,92,246,0.05), transparent); grid-column: span 1;">
+        <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--violet-glow); margin-bottom: 10px;">Idea 5</div>
+        <div style="font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--type-primary); margin-bottom: 10px;">Storage and compute are separate.</div>
+        <p style="font-size: 14px; margin: 0;">The build machine and the serve machine are not the same machine, and they don't need to be. Build big (lots of RAM, lots of disk) only while building. Serve small (minimal footprint) always. The <span class="pill" data-term="objectstore">object store</span> is the handoff point between them. This is the core structural idea that makes "throw away the serving layer and rebuild" cost-effective.</p>
+      </div>
+
+    </div>
+
+    <p>None of these ideas is new. What's new is that <em>all five are now cheap enough to combine at scale</em> — object storage is near-free, open-source engines like DuckDB and Tantivy are production-ready, and Parquet is the universal interchange format. The lakehouse is what you get when you assemble them intentionally.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d3">
+    <div class="eyebrow">The payoff</div>
+    <h3 class="feature-title" style="margin-top: 12px;">Reproducibility &amp; cost. <em>The boring superpower.</em></h3>
+    <p>Because the <span class="pill" data-term="objectstore">object store</span> holds the lake files and every artifact is built from them with SQL, the serving layer has a property that most production databases do not: it is completely disposable. You can delete every artifact — the <span class="pill" data-term="duckdb">DuckDB</span> files, the <span class="pill" data-term="tantivy">Tantivy</span> index, the <span class="pill" data-term="cube">cube</span> — and rebuild the whole thing from scratch. Nothing is lost, because the lake files are still there.</p>
+
+    <p>This sounds mundane until you've worked with a system where it isn't true — where the production database is the only copy of transformed data, where a migration gone wrong means a weekend of manual recovery, where "what would happen if I re-ran this from scratch?" is a question nobody wants to answer. The lakehouse answers it trivially: spin up a build box, re-run the pipeline, done.</p>
+
+    <p>The cost consequence follows directly. If the serving layer is disposable, you only pay for it when it's earning its keep. The always-on cost of a small serve box is modest; the build box runs only during the rebuild window and then shuts off. There's no requirement to run expensive compute continuously just to keep data warm. The lake is the always-on layer, and it's cheap by design.</p>
+
+    <div class="note" style="margin-top: 28px;">
+      <p style="margin: 0;"><strong>The practical test.</strong> A good sanity check for any data system: "If the serve layer exploded right now, how long would it take to recover, and would any data be permanently lost?" In a lakehouse built this way, the answer is: rebuild time, and no. That's the benchmark worth aiming for.</p>
+    </div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d4">
+    <div class="eyebrow">What's next</div>
+    <h3 class="feature-title" style="margin-top: 12px;">The same spine extends further.</h3>
+    <p>The architecture described across this track — lake files as source of truth, purpose-built engines, separation of storage and compute — is a foundation, not a ceiling. The same structural spine naturally extends toward graph queries over citation and patent-family networks, semantic search over the full-text corpus, and signals beyond patents altogether (financial disclosures, R&amp;D spend data, other data layers that attach to the same canonical entity map). These are directions, not timelines. The point is that none of them require redesigning the foundation — they're additional artifacts built on top of the same lake files, routed through the same query-dispatch pattern, benefiting from the same rebuild discipline. The architecture earns its keep precisely because it stays open to that kind of extension.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d5">
+    <div class="card" style="border-color: var(--cyan-deep); background: linear-gradient(180deg, rgba(34,211,238,0.05), transparent);">
+      <div class="eyebrow" style="margin-bottom: 12px;">For your own project</div>
+      <h3 class="feature-title" style="margin-bottom: 14px;">You rarely need a warehouse to start.</h3>
+      <p><span class="pill" data-term="duckdb">DuckDB</span> plus a folder of <span class="pill" data-term="parquet">Parquet</span> files — or a cheap bucket like R2 — is a real <span class="pill" data-term="lakehouse">lakehouse</span> on a laptop for roughly nothing. For most projects at intern scale, that's all you need: write your data out as Parquet, query it with DuckDB, and you get columnar performance and SQL expressiveness without standing up any infrastructure at all.</p>
+      <p>Add <span class="pill" data-term="preaggregation">pre-aggregation</span> only when a specific query gets slow in practice — measure first, optimize second. Don't build the <span class="pill" data-term="cube">cube</span> because it sounds impressive; build it because you identified a bottleneck and this is the right fix.</p>
+      <p style="margin-bottom: 0;">Reach for a dedicated search engine like <span class="pill" data-term="tantivy">Tantivy</span> (or Meilisearch, or Typesense) only when SQL <code>LIKE</code> / full-text search gets genuinely slow or limited. The threshold is real user pain, not anticipated pain. The same principles that shape this production system — cheap storage as truth, right engine per query shape, separation of build and serve — apply just as cleanly at a fraction of the scale. Start small, keep the files, and the architecture grows with you.</p>
+    </div>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="d4-entity-resolution.html" class="foot-link prev">
+      <span class="lbl">← Previous</span>
+      <span class="tt">D4 · Entity resolution</span>
+    </a>
+    <a href="index.html#data-track" class="foot-link next">
+      <span class="lbl">Back to the index →</span>
+      <span class="tt">The tour index</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+
+<script src="tour.js"></script>
+</body>
+</html>
