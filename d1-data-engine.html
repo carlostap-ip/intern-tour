@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>D1 · The data engine — TAP•IP Tour</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<style>
+  .mermaid-wrap {
+    background: var(--bg-surface);
+    border: 1px solid var(--line-soft);
+    border-radius: 14px;
+    padding: 28px 24px;
+    margin: 24px 0;
+    overflow-x: auto;
+  }
+  .mermaid-wrap .mermaid { background: transparent !important; }
+  .mermaid-wrap svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+
+  .service-row {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 18px;
+    padding: 20px 22px;
+    background: var(--bg-surface);
+    border: 1px solid var(--line-soft);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    align-items: start;
+  }
+  .service-row .ic { font-size: 30px; line-height: 1; text-align: center; }
+  .service-row h4 { margin: 0 0 4px; font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--type-primary); }
+  .service-row .meta { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); margin-bottom: 8px; }
+  .service-row p { margin: 0; font-size: 14px; }
+  .service-row p + p { margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a><span class="dot"></span>
+    <a href="index.html#data-track" style="color: var(--cyan);">Data</a><span class="dot"></span>
+    <a href="d1-data-engine.html" class="current">D1</a>
+    <a href="d2-pipeline.html">D2</a>
+    <a href="d3-cube.html">D3</a>
+    <a href="d4-entity-resolution.html">D4</a>
+    <a href="d5-why-lakehouse.html">D5</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">D1</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Track II · The data engine · ~6 min</div>
+      <h2 class="section-title">The other half — <em>an analytics engine, not a database</em>.</h2>
+      <p class="lede">The app you just toured is one half of the company. The other half ingests the world's patent data and turns it into answers. It's built on completely different foundations — here's why.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <div class="eyebrow">Two different jobs</div>
+    <h3 class="feature-title" style="margin-top: 12px;">One machine writes. The other <em>counts</em>.</h3>
+    <p>The TAP•IP app you toured in chapters 01–15 is an <strong>operational system</strong>: one tenant opens their workspace, creates an idea, saves a note. Everything happens one row at a time, one user at a time. Writes are frequent; queries are narrow.</p>
+
+    <p>The data engine is a completely different kind of machine. Its questions look like this: <em>"How many patents did every Fortune-500 company file per year for the last decade?"</em> That's an <span class="pill" data-term="olap">OLAP</span> query — it scans hundreds of millions of records, groups them by company and year, and returns a leaderboard. No single tenant, no narrow row lookup; the whole world's corpus at once.</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 32px 0;">
+      <div class="card" style="border-color: rgba(139,92,246,0.25); background: linear-gradient(180deg, rgba(139,92,246,0.05), transparent);">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+          <span style="background: var(--violet-glow); color: var(--bg-ink); padding: 3px 10px; border-radius: 999px; font-family: var(--font-mono); font-size: 11px; font-weight: 600;">OLTP · the app</span>
+        </div>
+        <div style="font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--type-primary); margin-bottom: 8px;">Row at a time.</div>
+        <p style="font-size: 14px; margin: 0;">"Save this idea." "Load my workspace." One user, narrow queries, heavy writes. Postgres is perfect.</p>
+      </div>
+      <div class="card" style="border-color: rgba(34,211,238,0.25); background: linear-gradient(180deg, rgba(34,211,238,0.05), transparent);">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+          <span style="background: var(--cyan); color: var(--bg-ink); padding: 3px 10px; border-radius: 999px; font-family: var(--font-mono); font-size: 11px; font-weight: 600;">OLAP · the engine</span>
+        </div>
+        <div style="font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--type-primary); margin-bottom: 8px;">Corpus at a time.</div>
+        <p style="font-size: 14px; margin: 0;">"Rank every company by filings, worldwide, 2000–2024." Hundreds of millions of records, world-spanning aggregates. Needs a different machine entirely.</p>
+      </div>
+    </div>
+
+    <p style="color: var(--type-tertiary); font-size: 14px;">One product note: this is an <strong>innovation-analytics engine</strong>. Patents are signal #1, but they're one of several signals the platform brings together to paint the full picture of who's innovating and where.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d3">
+    <div class="eyebrow">Why not just a big Postgres?</div>
+    <h3 class="feature-title" style="margin-top: 12px;">The operational database is tuned for <em>the opposite</em> job.</h3>
+    <p>Postgres stores rows. To answer "patents per company per year," it has to read every row, check every column it needs, and group the results. That's fine for thousands of rows. At hundreds of millions of rows spread across a decade's worth of filings from dozens of countries, it gets slow and expensive fast — you'd need a very large machine running all the time just to keep the index warm.</p>
+
+    <p>The deeper problem is shape. Postgres stores each row together on disk — great for fetching "give me everything about patent #X123." But an analytics query only needs two or three columns out of thirty, and it needs them across <em>every</em> record. Row-oriented storage forces you to read the columns you don't need, every single time.</p>
+
+    <p>This tension — operational writes vs. analytical reads — is old and well-understood. It motivates a whole different class of architecture: the <span class="pill" data-term="lakehouse">lakehouse</span>.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d4">
+    <div class="eyebrow">Lake → warehouse → lakehouse</div>
+    <h3 class="feature-title" style="margin-top: 12px;">Three ideas, one clean solution.</h3>
+    <p>To understand the lakehouse, you need to meet its two parents first.</p>
+
+    <div class="service-row" style="margin-top: 28px;">
+      <div class="ic">🏞️</div>
+      <div>
+        <div class="meta">Idea 1</div>
+        <h4>The <span class="pill" data-term="datalake">data lake</span>.</h4>
+        <p>Just store everything as raw files in cheap object storage — an <span class="pill" data-term="objectstore">object store</span> like S3 or Cloudflare R2. Flat files, no schema enforced, trivially cheap to write and hold forever. The catch: querying raw files is slow unless you build a lot of extra infrastructure on top.</p>
+      </div>
+    </div>
+
+    <div class="service-row">
+      <div class="ic">🏭</div>
+      <div>
+        <div class="meta">Idea 2</div>
+        <h4>The <span class="pill" data-term="warehouse">data warehouse</span>.</h4>
+        <p>A purpose-built analytics store (BigQuery, Redshift, Snowflake) that is very fast at <span class="pill" data-term="olap">OLAP</span> queries. The catch: you must <em>load</em> your data into it on a separate step, pay per query, and often keep a copy of your data in a format the warehouse controls.</p>
+      </div>
+    </div>
+
+    <div class="service-row" style="border-color: rgba(34,211,238,0.3);">
+      <div class="ic">✨</div>
+      <div>
+        <div class="meta">Idea 3 — what we use</div>
+        <h4>The lakehouse.</h4>
+        <p>Run warehouse-speed analytics <em>directly</em> on the lake's files — no separate load step, no copy. This works because modern <span class="pill" data-term="columnar">columnar</span> file formats like <span class="pill" data-term="parquet">Parquet</span> store data column-by-column, so an analytics engine can read only the columns it needs and skip everything else. The files live in the <span class="pill" data-term="objectstore">object store</span> (cheap, durable, infinitely scalable); the query engine reads them directly at full speed.</p>
+        <p style="margin-top: 8px; color: var(--type-tertiary);">Ours: raw <span class="pill" data-term="parquet">Parquet</span> files on Cloudflare R2 (the lake), queried by <span class="pill" data-term="duckdb">DuckDB</span> (the engine). No load step. No copy. No warehouse bill.</p>
+      </div>
+    </div>
+
+    <p>Parquet is worth a moment: instead of storing a row as one contiguous chunk, it groups all values for the same column together. Ask "sum of filings" and the engine reads one thin strip of the file and skips the rest. At ~147.6M resolved rows that difference is enormous.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d5">
+    <div class="eyebrow">The big picture</div>
+    <h3 class="feature-title" style="margin-top: 12px;">From patent offices to answers.</h3>
+    <p>Here's the full data flow at a glance. Each box is its own page in this track.</p>
+
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+  PO["🏛️ Patent offices<br/>EPO · USPTO"]
+  R2["☁️ Object store<br/>R2 · Parquet"]
+  BUILD["⚙️ DuckDB build<br/>transform + cube"]
+  SERVE["📦 Serving artifacts<br/>search · lookup · cube"]
+  API["🔌 API<br/>analytics + search"]
+  PO --> R2
+  R2 --> BUILD
+  BUILD --> SERVE
+  SERVE --> API
+</pre>
+    </div>
+
+    <p>Raw patent data arrives from <strong>EPO BDDS</strong> (free public area, no auth) and <strong>USPTO</strong> bulk data. It lands in Cloudflare R2 as <span class="pill" data-term="parquet">Parquet</span> files — the lake. A build step uses <span class="pill" data-term="duckdb">DuckDB</span> to transform, deduplicate, and pre-aggregate the data into four serving artifacts: a <span class="pill" data-term="tantivy">Tantivy</span> full-text search index, a lean lookup DB, a slim analytics table, and the <span class="pill" data-term="cube">cube</span>. Those artifacts power the API that the TAP•IP app calls.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d6">
+    <div class="note">
+      <p style="margin: 0;"><strong>Each box gets its own page next.</strong> <a href="d2-pipeline.html">D2</a> walks the full ingest pipeline — how raw XML from the patent offices becomes clean Parquet on R2. <a href="d3-cube.html">D3</a> explains what the <span class="pill" data-term="cube">cube</span> is and why pre-aggregation matters. <a href="d4-entity-resolution.html">D4</a> covers <span class="pill" data-term="entityresolution">entity resolution</span> — how we figure out that "Samsung Electronics Co., Ltd." and "SAMSUNG ELECTRONICS" are the same company. <a href="d5-why-lakehouse.html">D5</a> closes the loop on why this whole approach wins over a traditional warehouse at our scale.</p>
+    </div>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="index.html#data-track" class="foot-link prev">
+      <span class="lbl">← Previous</span>
+      <span class="tt">The tour index</span>
+    </a>
+    <a href="d2-pipeline.html" class="foot-link next">
+      <span class="lbl">Next chapter →</span>
+      <span class="tt">D2 · The pipeline</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    securityLevel: 'loose',
+    themeVariables: {
+      background: 'transparent',
+      mainBkg: '#161C3A',
+      secondBkg: '#1A2147',
+      tertiaryColor: '#11162E',
+      primaryBorderColor: '#A78BFA',
+      secondaryBorderColor: '#67E8F9',
+      tertiaryBorderColor: '#818CF8',
+      lineColor: '#67E8F9',
+      primaryTextColor: '#ECEEFB',
+      secondaryTextColor: '#ECEEFB',
+      tertiaryTextColor: '#ECEEFB',
+      textColor: '#ECEEFB',
+      titleColor: '#ECEEFB',
+      labelTextColor: '#ECEEFB',
+      clusterBkg: '#0B0F23',
+      clusterBorder: '#232C56',
+      fontFamily: '"Geist", "Söhne", system-ui, sans-serif',
+      fontSize: '14px',
+    },
+    flowchart: { curve: 'basis', useMaxWidth: true, htmlLabels: true, padding: 16 },
+  });
+</script>
+<script src="tour.js"></script>
+</body>
+</html>
