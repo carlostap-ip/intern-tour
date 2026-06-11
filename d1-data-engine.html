@@ -40,6 +40,102 @@
   .service-row .meta { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); margin-bottom: 8px; }
   .service-row p { margin: 0; font-size: 14px; }
   .service-row p + p { margin-top: 8px; }
+
+  /* ── Actor cards (pipeline widget) ───────────────────────── */
+  .actor-track-5 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 12px;
+    align-items: stretch;
+    margin-bottom: 24px;
+  }
+  .actor-card {
+    padding: 18px 16px;
+    background: var(--bg-deep);
+    border: 1px solid var(--line-soft);
+    border-radius: 12px;
+    text-align: center;
+    transition: all .35s var(--ease-out);
+    opacity: 0.55;
+  }
+  .actor-card.active { opacity: 1; transform: translateY(-2px); }
+  .actor-card .ac-icon { font-size: 28px; line-height: 1; margin-bottom: 8px; }
+  .actor-card .ac-name { font-family: var(--font-display); font-style: italic; font-size: 20px; color: var(--type-primary); line-height: 1.1; }
+  .actor-card .ac-sub  { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--type-tertiary); margin-top: 4px; }
+
+  /* Per-actor active colors for the pipeline widget */
+  .actor-card[data-actor="office"].active {
+    background: linear-gradient(135deg, rgba(252,211,77,0.15), rgba(252,211,77,0.04));
+    border-color: var(--gold);
+    box-shadow: 0 0 30px -4px rgba(252,211,77,0.45);
+  }
+  .actor-card[data-actor="office"].active .ac-sub { color: var(--gold); }
+
+  .actor-card[data-actor="lake"].active {
+    background: linear-gradient(135deg, rgba(34,211,238,0.18), rgba(34,211,238,0.04));
+    border-color: var(--cyan);
+    box-shadow: 0 0 30px -4px rgba(34,211,238,0.45);
+  }
+  .actor-card[data-actor="lake"].active .ac-sub { color: var(--cyan); }
+
+  .actor-card[data-actor="build"].active {
+    background: linear-gradient(135deg, rgba(139,92,246,0.18), rgba(139,92,246,0.04));
+    border-color: var(--violet-glow);
+    box-shadow: 0 0 30px -4px rgba(139,92,246,0.45);
+  }
+  .actor-card[data-actor="build"].active .ac-sub { color: var(--violet-glow); }
+
+  .actor-card[data-actor="serve"].active {
+    background: linear-gradient(135deg, rgba(167,139,250,0.18), rgba(167,139,250,0.04));
+    border-color: #C4B5FD;
+    box-shadow: 0 0 30px -4px rgba(167,139,250,0.45);
+  }
+  .actor-card[data-actor="serve"].active .ac-sub { color: #C4B5FD; }
+
+  .actor-card[data-actor="analyst"].active {
+    background: linear-gradient(135deg, rgba(34,211,238,0.15), rgba(34,211,238,0.04));
+    border-color: var(--cyan);
+    box-shadow: 0 0 30px -4px rgba(34,211,238,0.45);
+  }
+  .actor-card[data-actor="analyst"].active .ac-sub { color: var(--cyan); }
+
+  @media (max-width: 1024px) { .actor-track-5 { grid-template-columns: 1fr 1fr 1fr; } }
+  @media (max-width: 768px)  { .actor-track-5 { grid-template-columns: 1fr; } }
+
+  /* ── Data packet panel ──────────────────────────────────── */
+  .packet-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--violet-glow);
+    margin: 22px 0 8px;
+  }
+  .flow-packet {
+    background: var(--bg-deep);
+    border: 1px solid var(--line-soft);
+    border-left: 3px solid var(--violet-glow);
+    border-radius: 12px;
+    padding: 18px 22px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.75;
+    color: var(--type-secondary);
+    overflow-x: auto;
+    white-space: pre;
+    min-height: 60px;
+  }
+  .flow-packet .k { color: #A78BFA; }
+  .flow-packet .s { color: #67E8F9; }
+  .flow-packet .n { color: #FCD34D; }
+  .flow-packet .c { color: var(--type-tertiary); font-style: italic; }
+  .flow-packet .p { color: var(--cyan); }
+  .flow-packet .o { color: var(--type-tertiary); }
+  @media (max-width: 768px) { .flow-packet { padding: 14px 16px; font-size: 11.5px; } }
+
+  /* ── 6-column flow-steps override for the pipeline widget ── */
+  .pipe-anim .flow-steps { grid-template-columns: repeat(6, 1fr) !important; }
+  @media (max-width: 768px) { .pipe-anim .flow-steps { grid-template-columns: repeat(3, 1fr) !important; } }
 </style>
 </head>
 <body>
@@ -69,7 +165,7 @@
   <header class="chapter-head fade-in d1">
     <div class="chapter-num">D1</div>
     <div class="chapter-info">
-      <div class="eyebrow">Track II · The data engine · ~6 min</div>
+      <div class="eyebrow">Track II · The data engine · ~10 min</div>
       <h2 class="section-title">The other half — <em>an analytics engine, not a database</em>.</h2>
       <p class="lede">The app you just toured is one half of the company. The other half ingests the world's patent data and turns it into answers. It's built on completely different foundations — here's why.</p>
     </div>
@@ -127,6 +223,12 @@
         <div class="meta">Idea 1</div>
         <h4>The <span class="pill" data-term="datalake">data lake</span>.</h4>
         <p>Just store everything as raw files in cheap object storage — an <span class="pill" data-term="objectstore">object store</span> like S3 or Cloudflare R2. Flat files, no schema enforced, trivially cheap to write and hold forever. The catch: querying raw files is slow unless you build a lot of extra infrastructure on top.</p>
+        <div class="mermaid-wrap" style="margin-top: 16px;">
+<pre class="mermaid">
+flowchart LR
+  Files["📁 raw files"] -. "slow · build it yourself" .-> Q["your query"]
+</pre>
+        </div>
       </div>
     </div>
 
@@ -136,6 +238,12 @@
         <div class="meta">Idea 2</div>
         <h4>The <span class="pill" data-term="warehouse">data warehouse</span>.</h4>
         <p>A purpose-built analytics store (BigQuery, Redshift, Snowflake) that is very fast at <span class="pill" data-term="olap">OLAP</span> queries. The catch: you must <em>load</em> your data into it on a separate step, pay per query, and often keep a copy of your data in a format the warehouse controls.</p>
+        <div class="mermaid-wrap" style="margin-top: 16px;">
+<pre class="mermaid">
+flowchart LR
+  Files["📁 raw files"] -- "COPY + LOAD" --> Store[("🏭 fast store<br/>2nd copy")] -- fast --> A["answer"]
+</pre>
+        </div>
       </div>
     </div>
 
@@ -146,7 +254,39 @@
         <h4>The lakehouse.</h4>
         <p>Run warehouse-speed analytics <em>directly</em> on the lake's files — no separate load step, no copy. This works because modern <span class="pill" data-term="columnar">columnar</span> file formats like <span class="pill" data-term="parquet">Parquet</span> store data column-by-column, so an analytics engine can read only the columns it needs and skip everything else. The files live in the <span class="pill" data-term="objectstore">object store</span> (cheap, durable, infinitely scalable); the query engine reads them directly at full speed.</p>
         <p style="margin-top: 8px; color: var(--type-tertiary);">Ours: raw <span class="pill" data-term="parquet">Parquet</span> files on Cloudflare R2 (the lake), queried by <span class="pill" data-term="duckdb">DuckDB</span> (the engine). No load step. No copy. No warehouse bill.</p>
+        <div class="mermaid-wrap" style="margin-top: 16px;">
+<pre class="mermaid">
+flowchart LR
+  Files["📁 raw files in object store"] -- "engine reads directly" --> A["answer"]
+</pre>
+        </div>
       </div>
+    </div>
+
+    <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--type-tertiary); margin: 32px 0 8px;">The difference in one picture</div>
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+  subgraph Lake["🏞️ Data lake"]
+    direction LR
+    LF["📁 raw files"] -. "slow · DIY" .-> LQ["your query"]
+  end
+  subgraph Warehouse["🏭 Data warehouse"]
+    direction LR
+    WF["📁 raw files"] -- "COPY + LOAD" --> WS[("🏭 fast store<br/>2nd copy")] -- fast --> WA["answer"]
+  end
+  subgraph Lakehouse["✨ Lakehouse — what we use"]
+    direction LR
+    KF["📁 raw files in object store"] -- "engine reads directly" --> KA["answer"]
+  end
+</pre>
+    </div>
+
+    <div class="note" style="margin: 28px 0;">
+      <p style="margin: 0 0 10px;"><strong>An analogy if you think in storefronts, not servers.</strong></p>
+      <p style="margin: 0 0 10px;">A <strong>data warehouse</strong> is renting a pristine showroom downtown — to sell anything you must truck your inventory across town into it (the <em>load</em> step), keep a second copy there, and pay rent for every hour it's open (a cost per query).</p>
+      <p style="margin: 0 0 10px;">A <strong>data lake</strong> is your cheap warehouse on the edge of town: all the inventory is there, but there's no storefront, so customers can't easily shop it.</p>
+      <p style="margin: 0;">A <strong>lakehouse</strong> puts a smart sales counter <em>inside your own cheap warehouse</em> — customers buy straight off the shelves. No trucking, no second copy, no downtown rent, and just as fast to shop.</p>
     </div>
 
     <p>Parquet is worth a moment: instead of storing a row as one contiguous chunk, it groups all values for the same column together. Ask "sum of filings" and the engine reads one thin strip of the file and skips the rest. At ~147.6M resolved rows that difference is enormous.</p>
@@ -175,6 +315,59 @@ flowchart LR
     </div>
 
     <p>Raw patent data arrives from <strong>EPO BDDS</strong> (free public area, no auth) and <strong>USPTO</strong> bulk data. It lands in Cloudflare R2 as <span class="pill" data-term="parquet">Parquet</span> files — the lake. A build step uses <span class="pill" data-term="duckdb">DuckDB</span> to transform, deduplicate, and pre-aggregate the data into four serving artifacts: a <span class="pill" data-term="tantivy">Tantivy</span> full-text search index, a lean <span class="pill" data-term="sqlite">SQLite</span> lookup DB, a slim analytics table, and the <span class="pill" data-term="cube">cube</span>. Those artifacts power the API that the TAP•IP app calls.</p>
+
+    <p style="margin-top: 28px; color: var(--type-tertiary);">Press ▶ Play to watch one batch of patent data travel the whole pipeline.</p>
+
+    <div class="flow pipe-anim">
+      <div class="flow-controls">
+        <button class="btn btn-primary" id="pipe-play">▶ Play</button>
+        <button class="btn" id="pipe-reset">⟲ Reset</button>
+      </div>
+
+      <div class="actor-track-5">
+        <div class="actor-card" data-actor="office" data-track="pipe">
+          <div class="ac-icon">🏛️</div>
+          <div class="ac-name">Patent office</div>
+          <div class="ac-sub">EPO · USPTO</div>
+        </div>
+        <div class="actor-card" data-actor="lake" data-track="pipe">
+          <div class="ac-icon">☁️</div>
+          <div class="ac-name">R2 lake</div>
+          <div class="ac-sub">Parquet</div>
+        </div>
+        <div class="actor-card" data-actor="build" data-track="pipe">
+          <div class="ac-icon">⚙️</div>
+          <div class="ac-name">Build box</div>
+          <div class="ac-sub">DuckDB</div>
+        </div>
+        <div class="actor-card" data-actor="serve" data-track="pipe">
+          <div class="ac-icon">📦</div>
+          <div class="ac-name">Serve box</div>
+          <div class="ac-sub">SQLite · Tantivy · cube</div>
+        </div>
+        <div class="actor-card" data-actor="analyst" data-track="pipe">
+          <div class="ac-icon">👤</div>
+          <div class="ac-name">Analyst</div>
+          <div class="ac-sub">asks a question</div>
+        </div>
+      </div>
+
+      <div class="flow-steps" data-flow="pipe">
+        <div class="flow-step" data-step="0"><span class="step-num">01</span>Office<br/>publishes</div>
+        <div class="flow-step" data-step="1"><span class="step-num">02</span>Land in<br/>R2 lake</div>
+        <div class="flow-step" data-step="2"><span class="step-num">03</span>Clean &amp;<br/>resolve</div>
+        <div class="flow-step" data-step="3"><span class="step-num">04</span>Build<br/>artifacts</div>
+        <div class="flow-step" data-step="4"><span class="step-num">05</span>Publish<br/>+ pull</div>
+        <div class="flow-step" data-step="5"><span class="step-num">06</span>Analyst<br/>gets answer</div>
+      </div>
+
+      <div class="flow-detail" data-detail="pipe">
+        <em>Press ▶ Play to send a batch through.</em>
+      </div>
+
+      <div class="packet-label">↓ Data at this stage</div>
+      <div class="flow-packet" data-packet="pipe"><span class="c">// Press ▶ Play — the data at each stage appears here.</span></div>
+    </div>
   </section>
 
   <hr/>
@@ -229,5 +422,121 @@ flowchart LR
   });
 </script>
 <script src="tour.js"></script>
+<script>
+/* ============================================================
+ * Pipeline animation — copied verbatim from 06-realtime.html
+ * createAnimation({ prefix, FLOW, PACKETS, STEP_ACTOR, intervalMs })
+ * ============================================================ */
+
+function createAnimation({ prefix, FLOW, PACKETS, STEP_ACTOR, intervalMs = 1500 }) {
+  const steps      = document.querySelectorAll(`[data-flow="${prefix}"] .flow-step`);
+  const detail     = document.querySelector(`[data-detail="${prefix}"]`);
+  const packet     = document.querySelector(`[data-packet="${prefix}"]`);
+  const playBtn    = document.getElementById(`${prefix}-play`);
+  const resetBtn   = document.getElementById(`${prefix}-reset`);
+  const actorCards = document.querySelectorAll(`[data-track="${prefix}"]`);
+  const actorArrow = document.querySelector(`[data-arrow="${prefix}"]`);
+
+  const PLACEHOLDER_DETAIL = detail.innerHTML;
+  const PLACEHOLDER_PACKET = packet.innerHTML;
+
+  let intv = null, step = 0;
+
+  function setActor(activeActor) {
+    actorCards.forEach(c => {
+      const isActive = Array.isArray(activeActor)
+        ? activeActor.includes(c.dataset.actor)
+        : c.dataset.actor === activeActor;
+      c.classList.toggle('active', isActive);
+    });
+    if (actorArrow) {
+      // Light arrow when active actor differs from server (i.e. cross-boundary)
+      const involvesNonServer = Array.isArray(activeActor)
+        ? activeActor.some(a => a !== 'server')
+        : activeActor !== 'server';
+      actorArrow.classList.toggle('active', !!activeActor && involvesNonServer);
+    }
+  }
+
+  function show(i) {
+    steps.forEach((s, idx) => {
+      s.classList.remove('active');
+      if (idx < i) s.classList.add('played'); else s.classList.remove('played');
+    });
+    if (i < steps.length) {
+      steps[i].classList.add('active');
+      detail.innerHTML = FLOW[i];
+      packet.innerHTML = PACKETS[i];
+      setActor(STEP_ACTOR[i]);
+    }
+  }
+
+  playBtn.addEventListener('click', () => {
+    if (intv) { clearInterval(intv); intv = null; playBtn.innerHTML = '▶ Play'; return; }
+    step = 0;
+    playBtn.innerHTML = '⏸ Pause';
+    show(step);
+    intv = setInterval(() => {
+      step++;
+      if (step >= steps.length) {
+        clearInterval(intv); intv = null; playBtn.innerHTML = '▶ Play';
+        steps.forEach(s => s.classList.add('played'));
+        steps[steps.length-1].classList.add('active');
+        return;
+      }
+      show(step);
+    }, intervalMs);
+  });
+
+  resetBtn.addEventListener('click', () => {
+    if (intv) { clearInterval(intv); intv = null; playBtn.innerHTML = '▶ Play'; }
+    steps.forEach(s => { s.classList.remove('active'); s.classList.remove('played'); });
+    actorCards.forEach(c => c.classList.remove('active'));
+    if (actorArrow) actorArrow.classList.remove('active');
+    detail.innerHTML = PLACEHOLDER_DETAIL;
+    packet.innerHTML = PLACEHOLDER_PACKET;
+  });
+
+  steps.forEach((s, i) => s.addEventListener('click', () => {
+    if (intv) { clearInterval(intv); intv = null; playBtn.innerHTML = '▶ Play'; }
+    show(i);
+  }));
+}
+
+/* ============================================================
+ * ANIMATION — PIPELINE (6 steps)
+ * ============================================================ */
+createAnimation({
+  prefix: 'pipe',
+  STEP_ACTOR: ['office', ['office','lake'], ['lake','build'], 'build', ['build','serve'], ['serve','analyst']],
+  FLOW: [
+    '<strong>01 · Patent office publishes.</strong> The office releases its bulk data — millions of records as raw files. No database, just files we download.',
+    '<strong>02 · Land in the R2 lake.</strong> We land it untouched in the R2 lake as <span class="pill" data-term="parquet">Parquet</span>. Cheap to store; nothing transformed yet — this is the <span class="pill" data-term="datalake">"lake."</span>',
+    '<strong>03 · Clean and resolve.</strong> A big build box spins up, reads the <span class="pill" data-term="parquet">Parquet</span>, cleans and de-duplicates it, and resolves company names (<span class="pill" data-term="entityresolution">entity resolution</span>).',
+    '<strong>04 · Build the four artifacts.</strong> From the clean data the build box builds the four serving artifacts: the <span class="pill" data-term="sqlite">SQLite</span> lookup, the <span class="pill" data-term="tantivy">Tantivy</span> search index, the slim analytics table, and the <span class="pill" data-term="cube">cube</span>.',
+    '<strong>05 · Publish and pull.</strong> The artifacts are published back to R2; the small always-on serve box pulls them down, and the big build box shuts off.',
+    '<strong>06 · Analyst asks a question.</strong> An analyst asks "who\'s filing the most battery patents?" The serve box answers instantly from the <span class="pill" data-term="cube">cube</span> — no patent office, no build box involved.',
+  ],
+  PACKETS: [
+    // 00 — raw record from the office
+    '<span class="c">// raw record from the office</span>\n{ <span class="p">pub</span>: <span class="s">"EP1234567"</span>, <span class="p">applicant</span>: <span class="s">"SAMSUNG ELECTRONICS CO LTD"</span>, <span class="p">year</span>: <span class="n">2023</span> }',
+
+    // 01 — Parquet in R2
+    '<span class="c">// Parquet in R2 — columnar, compressed</span>\npub_number | country | year | applicant | abstract …\n<span class="c">// just files in object storage; not queried yet</span>',
+
+    // 02 — cleaned + entity resolved
+    '<span class="c">// cleaned + resolved</span>\n<span class="s">"SAMSUNG ELECTRONICS CO LTD"</span> → <span class="s">"Samsung Electronics"</span>\n<span class="c">// rolled up to ultimate parent: Samsung</span>',
+
+    // 03 — four artifacts built
+    '<span class="c">// built once, from the clean data:</span>\nSQLite lookup   <span class="c">// patent-by-number, family, citations</span>\nTantivy index   <span class="c">// keyword search</span>\nslim table      <span class="c">// ad-hoc analytics</span>\ncube            <span class="c">// pre-aggregated leaderboards</span>',
+
+    // 04 — publish + pull
+    '<span class="c">// artifacts → R2 → serve box pulls them</span>\nserve box: SQLite + Tantivy + cube ready\n<span class="c">// build box shuts down (pay only while building)</span>',
+
+    // 05 — question + answer
+    '<span class="c">// analyst asks:</span>\n<span class="s">"top battery-patent filers, 2023"</span>\n<span class="c">// → one cube lookup →</span>\n1. Samsung   2. LG   3. CATL …  <span class="c">// answered instantly (illustrative example)</span>',
+  ],
+});
+</script>
 </body>
 </html>
