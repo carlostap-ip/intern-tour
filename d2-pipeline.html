@@ -141,7 +141,93 @@ flowchart LR
 
     <p>Alongside normalization, this stage is also where the <strong><span class="pill" data-term="entityresolution">entity-resolution</span> spine attaches</strong>. "Samsung Electronics Co., Ltd." and "SAMSUNG ELECTRONICS CO LTD" and "Samsung Electronics" are the same company — but they appear as different strings in the raw data. The entity-resolution layer (covered in depth in <a href="d4-entity-resolution.html">D4</a>) resolves these into a single canonical identity, so analytics can roll up all of a company's filings regardless of how the name was spelled in each jurisdiction.</p>
 
-    <p>This stage is deliberately kept simple: clean, map to schema, attach entity spine. Nothing fancy. The next two stages do the heavy analytical work.</p>
+    <div style="margin: 28px 0 8px;">
+      <div class="eyebrow" style="margin-bottom: 6px;">See it happen</div>
+      <h4 style="font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--type-primary); margin: 0 0 6px;">Two formats in, one row out.</h4>
+      <p style="font-size: 14px; color: var(--type-secondary); margin: 0 0 18px;">The same invention, filed at two offices. Here's the actual (simplified) bulk XML each one ships — watch how differently they tag the very same facts:</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+      <div>
+        <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); margin-bottom: 6px;">EPO BDDS · DOCDB-style XML</div>
+        <pre style="margin:0; background: var(--bg-deep); border:1px solid var(--line-soft); border-left:3px solid var(--cyan); border-radius:10px; padding:14px 16px; font-family: var(--font-mono); font-size:11.5px; line-height:1.6; color: var(--type-secondary); overflow-x:auto; white-space:pre;">&lt;exchange-document country="EP"
+                   doc-number="1234567" kind="A1"&gt;
+ &lt;bibliographic-data&gt;
+  &lt;publication-reference&gt;&lt;document-id&gt;
+   &lt;country&gt;EP&lt;/country&gt;
+   &lt;doc-number&gt;1234567&lt;/doc-number&gt;
+   &lt;kind&gt;A1&lt;/kind&gt;
+   &lt;date&gt;20230315&lt;/date&gt;
+  &lt;/document-id&gt;&lt;/publication-reference&gt;
+  &lt;invention-title lang="en"&gt;Self-healing
+   polymer composition&lt;/invention-title&gt;
+  &lt;parties&gt;&lt;applicants&gt;&lt;applicant&gt;
+   &lt;applicant-name&gt;&lt;name&gt;<span style="color: var(--gold);">SAMSUNG
+    ELECTRONICS CO., LTD.</span>&lt;/name&gt;
+   &lt;/applicant-name&gt;
+  &lt;/applicant&gt;&lt;/applicants&gt;&lt;/parties&gt;
+ &lt;/bibliographic-data&gt;
+&lt;/exchange-document&gt;</pre>
+      </div>
+      <div>
+        <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px;">USPTO · grant red-book XML</div>
+        <pre style="margin:0; background: var(--bg-deep); border:1px solid var(--line-soft); border-left:3px solid var(--gold); border-radius:10px; padding:14px 16px; font-family: var(--font-mono); font-size:11.5px; line-height:1.6; color: var(--type-secondary); overflow-x:auto; white-space:pre;">&lt;us-patent-grant&gt;
+ &lt;us-bibliographic-data-grant&gt;
+  &lt;publication-reference&gt;&lt;document-id&gt;
+   &lt;country&gt;US&lt;/country&gt;
+   &lt;doc-number&gt;11000029&lt;/doc-number&gt;
+   &lt;kind&gt;B2&lt;/kind&gt;
+   &lt;date&gt;20230321&lt;/date&gt;
+  &lt;/document-id&gt;&lt;/publication-reference&gt;
+  &lt;invention-title&gt;Self-repairing
+   polymer network&lt;/invention-title&gt;
+  &lt;assignees&gt;&lt;assignee&gt;
+   &lt;orgname&gt;<span style="color: var(--gold);">Samsung Electronics
+    Co., Ltd.</span>&lt;/orgname&gt;
+  &lt;/assignee&gt;&lt;/assignees&gt;
+ &lt;/us-bibliographic-data-grant&gt;
+&lt;/us-patent-grant&gt;</pre>
+      </div>
+    </div>
+
+    <div style="text-align:center; color: var(--cyan); font-family: var(--font-mono); font-size: 12px; margin: 16px 0;">↓ &nbsp; parse · map to one schema · resolve the company name &nbsp; ↓</div>
+
+    <div style="overflow-x:auto;">
+      <table style="width:100%; border-collapse:collapse; font-family: var(--font-mono); font-size: 12px; background: var(--bg-deep); border:1px solid var(--line-soft); border-radius:10px; overflow:hidden;">
+        <thead>
+          <tr style="color: var(--type-tertiary); text-align:left;">
+            <th style="padding:10px 12px; border-bottom:1px solid var(--line-soft); font-weight:500;">pub_number</th>
+            <th style="padding:10px 12px; border-bottom:1px solid var(--line-soft); font-weight:500;">country</th>
+            <th style="padding:10px 12px; border-bottom:1px solid var(--line-soft); font-weight:500;">pub_year</th>
+            <th style="padding:10px 12px; border-bottom:1px solid var(--line-soft); font-weight:500;">title</th>
+            <th style="padding:10px 12px; border-bottom:1px solid var(--line-soft); font-weight:500;">applicant</th>
+            <th style="padding:10px 12px; border-bottom:1px solid var(--line-soft); font-weight:500;">ultimate_parent</th>
+          </tr>
+        </thead>
+        <tbody style="color: var(--type-secondary);">
+          <tr>
+            <td style="padding:10px 12px; border-bottom:1px solid var(--line-soft);">EP1234567</td>
+            <td style="padding:10px 12px; border-bottom:1px solid var(--line-soft);">EP</td>
+            <td style="padding:10px 12px; border-bottom:1px solid var(--line-soft);">2023</td>
+            <td style="padding:10px 12px; border-bottom:1px solid var(--line-soft);">Self-healing polymer composition</td>
+            <td style="padding:10px 12px; border-bottom:1px solid var(--line-soft); color: var(--cyan);">Samsung Electronics</td>
+            <td style="padding:10px 12px; border-bottom:1px solid var(--line-soft); color: var(--cyan);">Samsung</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 12px;">US11000029</td>
+            <td style="padding:10px 12px;">US</td>
+            <td style="padding:10px 12px;">2023</td>
+            <td style="padding:10px 12px;">Self-repairing polymer network</td>
+            <td style="padding:10px 12px; color: var(--cyan);">Samsung Electronics</td>
+            <td style="padding:10px 12px; color: var(--cyan);">Samsung</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-size: 13px; color: var(--type-tertiary); margin: 14px 0 0;">Same facts, totally different tags — <code>&lt;exchange-document&gt;</code> vs <code>&lt;us-patent-grant&gt;</code>, <code>&lt;applicant-name&gt;</code> vs <code>&lt;orgname&gt;</code>, the date as one run-on string. Normalization maps both into identical fields; <span class="pill" data-term="entityresolution">entity resolution</span> folds "SAMSUNG ELECTRONICS CO., LTD." and "Samsung Electronics Co., Ltd." into one company (<a href="d4-entity-resolution.html">D4</a>). The clean rows are then stored column-by-column as <span class="pill" data-term="parquet">Parquet</span> (<a href="d3-cube.html">D3</a>). <span style="color: var(--type-quiet);">XML is simplified for readability — real records carry many more fields.</span></p>
+
+    <p style="margin-top: 24px;">This stage is deliberately kept simple: clean, map to schema, attach entity spine. Nothing fancy. The next two stages do the heavy analytical work.</p>
   </section>
 
   <hr/>
