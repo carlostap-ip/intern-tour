@@ -69,7 +69,7 @@
   <header class="chapter-head fade-in d1">
     <div class="chapter-num">D3</div>
     <div class="chapter-info">
-      <div class="eyebrow">Track II · The data engine · ~9 min</div>
+      <div class="eyebrow">Track II · The data engine · ~12 min</div>
       <h2 class="section-title">The cube — <em>pre-computing the answers</em>.</h2>
       <p class="lede">The single most important idea in the analytics engine — and the one most worth understanding. A cube turns a slow question into an instant lookup.</p>
     </div>
@@ -268,9 +268,9 @@
         <div style="padding: 8px 12px; background: rgba(34,211,238,0.06); border-radius: 8px; border: 1px solid rgba(34,211,238,0.2); margin-bottom: 10px;">
           <div style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cyan); margin-bottom: 4px;">Artifact</div>
           <div style="font-size: 14px; color: var(--type-primary); font-weight: 500;">Lean lookup DB</div>
-          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan); margin-top: 2px;">(<span class="pill" data-term="duckdb">DuckDB</span>)</div>
+          <div style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan); margin-top: 2px;">(<span class="pill" data-term="sqlite">SQLite</span>)</div>
         </div>
-        <p style="font-size: 13px; margin: 0; color: var(--type-secondary);">A compact <span class="pill" data-term="duckdb">DuckDB</span> file optimized for narrow, key-based reads. Point lookup by patent number. Fast because you're reading <em>one</em> row, not scanning millions.</p>
+        <p style="font-size: 13px; margin: 0; color: var(--type-secondary);">A compact <span class="pill" data-term="sqlite">SQLite</span> file with B-tree <span class="pill" data-term="dbindex">indexes</span>; point lookup by patent number (plus patent family and citation edges); fast because an index lets it <strong>jump straight to the row</strong> (a seek), reading one row instead of scanning millions.</p>
       </div>
 
       <div class="card" style="border-color: rgba(139,92,246,0.35); background: linear-gradient(180deg, rgba(139,92,246,0.08), transparent);">
@@ -307,6 +307,63 @@
   <hr/>
 
   <section class="fade-in d6">
+    <div class="eyebrow">Under the hood — performance</div>
+    <h3 class="feature-title" style="margin-top: 12px;">Three ways to beat a <span class="pill" data-term="fullscan">full scan</span>. <em>The ideas behind all three artifacts.</em></h3>
+    <p>The three artifacts above share a common goal: avoid reading more data than necessary to answer a question. Here are the concrete techniques that make that possible, in order from slowest baseline to fastest answer.</p>
+
+    <div class="service-row" style="margin-top: 28px;">
+      <div class="ic">🐌</div>
+      <div>
+        <div class="meta">Baseline — the slow path</div>
+        <h4><span class="pill" data-term="fullscan">Full table scan</span> — reading every row.</h4>
+        <p>The simplest way to answer any query is to read every row in the table, check whether it matches, and accumulate results. This is a <span class="pill" data-term="fullscan">full table scan</span>. The cost grows directly with the row count: fine at thousands of rows, brutal at ~147 million on every single query. The cube, the lookup index, and data skipping all exist for one reason — to avoid this path.</p>
+      </div>
+    </div>
+
+    <div class="service-row">
+      <div class="ic">🔍</div>
+      <div>
+        <div class="meta">Technique 1 — jump instead of scan</div>
+        <h4><span class="pill" data-term="dbindex">Index</span> — O(log n) seek instead of O(n) scan.</h4>
+        <p>A database <span class="pill" data-term="dbindex">index</span> is a sorted side-structure (a B-tree) that stores keys in order alongside pointers to the rows that hold them. To find patent EP1234567, the engine walks the B-tree in a handful of steps — O(log n) — and jumps straight to that row. It never reads the other 146,999,999 rows at all. This is exactly how the <span class="pill" data-term="sqlite">SQLite</span> lookup answers "patent by number / family / citations" in milliseconds.</p>
+        <p style="color: var(--type-tertiary); margin-top: 8px;">The inverted index inside <span class="pill" data-term="tantivy">Tantivy</span> is the search-engine cousin of the same idea — instead of a sorted key tree, it's a map from every word to the list of documents containing it. Different structure, same principle: skip what you don't need. Contrast: scanning a 147-million-row phone book cover-to-cover vs. jumping to the alphabetical section — same data, completely different cost.</p>
+      </div>
+    </div>
+
+    <div class="service-row">
+      <div class="ic">⚡</div>
+      <div>
+        <div class="meta">Technique 2 — when you must scan, scan fast</div>
+        <h4><span class="pill" data-term="vectorized">Vectorized execution</span> — process columns in batches, not row-by-row.</h4>
+        <p>Aggregates — the cube build, ad-hoc analytics — can't always use an index. They genuinely touch many rows, because the answer requires combining many values. But not all scans are equal. <span class="pill" data-term="duckdb">DuckDB</span> uses <span class="pill" data-term="vectorized">vectorized execution</span>: instead of processing one row at a time and calling out to each column, it works on a <span class="pill" data-term="columnar">column</span> in batches of thousands of values at once. The CPU stays busy, cache lines are hot, and SIMD instructions can operate on the whole batch in parallel. That is a large part of why a columnar engine scans far faster than a row store would for the same data.</p>
+      </div>
+    </div>
+
+    <div class="service-row">
+      <div class="ic">🗺️</div>
+      <div>
+        <div class="meta">Technique 3 — skip whole blocks before reading</div>
+        <h4><span class="pill" data-term="dataskipping">Data skipping</span> — "mini cubes" in every Parquet block.</h4>
+        <p>Each block in a <span class="pill" data-term="parquet">Parquet</span> file stores the min and max of every column it contains — a tiny summary called a zone map. When a query has a filter (e.g. <code>year = 2023</code>), the engine reads those zone maps first. Any block whose year range doesn't overlap 2023 is skipped entirely — it's never decompressed, never touched. This is <span class="pill" data-term="dataskipping">data skipping</span>. Pair it with <span class="pill" data-term="partition">partition</span> pruning — files organized by year so whole files are skipped — and a query can touch a small fraction of the corpus even without a classic B-tree index.</p>
+      </div>
+    </div>
+
+    <div class="service-row" style="border-color: rgba(139,92,246,0.3);">
+      <div class="ic">📦</div>
+      <div>
+        <div class="meta">Technique 4 — read the answer, not the data</div>
+        <h4><span class="pill" data-term="preaggregation">Partial pre-aggregation</span> — build cubes for the hot paths only.</h4>
+        <p>You might ask: why not pre-aggregate every possible combination of dimensions? Because the combinations explode combinatorially. Every extra dimension multiplies the cube size — company × year × country × IPC class × family size quickly produces more cells than the original data, most of which are never queried. Build and storage cost blow up.</p>
+        <p style="color: var(--type-tertiary); margin-top: 8px;">The practical answer is <em>partial</em> pre-aggregation: build a few smaller cubes covering the <span class="pill" data-term="dimension">dimension</span> sets people actually use — by-year, by-country, by-company — instead of one all-encompassing cube. Pre-aggregate the hot paths; let the rare, ad-hoc queries fall back to a fast vectorized scan over the slim analytics table. Most queries hit a pre-computed row; the outliers pay for a scan that is still fast because of vectorization and data skipping.</p>
+      </div>
+    </div>
+
+    <p style="margin-top: 28px;">Three ways to beat a full scan: <strong>don't read what you don't need</strong> (indexes + data skipping), <strong>read fast when you must</strong> (vectorized columnar execution), and <strong>read the answer instead of the data</strong> (pre-aggregation / cube). Every architectural choice on this page traces back to one of those three.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d7">
     <div class="eyebrow">Building a cube at scale</div>
     <h3 class="feature-title" style="margin-top: 12px;">Shard, don't grow the box. <em>The recurring lesson of big-data builds.</em></h3>
     <p>Building a cube sounds like a single SQL statement: <code>GROUP BY country, year, company, ...</code>. At small scale that's exactly what it is. At billions-of-rows scale, it becomes an exercise in memory management — and the most common mistake is to treat it as a machine-size problem when it's actually an algorithm problem.</p>
@@ -348,7 +405,7 @@ flowchart TB
 
   <hr/>
 
-  <section class="fade-in d7">
+  <section class="fade-in d8">
     <div class="note">
       <p style="margin: 0;"><strong>Up next: the company name problem.</strong> The cube in the example above groups by <em>country</em> and <em>year</em> — clean, unambiguous values. But grouping by <em>company</em> is much harder: "Samsung Electronics Co., Ltd.", "SAMSUNG ELECTRONICS CO LTD", and "Samsung Electronics" are the same company but appear as different strings in the raw data. A cube grouped by company is only as trustworthy as the company names feeding it. That's the problem <span class="pill" data-term="entityresolution">entity resolution</span> solves — and it's what <a href="d4-entity-resolution.html">D4</a> covers next.</p>
     </div>
