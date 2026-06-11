@@ -36,6 +36,22 @@ const GLOSSARY = {
   webhook: { term: 'Webhook', short: 'When one server pushes data to another over HTTP. The receiver pre-registers a URL. The sender POSTs there when something happens. Inverse of an API call: instead of us asking them, they POST to us.' },
   messagequeue: { term: 'Message queue', short: 'A buffer between producers and consumers for async work. Producer enqueues a job; worker pulls and runs it. Different from pub/sub: each message goes to one consumer, not broadcast.' },
   celery: { term: 'Celery', short: 'Python task queue library. Workers read jobs from Redis or RabbitMQ. TAP•IP uses Celery for document processing (virus scan, text extraction, thumbnails, indexing).' },
+  lakehouse: { term: 'Data lakehouse', short: 'A data architecture that puts warehouse-style querying directly on top of cheap files in object storage — no separate database to load into first. Lake (cheap files) + warehouse (fast queries) = lakehouse.' },
+  datalake: { term: 'Data lake', short: 'A pile of raw files (often Parquet/JSON/CSV) in cheap object storage. Flexible and cheap, but slow to query without extra tooling.' },
+  warehouse: { term: 'Data warehouse', short: 'A database tuned for analytics — fast aggregate queries over huge tables. Traditionally you must load (ETL) data into it first.' },
+  columnar: { term: 'Columnar storage', short: 'Storing a table column-by-column instead of row-by-row. Analytics reads a few columns over many rows, so columnar means reading far less off disk — and it compresses better.' },
+  parquet: { term: 'Parquet', short: 'The standard columnar file format. One Parquet file is a chunk of a table, compressed, with column stats so engines can skip data they do not need.' },
+  objectstore: { term: 'Object storage', short: 'Cheap, near-infinite file storage you reach over HTTP (S3, Cloudflare R2, GCS). You pay pennies per GB and only for what you store. The "lake" in lakehouse lives here.' },
+  olap: { term: 'OLAP', short: 'Online Analytical Processing — "how many patents per company per year?" style aggregate questions over the whole dataset. The opposite of OLTP (one-row reads/writes, like a web app).' },
+  cube: { term: 'OLAP cube', short: 'A table of pre-computed answers. Instead of aggregating millions of rows every time, you GROUP BY once at build time across the dimensions people filter on, and store the totals. Queries then just look up a row.' },
+  dimension: { term: 'Dimension', short: 'A "slice-by" axis of a cube — country, year, company, technology area. The things you filter and group on.' },
+  measure: { term: 'Measure', short: 'A number a cube aggregates — patent count, citation count. Measures are what you sum/average; dimensions are how you slice them.' },
+  preaggregation: { term: 'Pre-aggregation', short: 'Computing the totals ahead of time at build, so reads are instant. Trade more build work + storage for much faster queries. The core trick behind a cube.' },
+  duckdb: { term: 'DuckDB', short: 'An in-process analytics database ("SQLite for analytics"). Columnar, fast at GROUP BY, reads Parquet directly. We use it to build the cube and answer lookups + analytics.' },
+  tantivy: { term: 'Tantivy', short: 'A fast full-text search engine library (Rust, like Lucene). We use it for keyword search because a database\'s built-in text search was too slow at our scale.' },
+  entityresolution: { term: 'Entity resolution', short: 'Deciding which records refer to the same real-world thing — e.g. that 15 different "Samsung" assignee spellings are one company. The spine of trustworthy company analytics.' },
+  elt: { term: 'ELT (vs ETL)', short: 'Extract, Load, Transform. Land the raw data cheaply first, then transform it in place with SQL — instead of transforming before loading (ETL). Lakehouses favor ELT.' },
+  partition: { term: 'Partition / shard', short: 'Splitting a big dataset into bounded chunks (by hash, by country, by year) so each piece fits in memory and can be built independently. "Shard, don\'t grow the box."' },
 };
 
 // Pill tooltips — delegated so pills created later (animation FLOW/PACKETS) also work
