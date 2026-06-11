@@ -47,7 +47,7 @@ const GLOSSARY = {
   dimension: { term: 'Dimension', short: 'A "slice-by" axis of a cube — country, year, company, technology area. The things you filter and group on.' },
   measure: { term: 'Measure', short: 'A number a cube aggregates — patent count, citation count. Measures are what you sum/average; dimensions are how you slice them.' },
   preaggregation: { term: 'Pre-aggregation', short: 'Computing the totals ahead of time at build, so reads are instant. Trade more build work + storage for much faster queries. The core trick behind a cube.' },
-  duckdb: { term: 'DuckDB', short: 'An in-process analytics database ("SQLite for analytics"). Columnar, fast at GROUP BY, reads Parquet directly. We use it to build the cube and answer lookups + analytics.' },
+  duckdb: { term: 'DuckDB', short: 'An in-process analytics database ("SQLite for analytics"). Columnar, fast at GROUP BY, reads Parquet directly. We use it to build the cube and answer analytics queries (SQLite handles the point lookups).' },
   tantivy: { term: 'Tantivy', short: 'A fast full-text search engine library (Rust, like Lucene). We use it for keyword search because a database\'s built-in text search was too slow at our scale.' },
   entityresolution: { term: 'Entity resolution', short: 'Deciding which records refer to the same real-world thing — e.g. that 15 different "Samsung" assignee spellings are one company. The spine of trustworthy company analytics.' },
   elt: { term: 'ELT (vs ETL)', short: 'Extract, Load, Transform. Land the raw data cheaply first, then transform it in place with SQL — instead of transforming before loading (ETL). Lakehouses favor ELT.' },
