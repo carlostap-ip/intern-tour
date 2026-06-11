@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>D5 · Semantic search — TAP•IP Tour</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<style>
+  .mermaid-wrap {
+    background: var(--bg-surface);
+    border: 1px solid var(--line-soft);
+    border-radius: 14px;
+    padding: 28px 24px;
+    margin: 24px 0;
+    overflow-x: auto;
+  }
+  .mermaid-wrap .mermaid { background: transparent !important; }
+  .mermaid-wrap svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+
+  .service-row {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 18px;
+    padding: 20px 22px;
+    background: var(--bg-surface);
+    border: 1px solid var(--line-soft);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    align-items: start;
+  }
+  .service-row .ic { font-size: 30px; line-height: 1; text-align: center; }
+  .service-row h4 { margin: 0 0 4px; font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--type-primary); }
+  .service-row .meta { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cyan); margin-bottom: 8px; }
+  .service-row p { margin: 0; font-size: 14px; }
+  .service-row p + p { margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a><span class="dot"></span>
+    <a href="index.html#data-track" style="color: var(--cyan);">Data</a><span class="dot"></span>
+    <a href="d1-data-engine.html">D1</a>
+    <a href="d2-pipeline.html">D2</a>
+    <a href="d3-cube.html">D3</a>
+    <a href="d4-entity-resolution.html">D4</a>
+    <a href="d5-semantic-search.html" class="current">D5</a>
+    <a href="d6-why-lakehouse.html">D6</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">D5</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Track II · The data engine · ~8 min</div>
+      <h2 class="section-title">Semantic search — <em>finding by meaning</em>.</h2>
+      <p class="lede">Keyword search finds the words you typed. Semantic search finds what you meant — even when the patent never uses your words.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <div class="eyebrow">The limit of keywords</div>
+    <h3 class="feature-title" style="margin-top: 12px;">Exact words are not the same as <em>shared meaning</em>.</h3>
+    <p>D3 introduced <span class="pill" data-term="tantivy">Tantivy</span>, the keyword search engine that powers the full-text index. It is fast, reliable, and handles the overwhelming majority of searches well. A search for "lithium battery electrolyte" returns every patent that contains those exact terms.</p>
+
+    <p>But here is the gap: a search for <em>"self-healing polymer"</em> returns zero results for a patent whose abstract reads <em>"autonomously repairing elastomer with reversible cross-linking."</em> Same invention. Zero shared keywords. Zero results.</p>
+
+    <p>This is not a bug in <span class="pill" data-term="tantivy">Tantivy</span> — it is the fundamental nature of keyword search. A keyword index matches tokens. It cannot know that "self-healing" and "autonomously repairing" mean the same thing, or that "polymer" and "elastomer" describe overlapping material classes. Every synonym, every paraphrase, every foreign-language claim phrased differently from a US equivalent is a potential miss.</p>
+
+    <p>The size of the corpus makes this worse, not better. Hundreds of millions of patents, written by people of different backgrounds, in different languages, across many decades of evolving terminology. The vocabulary drift alone means a search strategy that only matches exact terms leaves a large fraction of relevant prior art invisible.</p>
+
+    <p>That gap is what <span class="pill" data-term="semanticsearch">semantic search</span> closes. Instead of asking "does this document contain these tokens?", it asks: "does this document mean the same thing as this query?"</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d3">
+    <div class="eyebrow">Embeddings</div>
+    <h3 class="feature-title" style="margin-top: 12px;">Turning meaning into numbers. <em>Every patent becomes a point in meaning-space.</em></h3>
+    <p>An <span class="pill" data-term="embedding">embedding</span> is a list of numbers — a vector — that a model produces by reading a piece of text. The key property: texts with similar meaning get vectors that sit close together in that numeric space; texts with unrelated meaning sit far apart. The model has been trained to place meaning into geometry.</p>
+
+    <p>Think of it this way: every patent is placed as a point in a huge space with many dimensions. Patents about electrochemical energy storage cluster in one region. Patents about autonomous vehicle control cluster in another. When two patents are about related inventions — even if they use completely different words — they land near each other. Vocabulary no longer matters; only meaning does.</p>
+
+    <p>The embedding model we use is <strong>PaECTER</strong>, a patent-domain text-embedding model released under the Apache-2.0 license. Because PaECTER was trained specifically on patent literature, it understands the vocabulary and writing conventions of patents — claim language, technical jargon, the particular structure of abstracts — far better than a general-purpose model would. Every patent in the corpus is passed through PaECTER to produce its embedding vector.</p>
+
+    <p>The Mermaid diagram below shows the two paths: a patent's text goes through PaECTER and becomes a stored vector; at query time, the user's search text goes through the same model and produces a query vector.</p>
+
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+  subgraph Index["At index time (build)"]
+    PT["Patent text\n(abstract + claims)"]
+    PE["PaECTER"]
+    PV["Patent vector\n(stored)"]
+    PT --> PE --> PV
+  end
+
+  subgraph Query["At query time (serve)"]
+    QT["Query text\n(user's search)"]
+    QE["PaECTER"]
+    QV["Query vector"]
+    NN["Nearest-neighbor\nsearch"]
+    RES["Ranked results"]
+    QT --> QE --> QV --> NN --> RES
+  end
+
+  PV -.->|"compared against"| NN
+</pre>
+    </div>
+
+    <p>The same model processes both patent text at build time and user queries at search time. This is essential — vectors are only comparable when they come from the same embedding space. Use two different models (or two different versions of the same model) and the coordinates are incommensurable.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d4">
+    <div class="eyebrow">Vector search</div>
+    <h3 class="feature-title" style="margin-top: 12px;">Finding the nearest neighbors. <em>Similarity becomes ranking.</em></h3>
+    <p>Once every patent has a vector and the user's query has a vector, retrieval is geometric: find the document vectors that sit closest to the query vector. Rank them by closeness. The closest documents are the most semantically similar to the query — regardless of shared vocabulary.</p>
+
+    <p>This is <span class="pill" data-term="vectorsearch">vector search</span>. In its exact form you would compute the distance from the query vector to every single document vector in the corpus and sort the results. Exact, but expensive: with hundreds of millions of patent vectors, that is an enormous amount of computation for every search.</p>
+
+    <p>In practice, approximate nearest-neighbor (ANN) search trades a sliver of accuracy for a large reduction in compute. ANN indexes build a data structure over the vectors at index time that allows the engine to quickly identify a good-enough set of close neighbors without checking every vector. The accuracy loss is typically imperceptible to users — the top results are correct and relevant; a handful of borderline-rank candidates may be slightly mis-ordered. The speed gain is what makes the approach practical at corpus scale.</p>
+
+    <p>The result is a retrieval engine that ranks documents by meaning-closeness to the query — the semantic layer sitting alongside the keyword layer from D3.</p>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d5">
+    <div class="eyebrow">Making it fit</div>
+    <h3 class="feature-title" style="margin-top: 12px;">Quantization — <em>the storage unlock.</em></h3>
+    <p>Here is the catch. Each embedding vector from PaECTER is stored as a sequence of 32-bit floating-point numbers — four bytes per dimension. Across hundreds of millions of patents, that adds up to tens of gigabytes of vector data — potentially more storage than everything else on the serve box combined, for this one artifact alone.</p>
+
+    <p><span class="pill" data-term="quantization">Quantization</span> is the answer. Instead of storing each vector element as a full 32-bit float, quantization compresses it down to a much smaller representation: an 8-bit integer (int8) or even a single bit (1-bit). The compression ratio is many-fold — int8 cuts storage to one-quarter of float32; 1-bit cuts it to one-thirty-second. With a well-calibrated quantization scheme, the loss in retrieval accuracy is small: the top results remain correct; only the very finest distinctions in similarity ranking are affected.</p>
+
+    <p>That compression is what lets the entire corpus's vector index live on the same modest always-on serve box as the <span class="pill" data-term="sqlite">SQLite</span> point-lookup database, the <span class="pill" data-term="duckdb">DuckDB</span> analytics layer, and the <span class="pill" data-term="tantivy">Tantivy</span> keyword index. No specialized vector-database hardware. No separate expensive service. The vectors fit because they are small.</p>
+
+    <p>This connects directly to the broader cost story: the lakehouse architecture is built around the principle that the right tool for each query shape runs on commodity hardware. Quantization is what makes the semantic layer obey that principle.</p>
+
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart LR
+  F32["float32 vector\n(full precision)"]
+  INT8["int8 vector\n(¼ the size)"]
+  BIT["1-bit vector\n(1/32 the size)"]
+
+  F32 -->|"int8 quantization"| INT8
+  F32 -->|"1-bit quantization"| BIT
+
+  INT8 -->|"fits on modest\nserve box"| SERVE["Serve box\n(ANN index)"]
+  BIT -->|"fits on modest\nserve box"| SERVE
+</pre>
+    </div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d6">
+    <div class="eyebrow">Keyword + semantic, together</div>
+    <h3 class="feature-title" style="margin-top: 12px;">Complementary strengths. <em>Neither alone is enough.</em></h3>
+    <p>Semantic search complements keyword search. It does not replace it. Each has a domain where it wins:</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 28px 0;">
+      <div class="service-row" style="border-color: rgba(34,211,238,0.3); margin-bottom: 0;">
+        <div class="ic">🔤</div>
+        <div>
+          <div class="meta">Keyword search · <span class="pill" data-term="tantivy">Tantivy</span></div>
+          <h4>Exact terms.</h4>
+          <p>Patent numbers, inventor names, specific chemical identifiers, claim language you know verbatim. When you need a precise match, keywords are unbeatable — they find exactly what you typed, nothing more, nothing less.</p>
+          <p style="margin-top: 8px; color: var(--type-tertiary);">Misses synonyms, paraphrases, and cross-language equivalents.</p>
+        </div>
+      </div>
+      <div class="service-row" style="border-color: rgba(139,92,246,0.3); margin-bottom: 0;">
+        <div class="ic">🧠</div>
+        <div>
+          <div class="meta">Semantic search · <span class="pill" data-term="semanticsearch">meaning</span></div>
+          <h4>Concepts and paraphrases.</h4>
+          <p>Technology areas, inventive concepts, prior art you suspect exists but whose exact wording you cannot predict. Semantic search surfaces documents that mean the same thing even when the vocabulary diverges entirely.</p>
+          <p style="margin-top: 8px; color: var(--type-tertiary);">May over-retrieve on ambiguous or highly generic queries.</p>
+        </div>
+      </div>
+    </div>
+
+    <p>The strongest search results come from combining both — what practitioners call hybrid search. A hybrid query runs both a <span class="pill" data-term="tantivy">Tantivy</span> keyword pass and a <span class="pill" data-term="vectorsearch">vector search</span> pass, then merges and re-ranks the two result sets. Exact-term matches that are also semantically close rise to the top; documents that only match one signal rank lower. The union of both signals is broader; the intersection signal is sharper.</p>
+
+    <p>This is the design: the keyword index and the vector index are separate artifacts, each optimized for its own query shape, combined at query time. No single index tries to do both jobs — that is the right-tool-per-shape principle from the lakehouse applied to search.</p>
+
+    <div class="note" style="margin-top: 24px;">
+      <p style="margin: 0;">D6 closes the track — bringing together cheap <span class="pill" data-term="objectstore">object storage</span>, the right engine per query shape (<span class="pill" data-term="tantivy">Tantivy</span>, <span class="pill" data-term="duckdb">DuckDB</span>, <span class="pill" data-term="sqlite">SQLite</span>, and the vector index), and the principle that every artifact — including the <span class="pill" data-term="parquet">Parquet</span> files, the <span class="pill" data-term="cube">cube</span>, and the <span class="pill" data-term="embedding">embeddings</span> — is rebuildable from source. The semantic layer is one more artifact following the same pattern: built once, stored cheaply, served from the same box as everything else.</p>
+    </div>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="d4-entity-resolution.html" class="foot-link prev">
+      <span class="lbl">← Previous</span>
+      <span class="tt">D4 · Entity resolution</span>
+    </a>
+    <a href="d6-why-lakehouse.html" class="foot-link next">
+      <span class="lbl">Next chapter →</span>
+      <span class="tt">D6 · Why the lakehouse wins</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    securityLevel: 'loose',
+    themeVariables: {
+      background: 'transparent',
+      mainBkg: '#161C3A',
+      secondBkg: '#1A2147',
+      tertiaryColor: '#11162E',
+      primaryBorderColor: '#A78BFA',
+      secondaryBorderColor: '#67E8F9',
+      tertiaryBorderColor: '#818CF8',
+      lineColor: '#67E8F9',
+      primaryTextColor: '#ECEEFB',
+      secondaryTextColor: '#ECEEFB',
+      tertiaryTextColor: '#ECEEFB',
+      textColor: '#ECEEFB',
+      titleColor: '#ECEEFB',
+      labelTextColor: '#ECEEFB',
+      clusterBkg: '#0B0F23',
+      clusterBorder: '#232C56',
+      fontFamily: '"Geist", "Söhne", system-ui, sans-serif',
+      fontSize: '14px',
+    },
+    flowchart: { curve: 'basis', useMaxWidth: true, htmlLabels: true, padding: 16 },
+  });
+</script>
+<script src="tour.js"></script>
+</body>
+</html>
