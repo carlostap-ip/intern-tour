@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>D7 · MVP &amp; data architecture reference — TAP•IP Tour</title>
+<meta name="description" content="The MVP feature set, every /v1 endpoint, and the build-to-serve dependency map — the engineering reference for the TAP•IP data engine." />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/x-icon" href="favicon.ico" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<style>
+  /* ---- Mermaid frame (matches D1–D5) ---- */
+  .mermaid-wrap {
+    background: var(--bg-surface);
+    border: 1px solid var(--line-soft);
+    border-radius: 12px;
+    padding: 24px 18px;
+    margin: 22px 0;
+    overflow-x: auto;
+  }
+  .mermaid-wrap .mermaid { background: transparent !important; }
+  /* The dependency maps need more room than the 1080px reading column. Break out and
+     stay centred on the page; below 1100px they simply fill the column as normal. */
+  @media (min-width: 1100px) {
+    .mermaid-wrap.wide {
+      width: min(1400px, calc(100vw - 56px));
+      margin-left: calc(50% - min(1400px, 100vw - 56px) / 2);
+    }
+  }
+  .mermaid-wrap svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+  .diagram-cap {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--type-tertiary);
+    margin: -8px 0 22px; text-align: center;
+  }
+
+  /* ---- Status badges ---- */
+  .st {
+    display: inline-block; font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.12em; text-transform: uppercase; font-weight: 500;
+    padding: 4px 9px; border-radius: 5px; white-space: nowrap; vertical-align: middle;
+  }
+  .st-done { background: rgba(52,211,153,0.13); color: #6EE7B7; border: 1px solid rgba(52,211,153,0.35); }
+  .st-prog { background: rgba(252,211,77,0.13); color: var(--gold);  border: 1px solid rgba(252,211,77,0.35); }
+  .st-plan { background: rgba(129,140,248,0.13); color: var(--violet); border: 1px solid rgba(129,140,248,0.35); }
+  .st-cut  { background: rgba(251,113,133,0.12); color: #FDA4AF; border: 1px solid rgba(251,113,133,0.32); }
+  .st-part { background: rgba(103,232,249,0.12); color: var(--cyan); border: 1px solid rgba(103,232,249,0.32); }
+
+  /* ---- Feature block ---- */
+  .feat {
+    background: var(--bg-surface); border: 1px solid var(--line-soft);
+    border-radius: 12px; padding: 0; margin-bottom: 18px; overflow: hidden;
+  }
+  .feat > header {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 18px 22px; background: var(--bg-elevated);
+    border-bottom: 1px solid var(--line);
+  }
+  .feat > header .fno {
+    font-family: var(--font-display); font-style: italic; font-size: 26px;
+    color: var(--cyan); line-height: 1; min-width: 32px;
+  }
+  .feat > header h4 {
+    margin: 0; flex: 1 1 260px; font-family: var(--font-display); font-style: italic;
+    font-size: 22px; color: var(--type-primary); line-height: 1.2;
+  }
+  .feat-body { padding: 20px 22px 22px; }
+  .feat-body > p { margin: 0 0 14px; font-size: 14px; }
+  .feat-body > p:last-child { margin-bottom: 0; }
+
+  .kv { display: grid; grid-template-columns: 132px 1fr; gap: 8px 16px; margin-top: 14px; font-size: 13.5px; }
+  .kv dt {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.11em;
+    text-transform: uppercase; color: var(--type-tertiary); padding-top: 3px;
+  }
+  .kv dd { margin: 0; color: var(--type-secondary); }
+  .kv dd code, .mono { font-family: var(--font-mono); font-size: 12.5px; color: var(--type-primary); }
+
+  /* Inline links inside the dark cards inherit a violet that all but disappears —
+     same fix the index applies to its reading plan. */
+  .feat-body a, .note a, .warn a {
+    color: var(--cyan);
+    text-decoration: underline;
+    text-decoration-color: rgba(103, 232, 249, 0.4);
+    text-underline-offset: 3px;
+    transition: color 0.15s ease, text-decoration-color 0.15s ease;
+  }
+  .feat-body a:hover, .note a:hover, .warn a:hover { color: #A5F3FC; text-decoration-color: #A5F3FC; }
+
+  .tix { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tix span {
+    font-family: var(--font-mono); font-size: 11.5px; padding: 3px 8px; border-radius: 5px;
+    background: rgba(196,181,253,0.09); border: 1px solid rgba(196,181,253,0.22); color: var(--violet);
+  }
+  .tix span.epic { background: rgba(252,211,77,0.10); border-color: rgba(252,211,77,0.28); color: var(--gold); }
+  .tix span.defer { background: rgba(107,115,154,0.10); border-color: var(--line); color: var(--type-tertiary); }
+
+  /* ---- Endpoint tables ---- */
+  .ep-table { width: 100%; border-collapse: collapse; margin: 14px 0 6px; font-size: 13px;
+    background: var(--bg-surface); border: 1px solid var(--line-soft); border-radius: 12px; overflow: hidden; }
+  .ep-table thead th {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.11em; text-transform: uppercase;
+    color: var(--cyan); text-align: left; padding: 12px 14px;
+    background: var(--bg-elevated); border-bottom: 1px solid var(--line);
+  }
+  .ep-table td { padding: 11px 14px; border-bottom: 1px solid var(--line-soft); vertical-align: top; color: var(--type-secondary); }
+  .ep-table tr:last-child td { border-bottom: 0; }
+  .ep-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .ep-table .m { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; color: var(--type-tertiary); }
+  .ep-table .p { font-family: var(--font-mono); font-size: 12.5px; color: var(--type-primary); white-space: nowrap; }
+  .ep-table .a { font-family: var(--font-mono); font-size: 11.5px; color: var(--violet); }
+  .ep-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 14px 0 6px; }
+  .ep-scroll .ep-table { margin: 0; min-width: 640px; }
+  .ep-group {
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+    margin: 34px 0 0; padding-top: 4px;
+  }
+  .ep-group h4 { margin: 0; font-family: var(--font-display); font-style: italic; font-size: 21px; color: var(--type-primary); }
+  .ep-count { font-family: var(--font-mono); font-size: 11px; color: var(--type-tertiary); letter-spacing: 0.1em; }
+
+  /* ---- Legend / mini-grids ---- */
+  .legend { display: flex; flex-wrap: wrap; gap: 10px 22px; margin: 16px 0 4px; }
+  .legend div { display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--type-secondary); }
+
+  .art-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(232px, 1fr)); gap: 12px; margin: 20px 0; }
+  .art {
+    background: var(--bg-surface); border: 1px solid var(--line-soft);
+    border-left: 3px solid var(--indigo); border-radius: 10px; padding: 15px 16px;
+  }
+  .art.duck  { border-left-color: var(--gold); }
+  .art.lite  { border-left-color: var(--cyan-deep); }
+  .art.tant  { border-left-color: var(--violet-glow); }
+  .art.vec   { border-left-color: #34D399; }
+  .art .n { font-family: var(--font-mono); font-size: 12.5px; color: var(--type-primary); word-break: break-all; }
+  .art .e { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--type-quiet); margin-top: 5px; }
+  .art .d { font-size: 12.5px; color: var(--type-secondary); margin-top: 8px; line-height: 1.55; }
+
+  .warn {
+    background: rgba(251,113,133,0.06); border: 1px solid rgba(251,113,133,0.28);
+    border-radius: 12px; padding: 18px 22px; margin: 22px 0;
+  }
+  .warn .eyebrow { color: #FDA4AF; }
+  .warn p { margin: 10px 0 0; font-size: 14px; }
+  .warn p:first-of-type { margin-top: 8px; }
+
+  @media (max-width: 640px) {
+    .kv { grid-template-columns: 1fr; gap: 4px 0; }
+    .kv dt { padding-top: 10px; }
+    .ep-table { font-size: 12px; }
+    .ep-table td, .ep-table thead th { padding: 9px 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="progress-bar" id="progress"></div>
+<div class="shell">
+
+<header class="topbar">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">TAP<span class="bullet">•</span>IP</span>
+    <span class="brand-sub">tour</span>
+  </a>
+  <nav class="top-nav">
+    <a href="index.html">Index</a><span class="dot"></span>
+    <a href="index.html#data-track" style="color: var(--cyan);">Data</a><span class="dot"></span>
+    <a href="d1-data-engine.html">D1</a>
+    <a href="d2-pipeline.html">D2</a>
+    <a href="d3-cube.html">D3</a>
+    <a href="d4-entity-resolution.html">D4</a>
+    <a href="d5-semantic-search.html">D5</a>
+    <a href="d6-why-lakehouse.html">D6</a>
+    <a href="d7-mvp-architecture.html" class="current">D7</a>
+  </nav>
+</header>
+
+<main>
+
+  <header class="chapter-head fade-in d1">
+    <div class="chapter-num">D7</div>
+    <div class="chapter-info">
+      <div class="eyebrow">Reference · not a narrative</div>
+      <h1 class="chapter-title">MVP &amp; data <em>architecture</em>.</h1>
+      <p class="lede">Every MVP feature with its real status, every <code>/v1</code> endpoint with the artifact behind it, and the dependency map that says what breaks what. Look things up here; read D1–D6 to understand them.</p>
+    </div>
+  </header>
+
+  <section class="fade-in d2">
+    <div class="note">
+      <p style="margin: 0 0 10px;"><strong>How status was decided.</strong> Not from ticket state. Epics in this repo routinely stay open after their surface ships — <span class="mono">#522</span> (full text), <span class="mono">#452</span> (OA timeline) and <span class="mono">#372</span> (capabilities) are all open tickets for things that are live right now. Status below is read from what the deployed server actually registers: the boot-time capability registry in <span class="mono">cmd/server</span>, the route table in <span class="mono">internal/api/server.go</span>, the published contract <span class="mono">openapi.json</span>, and the live capability list recorded in the 2026-08-21 program handoff (<span class="mono">#694</span>): <strong>20 capabilities live, 1 absent by design</strong>. Ticket numbers are listed for what is <em>still missing</em>, which is a different question from what is open.</p>
+      <p style="margin: 0;"><strong>Milestone counts</strong> are live as of 2026-08-26 and have moved since the handoff — M1 is now 20 closed / 8 open, M2 4 closed / 9 open.</p>
+    </div>
+
+    <div class="legend">
+      <div><span class="st st-done">Live</span> registered, deployed, answering</div>
+      <div><span class="st st-part">Live · v1</span> shipped, but a declared v2 is the real target</div>
+      <div><span class="st st-prog">In progress</span> surface exists, epic incomplete</div>
+      <div><span class="st st-plan">Planned</span> nothing serving yet</div>
+      <div><span class="st st-cut">Cut from MVP</span> deliberately not built</div>
+    </div>
+  </section>
+
+  <hr/>
+
+  <!-- ============================================================ A ============================================================ -->
+  <section class="fade-in d3">
+    <div class="eyebrow">Part A</div>
+    <h2 class="section-title" style="margin-top: 12px;">The MVP, <em>feature by feature</em>.</h2>
+    <p style="color: var(--type-tertiary); margin-bottom: 26px;">Seven features in, one out. Each one names the endpoints it serves, the artifacts it reads, and the tickets standing between it and done.</p>
+
+    <!-- 1 -->
+    <div class="feat">
+      <header>
+        <span class="fno">1</span>
+        <h4>Entity resolution — the ultimate-parent spine.</h4>
+        <span class="st st-part">Live · v1 &nbsp;·&nbsp; v2 barely started</span>
+      </header>
+      <div class="feat-body">
+        <p>Every number in the product is keyed on a consolidated corporate parent. <span class="pill" data-term="entityresolution">Entity resolution</span> collapses "SAMSUNG ELECTRONICS CO., LTD." and its fifteen spellings and subsidiaries into one <code>parent_key</code>. Everything downstream — the cube, the company file, strength cohorts, EDGAR signals — inherits that answer, which is why it is called the spine and why an error here is an error everywhere.</p>
+        <dl class="kv">
+          <dt>Serving now</dt><dd><code>/v1/entities/resolve</code>, <code>/v1/entities/suggest</code> — FTS5 typeahead over ~25M parents, plus the <code>parent_key</code> dimension baked into every cube rollup.</dd>
+          <dt>Artifacts</dt><dd><code>entity_dim.sqlite</code> (derived from the cube), <code>cube_parent_map</code> / <code>cube_entity</code> inside <code>cube.duckdb</code>, <code>assignee_map</code>.</dd>
+          <dt>Capability</dt><dd><code>entity-resolve</code> — live.</dd>
+          <dt>What v1 is</dt><dd>Name normalisation + an override map, projected into the cube at build time. It works, and it is what the whole product runs on today.</dd>
+          <dt>What v2 adds</dt><dd>A real ownership <em>graph</em> — GLEIF LEI parent relationships, Wikidata, Japan houjin-bangou, Korea DART — with multi-source merge and conflict resolution, so <code>assignee_map</code> and the cube become <em>projections</em> of a graph rather than the source of truth.</dd>
+          <dt>Tickets to done</dt>
+          <dd><div class="tix">
+            <span class="epic">#108 epic · ownership graph v2</span><span>#109 minimal graph + traversal</span><span>#111 JP/KR loaders</span><span>#112 multi-source merge + conflict resolution</span><span>#113 migrate v1 → v2</span><span>#122 industry crosswalk</span><span>#95 Wikidata + assignment grounding join</span><span>#99 quarterly map refresh</span><span>#792 legal-form-shell collisions + parent→subsidiary inversion</span><span>#752 ops: refresh a source on the serve box</span>
+          </div></dd>
+          <dt>Read this</dt><dd><a href="d4-entity-resolution.html">D4 · Entity resolution</a>.</dd>
+        </dl>
+        <div class="warn" style="margin-bottom: 0;">
+          <div class="eyebrow">The honest gap</div>
+          <p style="margin-top: 6px;">M2 is <strong>4 closed / 9 open</strong> — the least-built milestone that everything else depends on. The architecture claims an ownership graph; what exists is a projected map. That distance is the single largest gap between the stated design and the running system.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="feat">
+      <header>
+        <span class="fno">2</span>
+        <h4>Company file &amp; analytics.</h4>
+        <span class="st st-done">Live</span>
+      </header>
+      <div class="feat-body">
+        <p>The flagship surface: one composed profile per consolidated parent — portfolio size, technology mix, jurisdictions, filing trend, strength panels — plus the flexible <span class="pill" data-term="cube">cube</span> analytics that power every leaderboard, trend line and cross-tab in the product.</p>
+        <dl class="kv">
+          <dt>Serving now</dt><dd><code>/v1/entities/{parent_key}/company-file</code>, the four <code>/v1/cube/*</code> presets, <code>/v1/analytics/facet</code> + <code>/crosstab</code> + the three preset wrappers, <code>/v1/reports*</code>.</dd>
+          <dt>Artifacts</dt><dd><code>cube.duckdb</code> (required — the API will not boot without it), <code>company_file.sqlite</code>, <code>facet_leaderboard.sqlite</code>, the roaring facet index.</dd>
+          <dt>Capability</dt><dd><code>cube-analytics</code> — live. The company file is <em>composed</em>, not a capability of its own: with its sidecar absent it still answers from the spine and live rollups.</dd>
+          <dt>Hard-won</dt><dd><span class="mono">#264</span> — the rollups over-counted through fan-out on a multi-valued grain, and a <strong>~4× inflated portfolio total shipped</strong> because both the build gate and the deploy gate checked the same fanned number. Both were repointed. One rule, both homes.</dd>
+          <dt>Still open</dt>
+          <dd><div class="tix">
+            <span class="epic">#117 epic · filing-strategy analysis</span><span>#118 family / priority continuity graph</span><span>#119 strategy metrics + benchmarking</span><span>#120 basic tier — public norms</span><span>#121 rich tier — client portfolio</span><span>#133 perf: fast filtered + crosstab pre-aggregation</span><span>#402 exact-distinct facet index</span><span>#185 crown-jewels anti-exfil cap</span>
+          </div></dd>
+          <dt>Read this</dt><dd><a href="d3-cube.html">D3 · The cube</a>.</dd>
+        </dl>
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="feat">
+      <header>
+        <span class="fno">3</span>
+        <h4>Patent lookup — record, graph, text, prosecution.</h4>
+        <span class="st st-done">Live</span>
+      </header>
+      <div class="feat-body">
+        <p>Point lookups over ~148M resolved patents: one publication by number, its family, its citations both directions, its full text, its prosecution history, its chain of title, and a composed "case experience" view. All <span class="pill" data-term="sqlite">SQLite</span> B-tree seeks — millisecond latency, because <span class="pill" data-term="duckdb">DuckDB</span> <em>builds</em> the lookups, it doesn't serve them.</p>
+        <dl class="kv">
+          <dt>Serving now</dt><dd>13 routes across the patent record, the citation graph, full text, prosecution, examiner/art-unit stats and assignments.</dd>
+          <dt>Artifacts</dt><dd><code>lookup_lean.db</code> (required — it is the existence oracle), <code>patent_detail.sqlite</code>, <code>patent_text.sqlite</code>, <code>prosecution.sqlite</code>, <code>oa_timeline.sqlite</code>, <code>examiner.sqlite</code>, <code>assignment.v4.sqlite</code>, <code>app_bridge.sqlite</code>.</dd>
+          <dt>Capabilities</dt><dd><code>lean-lookup</code> · <code>detail-full</code> · <code>patent-text</code> · <code>prosecution</code> · <code>examiner</code> · <code>assignment-chain-of-title</code> · <code>case</code> — all live.</dd>
+          <dt>Scale note</dt><dd>Full text landed 2026-08-21: <strong>17,092,603 rows, 33.7 GiB</strong>, built for ≈$1.90 against a $6 estimate. The compression dictionary was <em>declined on a real measurement</em> — 9.8% gain against a 15% threshold — and reports itself as declined, not as zero.</dd>
+          <dt>Still open</dt>
+          <dd><div class="tix">
+            <span>#765 normalize the US pre-grant serial to 11-position form</span><span>#226 full-text ingest: bound parser hangs</span><span class="epic">#217 epic · DO full-text swarm hardening</span><span>#452 OA-timeline gap-1 (surface live, epic open)</span>
+          </div></dd>
+          <dt>Read this</dt><dd><a href="d2-pipeline.html">D2 · The pipeline</a>.</dd>
+        </dl>
+      </div>
+    </div>
+
+    <!-- 4 -->
+    <div class="feat">
+      <header>
+        <span class="fno">4</span>
+        <h4>Keyword &amp; entity search — including the company picker.</h4>
+        <span class="st st-done">Live</span>
+        <span class="st st-plan" style="margin-left:-6px;">description search absent</span>
+      </header>
+      <div class="feat-body">
+        <p>BM25 relevance search over the patent corpus via a Rust <span class="pill" data-term="tantivy">Tantivy</span> sidecar, with a two-mode query dialect (simple and expert operators). Alongside it, the typo-tolerant company picker that turns what a user types into a <code>parent_key</code> — the entry point to nearly every other feature.</p>
+        <dl class="kv">
+          <dt>Serving now</dt><dd><code>/v1/search</code>, <code>/v1/search/npl</code> + <code>/npl/{work_id}</code> (scholarly prior art), <code>/v1/entities/resolve</code>, <code>/v1/entities/suggest</code> (score + <code>matched_on</code> basis).</dd>
+          <dt>Artifacts</dt><dd>Tantivy index (<strong>308.9 GiB</strong>), the NPL Tantivy index + <code>npl_lookup.sqlite</code>, <code>entity_dim.sqlite</code>.</dd>
+          <dt>Capabilities</dt><dd><code>keyword-search</code> · <code>npl-search</code> · <code>entity-resolve</code> live. <code>description-search</code> is the <strong>one absent-by-design capability</strong> — it flips to live when description fields are indexed, and <code>/v1/capabilities</code> declares that rather than making clients probe for 503s.</dd>
+          <dt>The disk reality</dt><dd>308.9 GiB of index against ~309 GiB free on the serve box — a margin of about <strong>0.05%</strong>. A restore only fits because it deletes the stale index <em>before</em> streaming the new one. A 2× transition does not fit.</dd>
+          <dt>Tickets to done</dt>
+          <dd><div class="tix">
+            <span>#203 rebuild index with full-text fields — unlocks CL= + description search</span><span>#666 add a delta path — refresh is a full 4h / 309 GB rebuild for ~0.01% new data</span><span>#671 restore needs a maintenance window (decided, not a defect)</span>
+          </div></dd>
+        </dl>
+      </div>
+    </div>
+
+    <!-- 5 -->
+    <div class="feat">
+      <header>
+        <span class="fno">5</span>
+        <h4>Prior art &amp; hybrid search.</h4>
+        <span class="st st-prog">In progress</span>
+      </header>
+      <div class="feat-body">
+        <p>Semantic neighbours from a patent-domain <span class="pill" data-term="embedding">embedding</span> model, fused with BM25 keyword hits by deterministic reciprocal-rank fusion, with a priority-date bar so results are admissible as prior art. The endpoints answer today; the epic that defines them does not consider itself finished.</p>
+        <dl class="kv">
+          <dt>Serving now</dt><dd><code>/v1/semantic-search</code> (incl. <code>?similar_to=</code>), <code>/v1/hybrid-search</code>, <code>/v1/prior-art</code> — all three registered, documented in <code>openapi.json</code>, and covered by degrade tests.</dd>
+          <dt>Artifacts</dt><dd>IVF-PQ <span class="pill" data-term="vectorsearch">vector index</span> (in-process ANN), Tantivy, <code>lookup_lean.db</code> for the date cutoff.</dd>
+          <dt>Capability</dt><dd><code>vector-index</code> live; <code>embedder</code> live. With the vector generation absent, hybrid <em>degrades to keyword-only and declares it</em> — there is no silent brute-force fallback.</dd>
+          <dt>Known defect</dt><dd><span class="mono">#749</span> — the prior-art cutoff is <strong>stuck at <code>pub_year</code> on the live box</strong>. The <code>filing_date</code>/<code>pub_date</code> projection never reached the deployed lookup, so the date bar is coarser than the contract implies. This is the one to fix first.</dd>
+          <dt>Tickets to done</dt>
+          <dd><div class="tix">
+            <span class="epic">#189 epic · F7 hybrid prior-art + reports seam</span><span>#749 cutoff stuck at pub_year</span><span>#196 light up the vector signal</span><span>#197 Modes A/B assembly</span><span>#198 reports.Kind=prior_art + presets</span><span>#191 store.PriorArt + PriorityCutoff</span><span>#192 handler + envelope</span><span>#193 bdds prior-art CLI</span><span>#199 OpenAPI entries</span><span class="defer">#200 deferred · IDS ingest</span><span class="defer">#201 deferred · saved specs</span>
+          </div></dd>
+          <dt>Read this</dt><dd><a href="d5-semantic-search.html">D5 · Semantic search</a>.</dd>
+        </dl>
+        <div class="note" style="margin-top: 16px; margin-bottom: 0;">
+          <p style="margin: 0;"><strong>Bookkeeping caveat.</strong> <span class="mono">#191</span>, <span class="mono">#192</span> and <span class="mono">#199</span> are open tickets for work that is visibly present in the code and in the published contract. Treat the F7 slice list as a <em>scope</em> checklist, not a build log — the ones that describe real remaining behaviour are <span class="mono">#196</span>, <span class="mono">#197</span> and <span class="mono">#749</span>.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6 -->
+    <div class="feat">
+      <header>
+        <span class="fno">6</span>
+        <h4>Strategic "paid-stats" analytics &amp; patent strength.</h4>
+        <span class="st st-done">Live</span>
+      </header>
+      <div class="feat-body">
+        <p>The competitive reports incumbents charge for — filing dynamics by entity size, applicant type, origin jurisdiction and WIPO technology field; cohort-correct prosecution disposition and allowance rates; owner concentration (HHI); rejection-ground mixes and the §101/Alice trend. Plus per-patent strength: a decile ranked <em>within a country × technology × grant-year cohort</em>, so the number means something.</p>
+        <dl class="kv">
+          <dt>Serving now</dt><dd>14 <code>/v1/analytics/strategic/*</code> routes, 4 <code>/v1/analytics/</code> fieldset routes (whitespace / dynamics / payoff / catalog), <code>/v1/analytics/clusters</code>, <code>/v1/analytics/emerging*</code>, and both strength routes.</dd>
+          <dt>Artifacts</dt><dd><code>strategic_analytics.sqlite</code>, <code>fx_analytics.sqlite</code>, <code>clusters.sqlite</code> (16,384 IVF clusters + PCA-2D), <code>emergingtech.sqlite</code>, <code>strength.sqlite</code>.</dd>
+          <dt>Capabilities</dt><dd><code>strategic-analytics</code> · <code>fieldset-analytics</code> · <code>clusters-landscape</code> · <code>emergence-signals</code> · <code>strength</code> — all live.</dd>
+          <dt>Honest by construction</dt><dd>Every report row stamps <strong>its own N, its rule, and a coverage note</strong>; the serving reader re-derives nothing. A missing sidecar input degrades that <em>one</em> report to <code>deferred</code> in the mart's <code>_catalog</code> — declared, never faked. This is the moat, not a nicety.</dd>
+          <dt>Still open</dt>
+          <dd><div class="tix">
+            <span>#255 strategic v2 — deferred report families (Market Coverage / PAI, citation velocity, gated PTAB &amp; litigation)</span><span class="epic">#8 analytics engine for public patent data</span><span class="defer">#210 deferred · PTAB appeal outcomes</span>
+          </div></dd>
+        </dl>
+      </div>
+    </div>
+
+    <!-- 7 -->
+    <div class="feat">
+      <header>
+        <span class="fno">7</span>
+        <h4>EDGAR signals — disclosed intent &amp; R&amp;D.</h4>
+        <span class="st st-prog">Partial — one lane of eight</span>
+      </header>
+      <div class="feat-body">
+        <p>The thesis is that patents are signal #1 of several. EDGAR is signal #2: what companies <em>say</em> they are investing in (10-K narrative, R&amp;D spend) set against what they actually file — and the residual between the two as a proxy for trade-secret strategy.</p>
+        <dl class="kv">
+          <dt>Serving now</dt><dd><code>/v1/entities/{parent_key}/signals</code> — disclosed-R&amp;D series + intensity benchmark for a consolidated parent.</dd>
+          <dt>Artifacts</dt><dd><code>edgar_rd.sqlite</code>, built from <code>edgar_fsds</code> + <code>edgar_10k</code>.</dd>
+          <dt>Capability</dt><dd><code>edgar-signals</code> — live.</dd>
+          <dt>What's missing</dt><dd>The R&amp;D numeric lane is up. The <em>crosswalk</em> (CIK ↔ assignee ↔ LEI ↔ ultimate parent) that makes coverage measurable, the narrative extractors, the trade-secrecy residual, and the cross-language connectors are not.</dd>
+          <dt>Tickets to done</dt>
+          <dd><div class="tix">
+            <span class="epic">#148 epic · EDGAR innovation signals</span><span>#149 S1 securities-master union + coverage</span><span>#150 S2 CIK ↔ assignee ↔ LEI crosswalk</span><span>#152 S4 signal extractors</span><span>#153 S5 residual + lead/lag join</span><span>#154 S6 secrecy-strategy screen</span><span>#155 S7 DART + EDINET connectors</span><span>#156 S8 stated-vs-revealed reconciliation</span><span class="epic">#132 epic · royalty benchmark</span>
+          </div></dd>
+        </dl>
+        <p style="margin-top: 14px;">M6 stands at <strong>2 closed / 9 open</strong>. The endpoint exists; the signal layer behind it is early.</p>
+      </div>
+    </div>
+
+    <!-- 8 CUT -->
+    <div class="feat" style="border-color: rgba(251,113,133,0.28);">
+      <header style="background: rgba(251,113,133,0.05);">
+        <span class="fno" style="color: #FDA4AF;">✕</span>
+        <h4>Litigation / court-docket signal.</h4>
+        <span class="st st-cut">Cut from MVP</span>
+      </header>
+      <div class="feat-body">
+        <p>US patent-litigation posture per consolidated parent — CourtListener/RECAP, PTAB, ITC EDIS — joined to the entity spine. On-thesis and low-cost, but <strong>not in the MVP</strong>.</p>
+        <dl class="kv">
+          <dt>Code state</dt><dd>The route <code>/v1/entities/{parent_key}/disputes</code> <em>is</em> registered and the <code>litigation-disputes</code> capability <em>is</em> defined — so the shape is reserved. <code>litigation.sqlite</code> is not built and not on the box.</dd>
+          <dt>Live behaviour</dt><dd>A typed <strong>503</strong>, never an empty 200. The comment in <code>server.go</code> says why in as many words: "no disputes" and "the litigation artifact is not loaded" are different answers, and only one of them is about the entity.</dd>
+          <dt>Source registered</dt><dd><code>courtlistener</code> is in the source catalog (RECAP, nature-of-suit 830) — acquisition is designed, ingest is not scheduled.</dd>
+          <dt>To un-cut it</dt><dd><div class="tix"><span class="epic">#204 · FU#15 litigation / court-docket signal (US-first; international deferred)</span></div></dd>
+          <dt>Why cut</dt><dd>The moat is the join to ultimate parent, not the raw records — incumbents already resell public dockets. It only pays once the spine (feature 1) is stronger, which puts it behind M2.</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="note" style="margin-top: 26px;">
+      <p style="margin: 0;"><strong>Also live, but platform rather than product:</strong> managed API keys (<code>api-keys</code>), the capability declaration itself, the job monitor, and the admin catalog/freshness/serving reconciliation. <strong>Not started:</strong> the AI layer (M7, 3 open / 0 closed) and anti-exfiltration volume budgets (M8, 12 open / 1 closed — <span class="mono">#158</span>).</p>
+    </div>
+  </section>
+
+  <hr/>
+
+  <!-- ============================================================ C (diagrams) ============================================================ -->
+  <section class="fade-in d4">
+    <div class="eyebrow">Part B</div>
+    <h2 class="section-title" style="margin-top: 12px;">What depends on <em>what</em>.</h2>
+    <p style="color: var(--type-tertiary); margin-bottom: 8px;">Data moves left to right and never backwards. Raw feeds land in object storage; one resolve pass produces the corpus; one cube is built from it; everything else is a projection of the cube or a sidecar built beside it. Read a column at a time.</p>
+
+    <div class="mermaid-wrap wide">
+<pre class="mermaid">
+flowchart LR
+
+  subgraph SRC["RAW SOURCES · 20 registered feeds"]
+    direction TB
+    EPO["EPO BDDS<br/><small>DOCDB · fulltext · INPADOC</small>"]
+    USP["USPTO ODP<br/><small>filewrapper · grants · apps<br/>assignments · office actions</small>"]
+    SEC["SEC EDGAR<br/><small>FSDS · 10-K</small>"]
+    OWN["GLEIF · Wikidata<br/><small>LEI · parent relations</small>"]
+    MISC["OpenAlex · CPC scheme<br/><small>CourtListener (registered, not ingested)</small>"]
+  end
+
+  subgraph LAKE["THE LAKE · Cloudflare R2"]
+    direction TB
+    RAW[("raw archives")]
+    RES[("resolved Parquet<br/><small>country-partitioned<br/>~148M patents</small>")]
+  end
+
+  subgraph BUILD["BUILD · ephemeral rented boxes · DuckDB"]
+    direction TB
+    ANA["analytics.duckdb<br/><small>slim flattened table</small>"]
+    CUBE["cube.duckdb<br/><small>THE KEYING AUTHORITY<br/>parent · tech · country · year</small>"]
+    JOBS["build-lookup · build-strength<br/>build-search · build-detail/text<br/>embed corpus"]
+    MB["report-mart builds<br/><small>strategic · fx · clusters<br/>emergingtech · edgar_rd</small>"]
+  end
+
+  SRC --> RAW
+  RAW -->|"bdds resolve"| RES
+  RES --> ANA
+  ANA --> CUBE
+  OWN -.->|"ownership map"| CUBE
+  RES --> JOBS
+  ANA --> MB
+  CUBE --> MB
+  SEC -.-> MB
+
+  classDef src fill:#161C3A,stroke:#818CF8,color:#ECEEFB;
+  classDef lake fill:#11162E,stroke:#67E8F9,color:#ECEEFB;
+  classDef build fill:#1A2147,stroke:#FCD34D,color:#ECEEFB;
+  classDef hot fill:#241A33,stroke:#FCD34D,stroke-width:3px,color:#FCD34D;
+  class EPO,USP,SEC,OWN,MISC src;
+  class RAW,RES lake;
+  class ANA,JOBS,MB build;
+  class CUBE hot;
+</pre>
+    </div>
+    <div class="diagram-cap">Fig. 1 — Ingest &amp; build. Twenty feeds in; one resolved corpus; one cube.</div>
+
+    <p style="margin-top: 26px;">Everything above happens on a machine that no longer exists by the time you read a response. Everything below happens on the one box that is always up. The seam between them is the artifact set.</p>
+
+    <div class="mermaid-wrap wide">
+<pre class="mermaid">
+flowchart LR
+
+  CUBE["cube.duckdb<br/><small>THE KEYING AUTHORITY</small>"]
+  JOBS["build jobs<br/><small>from resolved Parquet</small>"]
+  MB["report-mart builds"]
+
+  subgraph SERVE["SERVING ARTIFACTS · the always-on box"]
+    direction TB
+    LOOK["lookup_lean.db<br/><small>required</small>"]
+    SIDE["record sidecars<br/><small>detail · text · prosecution<br/>examiner · assignment · app_bridge</small>"]
+    STR["strength.sqlite"]
+    TANT["Tantivy index<br/><small>patents · NPL</small>"]
+    VEC["IVF-PQ vectors"]
+    ENT["entity_dim.sqlite"]
+    CF["company_file.sqlite"]
+    FL["facet_leaderboard.sqlite"]
+    MARTS["report marts<br/><small>strategic · fx · clusters<br/>emergingtech · edgar_rd</small>"]
+  end
+
+  subgraph API["ENDPOINT GROUPS · 74 routes"]
+    direction TB
+    E4["/v1/entities<br/><small>5</small>"]
+    E2["/v1/patents · /v1/assignments<br/>/v1/examiners · /v1/art-units<br/><small>15</small>"]
+    E3["/v1/search · /v1/semantic-search<br/>/v1/hybrid-search · /v1/prior-art<br/><small>6</small>"]
+    E1["/v1/analytics · /v1/cube<br/>/v1/reports · /v1/tech<br/><small>37</small>"]
+  end
+
+  JOBS --> LOOK
+  JOBS --> SIDE
+  JOBS --> STR
+  JOBS --> TANT
+  JOBS --> VEC
+  MB --> MARTS
+
+  CUBE ==>|"re-key"| ENT
+  CUBE ==>|"re-key"| CF
+  CUBE ==>|"re-key"| FL
+
+  ENT --> E4
+  CF --> E4
+  CUBE --> E4
+  LOOK --> E2
+  SIDE --> E2
+  STR --> E2
+  LOOK -->|"date cutoff"| E3
+  TANT --> E3
+  VEC --> E3
+  CUBE --> E1
+  FL --> E1
+  MARTS --> E1
+
+  classDef build fill:#1A2147,stroke:#FCD34D,color:#ECEEFB;
+  classDef serve fill:#161C3A,stroke:#22D3EE,color:#ECEEFB;
+  classDef api fill:#11162E,stroke:#A78BFA,color:#ECEEFB;
+  classDef hot fill:#241A33,stroke:#FCD34D,stroke-width:3px,color:#FCD34D;
+  class JOBS,MB build;
+  class CUBE hot;
+  class LOOK,STR,TANT,VEC,ENT,CF,FL,MARTS,SIDE serve;
+  class E1,E2,E3,E4 api;
+</pre>
+    </div>
+    <div class="diagram-cap">Fig. 2 — Serve &amp; route. Thick arrows are re-keys of the cube — the dependency that bites.</div>
+
+    <div class="warn">
+      <div class="eyebrow">The dependency that bit us</div>
+      <p><strong>Three serving artifacts are re-keys of the cube.</strong> <code>entity_dim.sqlite</code>, <code>company_file.sqlite</code> and <code>facet_leaderboard.sqlite</code> are all derived from <code>cube.duckdb</code>. Rebuild the cube and deploy it without rebuilding them, and each one keeps serving counts for the <em>previous</em> corpus — with no error, no 503, and no visible symptom except two numbers on the same screen disagreeing.</p>
+      <p>That is exactly how it surfaced: a 17-row NOVARTIS delta between <code>/v1/entities/resolve</code>'s <code>n_patents</code> and the freshly-built <code>by=tech</code> facet. A stale sidecar does not look broken. It looks like a bug in whichever number you trust less.</p>
+      <p>The fix is a <strong>reconciliation gate per re-key</strong>, run at deploy time against a marquee value that must be equal on both sides. Below is what each gate compares and what happens when it fails.</p>
+    </div>
+
+    <div class="mermaid-wrap wide">
+<pre class="mermaid">
+flowchart TB
+  CUBE["cube.duckdb<br/><small>rebuilt → new corpus generation</small>"]
+
+  CUBE --> G1{{"gate · entity_dim ↔ cube"}}
+  CUBE --> G2{{"gate · company_file ↔ cube"}}
+  CUBE --> G3{{"gate · facet_leaderboard ↔ cube"}}
+
+  G1 -->|"compares<br/>entity.n_patents<br/>vs cube_entity.n_patents<br/>for SAMSUNG ELECTRONICS"| A1["entity_dim.sqlite<br/><small>company picker · FTS5</small>"]
+  G2 -->|"compares<br/>company_file.patents<br/>vs SUM cube_parent_year.n_patents"| A2["company_file.sqlite<br/><small>company-file panels</small>"]
+  G3 -->|"compares<br/>SUM class_leaderboard.n_patents<br/>vs SUM cube_parent_tech.n_patents<br/>for class A61"| A3["facet_leaderboard.sqlite<br/><small>global by=parent leaderboard</small>"]
+
+  G1 -.->|"MISMATCH → SELF-HEAL<br/>rebuild on-box from the resident cube,<br/>atomic swap, reload"| H1["lean rebuild · minutes"]
+  G2 -.->|"MISMATCH → REFUSE<br/>196M-row scan — a build-box job"| H2["deploy fails loudly"]
+  G3 -.->|"MISMATCH → REFUSE<br/>173.9M-row sort — a build-box job"| H3["deploy fails loudly<br/><small>or unset the var → exact fallback</small>"]
+
+  classDef hot fill:#241A33,stroke:#FCD34D,stroke-width:3px,color:#FCD34D;
+  classDef gate fill:#11162E,stroke:#67E8F9,color:#67E8F9;
+  classDef art fill:#161C3A,stroke:#22D3EE,color:#ECEEFB;
+  classDef heal fill:#132A22,stroke:#34D399,color:#6EE7B7;
+  classDef bad fill:#2A1620,stroke:#FB7185,color:#FDA4AF;
+
+  class CUBE hot;
+  class G1,G2,G3 gate;
+  class A1,A2,A3 art;
+  class H1 heal;
+  class H2,H3 bad;
+</pre>
+    </div>
+    <div class="diagram-cap">Fig. 3 — The three coupling gates. One self-heals; two refuse the deploy.</div>
+
+    <p>The asymmetry is deliberate and worth internalising. <code>entity_dim</code> is a name index — a streaming FTS5 build over the parent set, bounded RAM, minutes — so the serve box can regenerate it in place from the cube already sitting there. <code>company_file</code> and <code>facet_leaderboard</code> are corpus-scale scans and sorts; healing those on the serve box would evict the page cache out from under live traffic. So they fail the deploy instead, and an operator rebuilds on a rented box. <strong>Never build on the serve box</strong> is not a style preference; it is why those two gates refuse rather than fix.</p>
+
+    <div class="mermaid-wrap wide">
+<pre class="mermaid">
+flowchart LR
+  DEV["laptop<br/><small>bdds CLI</small>"] -->|"bdds ops fire<br/><small>prints projected egress first</small>"| BOX["rented build box<br/><small>r7i · sharded to all cores<br/>DuckDB · hours</small>"]
+  BOX -->|"publish artifact<br/><small>⚠ egress billed by the build cloud</small>"| R2[("Cloudflare R2<br/><small>the durable backbone</small>")]
+  BOX -->|"self-terminate"| GONE["destroyed"]
+  R2 -->|"pull · free read egress"| SERVE["Contabo serve box<br/><small>48 GB · 14 vCPU<br/>lean sidecars only</small>"]
+  SERVE --> EDGE["Cloudflare → Caddy<br/><small>/v1 · /health · /openapi.json</small>"]
+  EDGE --> CLIENT["api.tap-ip.com<br/><small>X-API-KEY on every /v1</small>"]
+
+  classDef a fill:#11162E,stroke:#818CF8,color:#ECEEFB;
+  classDef b fill:#1A2147,stroke:#FCD34D,color:#ECEEFB;
+  classDef c fill:#161C3A,stroke:#22D3EE,color:#ECEEFB;
+  classDef d fill:#11162E,stroke:#A78BFA,color:#ECEEFB;
+  class DEV a; class BOX,GONE b; class R2,SERVE c; class EDGE,CLIENT d;
+</pre>
+    </div>
+    <div class="diagram-cap">Fig. 4 — Build-heavy → serve-lean. R2's free egress is the READ side only.</div>
+
+    <div class="note">
+      <p style="margin: 0;"><strong>The egress trap.</strong> "R2 egress is free" is true when <em>pulling</em>: a build box can stream terabytes out of R2 for nothing. Pushing the finished artifact <em>out of the build box's own cloud</em> is billed by that provider, and on a large artifact it dominates the run — measured on the 309 GB search index: <strong>~$21 egress against ~$4 for the box itself</strong>. <code>bdds ops fire</code> prints the projected publish egress before you spend it.</p>
+    </div>
+
+    <h3 class="feature-title" style="margin-top: 40px;">The serving artifacts, <em>at a glance</em>.</h3>
+    <p style="color: var(--type-tertiary); margin-bottom: 4px;">Colour = engine. Three of these are <strong>required</strong> — the API process exits without them, and <code>restart: unless-stopped</code> turns that into a crash-loop, so the deploy refuses. The rest degrade one route each to a typed 503 and declare it on <code>/v1/capabilities</code>.</p>
+
+    <div class="art-grid">
+      <div class="art duck"><div class="n">cube.duckdb</div><div class="e">CUBE_DB · required</div><div class="d">Pre-aggregated rollups by parent, tech, country, year. The keying authority for the whole product.</div></div>
+      <div class="art lite"><div class="n">lookup_lean.db</div><div class="e">LOOKUP_DB · required</div><div class="d">Point lookups, citations, family, ultimate parent. Also the <em>existence oracle</em> — without it every publication reads as "not held".</div></div>
+      <div class="art lite"><div class="n">keys.sqlite</div><div class="e">KEYS_DB · required</div><div class="d">Managed API keys. Booting without it would serve under weaker auth than the compose file declares.</div></div>
+      <div class="art lite"><div class="n">entity_dim.sqlite</div><div class="e">ENTITY_DB · re-key of cube</div><div class="d">FTS5 company-name index — the picker. Self-heals on gate mismatch.</div></div>
+      <div class="art lite"><div class="n">company_file.sqlite</div><div class="e">COMPANY_FILE_DB · re-key of cube</div><div class="d">Per-parent coverage + panels. Gate refuses on mismatch.</div></div>
+      <div class="art lite"><div class="n">facet_leaderboard.sqlite</div><div class="e">SERVING_FACET_LEADERBOARD_DB · re-key</div><div class="d">Sub-second global by=parent leaderboard. Unset it and the facet falls back to an exact ~13s additive scan — correct, just slow.</div></div>
+      <div class="art lite"><div class="n">strength.sqlite</div><div class="e">STRENGTH_DB</div><div class="d">Cohort deciles + citation features, ranked within country × technology × grant-year.</div></div>
+      <div class="art lite"><div class="n">patent_detail.sqlite</div><div class="e">SERVING_DETAIL_DB</div><div class="d">Sub-second full-record seek. Falls back to resolved Parquet on demand.</div></div>
+      <div class="art lite"><div class="n">patent_text.sqlite</div><div class="e">SERVING_TEXT_DB</div><div class="d">Abstract + claims, 17.09M rows, 33.7 GiB. Weekly Red Book cadence — deliberately decoupled from the detail rebuild.</div></div>
+      <div class="art lite"><div class="n">prosecution.sqlite · oa_timeline.sqlite</div><div class="e">PROSECUTION_DB · SERVING_OA_TIMELINE_DB</div><div class="d">Per-application procedural events and the office-action timeline. Separate vars on purpose: different cadences, and one absent must never take the other down.</div></div>
+      <div class="art lite"><div class="n">examiner.sqlite</div><div class="e">EXAMINER_DB</div><div class="d">Per-examiner and per-art-unit prosecution stats; also backs field → art-units.</div></div>
+      <div class="art lite"><div class="n">assignment.v4.sqlite · app_bridge.sqlite</div><div class="e">ASSIGNMENT_DB · APP_BRIDGE_DB</div><div class="d">Recorded chain of title, and the pub/patent → application_number bridge the composed case view needs.</div></div>
+      <div class="art lite"><div class="n">strategic_analytics.sqlite · fx_analytics.sqlite</div><div class="e">STRATEGIC_DB · FX_DB</div><div class="d">Precomputed report marts. Each row carries its own N, rule and coverage note; unbuilt reports declare themselves <code>deferred</code> in the mart catalog.</div></div>
+      <div class="art lite"><div class="n">clusters.sqlite · emergingtech.sqlite</div><div class="e">CLUSTERS_DB · EMERGINGTECH_DB</div><div class="d">16,384 IVF clusters with PCA-2D coordinates; filing-acceleration and CPC code-birth signals.</div></div>
+      <div class="art lite"><div class="n">edgar_rd.sqlite</div><div class="e">SIGNALS_DB</div><div class="d">EDGAR disclosed-R&amp;D series + intensity benchmark.</div></div>
+      <div class="art lite" style="border-left-color: #FB7185;"><div class="n">litigation.sqlite</div><div class="e">LITIGATION_DB · not built</div><div class="d">Reserved for the cut litigation feature. Absent → typed 503, never an empty 200.</div></div>
+      <div class="art tant"><div class="n">Tantivy index · NPL index</div><div class="e">SEARCH_URL · NPL_SEARCH_URL</div><div class="d">Rust BM25 sidecars over HTTP. 308.9 GiB against ~309 GiB free — no headroom.</div></div>
+      <div class="art vec"><div class="n">IVF-PQ vector index</div><div class="e">VECTOR_INDEX_DIR</div><div class="d">In-process ANN for semantic and hybrid search. Absent → hybrid degrades to keyword-only <em>and says so</em>.</div></div>
+    </div>
+  </section>
+
+  <hr/>
+
+  <!-- ============================================================ B (endpoints) ============================================================ -->
+  <section class="fade-in d5">
+    <div class="eyebrow">Part C</div>
+    <h2 class="section-title" style="margin-top: 12px;">Every endpoint, <em>grouped</em>.</h2>
+    <p style="color: var(--type-tertiary); margin-bottom: 4px;">All <strong>74</strong> registered <code>/v1</code> method+path pairs (73 distinct paths) plus <code>/health</code>. Every <code>/v1</code> route requires an <code>X-API-KEY</code> header. The "backed by" column names the artifact that answers — if it is absent, that route returns a typed 503 and <code>/v1/capabilities</code> declares it.</p>
+
+    <div class="ep-group"><h4>Entities &amp; company</h4><span class="ep-count">5 routes</span></div>
+    <div class="ep-scroll">
+    <table class="ep-table">
+      <thead><tr><th style="width:52px;">Method</th><th>Path</th><th>Purpose</th><th style="width:210px;">Backed by</th></tr></thead>
+      <tbody>
+        <tr><td class="m">GET</td><td class="p">/v1/entities/resolve</td><td>Company name → consolidated <code>parent_key</code> (autocomplete)</td><td class="a">entity_dim.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/entities/suggest</td><td>Typo-tolerant suggest with score + <code>matched_on</code> basis</td><td class="a">entity_dim.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/entities/{parent_key}/company-file</td><td>Composed per-entity innovation profile — the flagship surface</td><td class="a">company_file.sqlite + cube</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/entities/{parent_key}/signals</td><td>Disclosed-R&amp;D signals from EDGAR</td><td class="a">edgar_rd.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/entities/{parent_key}/disputes</td><td>US litigation posture — <strong>cut from MVP</strong>, returns 503</td><td class="a">litigation.sqlite <em>(absent)</em></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="ep-group"><h4>Patent record &amp; citation graph</h4><span class="ep-count">6 routes</span></div>
+    <div class="ep-scroll">
+    <table class="ep-table">
+      <thead><tr><th style="width:52px;">Method</th><th>Path</th><th>Purpose</th><th style="width:210px;">Backed by</th></tr></thead>
+      <tbody>
+        <tr><td class="m">GET</td><td class="p">/v1/patents/{pub}</td><td>One patent by publication, grant or application number</td><td class="a">lookup_lean.db</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/patents/{pub}/full</td><td>Full record — abstract, inventors, assignees, nested detail</td><td class="a">patent_detail.sqlite → resolved Parquet</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/patents/{pub}/text</td><td>Full text — abstract + claims</td><td class="a">patent_text.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/patents/{pub}/citations</td><td>Backward citations — what this patent cites</td><td class="a">lookup_lean.db</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/patents/{pub}/cited-by</td><td>Forward citations — what cites this patent</td><td class="a">lookup_lean.db</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/patents/{pub}/family</td><td>Same-family publications (INPADOC)</td><td class="a">lookup_lean.db</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="ep-group"><h4>Patent strength</h4><span class="ep-count">2 routes</span></div>
+    <div class="ep-scroll">
+    <table class="ep-table">
+      <thead><tr><th style="width:52px;">Method</th><th>Path</th><th>Purpose</th><th style="width:210px;">Backed by</th></tr></thead>
+      <tbody>
+        <tr><td class="m">GET</td><td class="p">/v1/patents/{pub}/strength</td><td>Cohort-relative decile / percentile card for one patent</td><td class="a">strength.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/patents/strength/top</td><td>Top patents within a technology cohort by strength</td><td class="a">strength.sqlite</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="ep-group"><h4>Prosecution, examiners &amp; chain of title</h4><span class="ep-count">7 routes</span></div>
+    <div class="ep-scroll">
+    <table class="ep-table">
+      <thead><tr><th style="width:52px;">Method</th><th>Path</th><th>Purpose</th><th style="width:210px;">Backed by</th></tr></thead>
+      <tbody>
+        <tr><td class="m">GET</td><td class="p">/v1/patents/{id}/prosecution</td><td>US prosecution facts for one application</td><td class="a">prosecution.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/patents/{id}/office-actions</td><td>Per-application office-action timeline</td><td class="a">oa_timeline.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/patents/{id}/case</td><td>Composed case experience — prosecution + examiner + family + strategy</td><td class="a">app_bridge.sqlite + the above</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/patents/{id}/assignments</td><td>Recorded ownership history — chain of title</td><td class="a">assignment.v4.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/assignments/{reel}/{frame}</td><td>The reverse view — what else moved in that one recorded deal</td><td class="a">assignment.v4.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/examiners/{id}</td><td>Per-examiner prosecution statistics</td><td class="a">examiner.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/art-units/{id}</td><td>Per-art-unit prosecution statistics</td><td class="a">examiner.sqlite</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="ep-group"><h4>Search &amp; prior art</h4><span class="ep-count">6 routes</span></div>
+    <div class="ep-scroll">
+    <table class="ep-table">
+      <thead><tr><th style="width:52px;">Method</th><th>Path</th><th>Purpose</th><th style="width:210px;">Backed by</th></tr></thead>
+      <tbody>
+        <tr><td class="m">GET</td><td class="p">/v1/search</td><td>BM25 relevance search, two-mode query dialect</td><td class="a">Tantivy</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/search/npl</td><td>Scholarly (non-patent-literature) keyword prior art</td><td class="a">NPL Tantivy</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/search/npl/{work_id}</td><td>Full scholarly record for one work</td><td class="a">npl_lookup.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/semantic-search</td><td>Vector "more like this" — patent-domain embedding ANN</td><td class="a">IVF-PQ vector index</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/hybrid-search</td><td>Semantic + keyword fused by reciprocal-rank fusion</td><td class="a">vectors + Tantivy</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/prior-art</td><td>Patent-to-patent prior art — RRF with a priority-date bar</td><td class="a">vectors + Tantivy + lookup_lean.db</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="ep-group"><h4>Cube presets — instant leaderboards</h4><span class="ep-count">4 routes</span></div>
+    <div class="ep-scroll">
+    <table class="ep-table">
+      <thead><tr><th style="width:52px;">Method</th><th>Path</th><th>Purpose</th><th style="width:210px;">Backed by</th></tr></thead>
+      <tbody>
+        <tr><td class="m">GET</td><td class="p">/v1/cube/owners</td><td>Top owners — consolidated corporate parents</td><td class="a">cube.duckdb</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/cube/technologies</td><td>Top technologies — CPC/IPC subclasses</td><td class="a">cube.duckdb</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/cube/countries</td><td>Filings by country — choropleth feed</td><td class="a">cube.duckdb</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/cube/trends</td><td>Filings by year — trend-line feed</td><td class="a">cube.duckdb</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="ep-group"><h4>Flexible &amp; landscape analytics</h4><span class="ep-count">8 routes</span></div>
+    <div class="ep-scroll">
+    <table class="ep-table">
+      <thead><tr><th style="width:52px;">Method</th><th>Path</th><th>Purpose</th><th style="width:210px;">Backed by</th></tr></thead>
+      <tbody>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/facet</td><td>1-D aggregation — leaderboards, trends, breakdowns</td><td class="a">cube + facet_leaderboard + facet index</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/crosstab</td><td>2-D grid — landscape / white-space / co-occurrence</td><td class="a">cube.duckdb</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/trends</td><td>Preset: <code>facet by=year</code></td><td class="a">cube.duckdb</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/top-applicants</td><td>Preset: <code>facet by=assignee</code></td><td class="a">cube.duckdb</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/by-jurisdiction</td><td>Preset: <code>facet by=country</code></td><td class="a">cube.duckdb</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/clusters</td><td>Innovation-landscape clusters — 2D substrate</td><td class="a">clusters.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/emerging</td><td>Emergence Signals — declared-coverage detector</td><td class="a">emergingtech.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/emerging/{id}</td><td>One Emergence Signal with member evidence</td><td class="a">emergingtech.sqlite</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="ep-group"><h4>Strategic "paid-stats" reports</h4><span class="ep-count">14 routes</span></div>
+    <div class="ep-scroll">
+    <table class="ep-table">
+      <thead><tr><th style="width:52px;">Method</th><th>Path</th><th>Purpose</th><th style="width:210px;">Backed by</th></tr></thead>
+      <tbody>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/strategic/catalog</td><td>Report catalog — served / deferred / not_covered</td><td class="a">strategic_analytics.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/strategic/filing/entity-size</td><td>Filing dynamics by entity size, share by filing year</td><td class="a">strategic_analytics.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/strategic/filing/applicant-type</td><td>Filing dynamics by applicant type</td><td class="a">strategic_analytics.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/strategic/filing/application-type</td><td>Filing type — the continuation-inflation view</td><td class="a">strategic_analytics.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/strategic/filing/jurisdiction</td><td>Country share by filing year, by origin</td><td class="a">strategic_analytics.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/strategic/filing/tech</td><td>Filing dynamics by WIPO Schmoch technology field</td><td class="a">strategic_analytics.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/strategic/prosecution/disposition</td><td>Cohort-correct disposition &amp; allowance rate by entity size</td><td class="a">strategic_analytics.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/strategic/prosecution/rejections</td><td>Rejection-ground mix by tech center</td><td class="a">strategic_analytics.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/strategic/prosecution/rejections/art-unit</td><td>Rejection-ground mix by native art unit</td><td class="a">strategic_analytics.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/strategic/prosecution/alice</td><td>§101 / <em>Alice</em> eligibility-rejection trend</td><td class="a">strategic_analytics.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/strategic/prosecution/examiner-rejections</td><td>One examiner's descriptive rejection-ground profile</td><td class="a">strategic_analytics.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/strategic/owners/concentration</td><td>Owner concentration — HHI &amp; top-share by field × year</td><td class="a">strategic_analytics.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/strategic/benchmarks</td><td>Published benchmark reference — ours-vs-published</td><td class="a">strategic_analytics.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/strategic/named-tech</td><td>Named-technology filing trend, cited registry definition</td><td class="a">strategic_analytics.sqlite</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="ep-group"><h4>Fieldset analytics — whitespace &amp; dynamics</h4><span class="ep-count">4 routes</span></div>
+    <div class="ep-scroll">
+    <table class="ep-table">
+      <thead><tr><th style="width:52px;">Method</th><th>Path</th><th>Purpose</th><th style="width:210px;">Backed by</th></tr></thead>
+      <tbody>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/fieldset/catalog</td><td>Fieldset report catalog — what's built vs deferred</td><td class="a">fx_analytics.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/whitespace</td><td>White-space tiles — per-cell score, quadrant, censoring feed</td><td class="a">fx_analytics.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/dynamics</td><td>Directional-dynamics ladder — three-rung graded verdicts</td><td class="a">fx_analytics.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/analytics/payoff</td><td>Payoff backtest — as-of cohort-lift verdict surface</td><td class="a">fx_analytics.sqlite</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="ep-group"><h4>Technology taxonomy</h4><span class="ep-count">5 routes</span></div>
+    <div class="ep-scroll">
+    <table class="ep-table">
+      <thead><tr><th style="width:52px;">Method</th><th>Path</th><th>Purpose</th><th style="width:210px;">Backed by</th></tr></thead>
+      <tbody>
+        <tr><td class="m">GET</td><td class="p">/v1/tech/fields</td><td>WIPO Schmoch tech-field catalog</td><td class="a">cube.duckdb · tech_field_map</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/tech/fields/{id}</td><td>Field → subclasses</td><td class="a">cube.duckdb · tech_field_map</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/tech/fields/{id}/art-units</td><td>Art units that examine a tech field — technology-first nav</td><td class="a">examiner.sqlite</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/tech/subclass/{code}</td><td>Subclass code → WIPO field</td><td class="a">cube.duckdb · tech_field_map</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/tech/resolve</td><td>Free-text description → ranked CPC-subclass candidates</td><td class="a">patent_detail.sqlite + search engines</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="ep-group"><h4>Named reports</h4><span class="ep-count">2 routes</span></div>
+    <div class="ep-scroll">
+    <table class="ep-table">
+      <thead><tr><th style="width:52px;">Method</th><th>Path</th><th>Purpose</th><th style="width:210px;">Backed by</th></tr></thead>
+      <tbody>
+        <tr><td class="m">GET</td><td class="p">/v1/reports</td><td>Report catalog — named, described analytics templates</td><td class="a">cube.duckdb</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/reports/{id}</td><td>Run a named report</td><td class="a">cube.duckdb</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="ep-group"><h4>Platform, admin &amp; observability</h4><span class="ep-count">11 routes + /health</span></div>
+    <div class="ep-scroll">
+    <table class="ep-table">
+      <thead><tr><th style="width:52px;">Method</th><th>Path</th><th>Purpose</th><th style="width:210px;">Backed by</th></tr></thead>
+      <tbody>
+        <tr><td class="m">GET</td><td class="p">/health</td><td>Liveness probe — the one route with no key</td><td class="a">—</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/capabilities</td><td>Public capability list — lets clients gate panels instead of probing 503s</td><td class="a">boot status registry</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/jobs</td><td>Build &amp; ingest job status</td><td class="a">R2 status markers</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/admin/sources</td><td>Data-source catalog reconciled against R2 — the API half of <code>bdds inspect</code></td><td class="a">catalog.yaml + R2</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/admin/serving</td><td>Serving artifacts, reconciled against R2</td><td class="a">R2 listing</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/admin/freshness</td><td>Per-source freshness invariant — measured age vs declared cadence</td><td class="a">catalog.yaml + R2</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/admin/status</td><td>Serving readiness — the unredacted twin of <code>/v1/capabilities</code></td><td class="a">boot status registry</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/admin/refresh-runs</td><td>Cadenced refresh-run history, rule-stamped per job</td><td class="a">R2 refresh state</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/admin/embeddings</td><td>Embedding coverage status</td><td class="a">R2 embed manifest</td></tr>
+        <tr><td class="m">GET</td><td class="p">/v1/admin/keys</td><td>List issued API keys</td><td class="a">keys.sqlite</td></tr>
+        <tr><td class="m">POST</td><td class="p">/v1/admin/keys</td><td>Mint a key — <strong>not in <code>openapi.json</code></strong></td><td class="a">keys.sqlite</td></tr>
+        <tr><td class="m">DELETE</td><td class="p">/v1/admin/keys/{id}</td><td>Revoke a key — <strong>not in <code>openapi.json</code></strong></td><td class="a">keys.sqlite</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="warn">
+      <div class="eyebrow">Contract drift — worth knowing before you trust the spec</div>
+      <p>The published <code>openapi.json</code> declares <strong>72</strong> <code>/v1</code> paths. The router registers <strong>73 paths / 74 method+path pairs</strong>. The gap is exactly the two key <em>mutations</em> above: <code>POST /v1/admin/keys</code> (an undeclared method on a declared path) and <code>DELETE /v1/admin/keys/{id}</code> (an undeclared path outright). Both are admin-only and gated behind Caddy, so nothing public is undeclared — but the contract is not a complete description of the router.</p>
+      <p>Separately, <span class="mono">#770</span> is open: the contract <strong>under-declares response fields by 73</strong> (56 company-file · 12 hybrid-search · 4 emerging · 1 prior-art), and <code>bdds contract verify</code> exits 1 on it today. The fix direction is settled — derive the contract from the Go types by reflection rather than maintaining a parallel copy (<span class="mono">#352</span>, the system-catalog epic, is the durable version of this).</p>
+    </div>
+
+    <div class="note">
+      <p style="margin: 0;"><strong>Where the surface is public.</strong> Cloudflare → Caddy gates <code>api.tap-ip.com</code> down to <code>/v1</code>, <code>/health</code> and <code>/openapi.json</code>. The <code>/docs</code> Swagger UI, <code>/ui</code>, <code>/admin</code> and <code>/jobs</code> pages are auth-exempt <em>and inject the API key into the page</em> — which is precisely why they stay box-private and are reached over an SSH tunnel, never exposed.</p>
+    </div>
+  </section>
+
+  <hr/>
+
+  <section class="fade-in d5">
+    <div class="card" style="border-color: var(--cyan-deep); background: linear-gradient(180deg, rgba(34,211,238,0.05), transparent);">
+      <div class="eyebrow" style="margin-bottom: 12px;">Three things to take away</div>
+      <h3 class="feature-title" style="margin-bottom: 14px;">If you remember nothing else.</h3>
+      <p><strong>1 · One artifact is the keying authority.</strong> The cube decides what a company <em>is</em>, and three other serving artifacts are re-keys of it. Any change to how the cube keys parents desynchronises all three, silently. That is why there is a reconciliation gate per re-key, and why one of them self-heals while two refuse the deploy.</p>
+      <p><strong>2 · Absent is not zero.</strong> Every degraded route returns a typed 503 and declares itself on <code>/v1/capabilities</code>. An empty <code>200</code> would be a claim about the world; a 503 is a claim about the deployment. The litigation endpoint is the clearest example — cut from the MVP, and honest about it.</p>
+      <p style="margin-bottom: 0;"><strong>3 · Status lives in the running system, not the tracker.</strong> Epics stay open after their surface ships. When you need to know whether something works, read <code>/v1/capabilities</code>, the route table, and the capability registry — then go look at the tickets to find out what is still <em>missing</em>.</p>
+    </div>
+  </section>
+
+  <nav class="chapter-foot">
+    <a href="d6-why-lakehouse.html" class="foot-link prev">
+      <span class="lbl">← Previous</span>
+      <span class="tt">D6 · Why the lakehouse wins</span>
+    </a>
+    <a href="index.html#data-track" class="foot-link next">
+      <span class="lbl">Back to the index →</span>
+      <span class="tt">The tour index</span>
+    </a>
+  </nav>
+
+</main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    securityLevel: 'loose',
+    themeVariables: {
+      background: 'transparent',
+      mainBkg: '#161C3A',
+      secondBkg: '#1A2147',
+      tertiaryColor: '#11162E',
+      primaryBorderColor: '#A78BFA',
+      secondaryBorderColor: '#67E8F9',
+      tertiaryBorderColor: '#818CF8',
+      lineColor: '#67E8F9',
+      primaryTextColor: '#ECEEFB',
+      secondaryTextColor: '#ECEEFB',
+      tertiaryTextColor: '#ECEEFB',
+      textColor: '#ECEEFB',
+      titleColor: '#ECEEFB',
+      labelTextColor: '#ECEEFB',
+      clusterBkg: '#0B0F23',
+      clusterBorder: '#232C56',
+      edgeLabelBackground: '#11162E',
+      fontFamily: '"Geist", "Söhne", system-ui, sans-serif',
+      fontSize: '14px',
+    },
+    flowchart: { curve: 'basis', useMaxWidth: true, htmlLabels: true, padding: 16 },
+  });
+</script>
+<script src="tour.js"></script>
+</body>
+</html>

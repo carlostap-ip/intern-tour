@@ -160,9 +160,15 @@ main {
 
 @media (max-width: 768px) {
   main { padding: 48px 20px 96px; }
-  .topbar { padding: 14px 18px; }
+  .topbar { padding: 14px 18px; gap: 12px; }
   .top-nav .dot { display: none; }
   .top-nav a { padding: 6px 6px; }
+  /* Chapter navs are long (Index · Data · D1…D7). Let the nav wrap onto a second
+     row rather than pushing the whole page wider than the viewport. Wrapping (not
+     scrolling) so no chapter link can end up clipped out of reach. */
+  .topbar { flex-wrap: wrap; row-gap: 8px; }
+  .brand { flex: 0 0 auto; }
+  .top-nav { flex-wrap: wrap; justify-content: flex-end; row-gap: 2px; min-width: 0; }
 }
 
 /* ─────────────────────────────────────────────
