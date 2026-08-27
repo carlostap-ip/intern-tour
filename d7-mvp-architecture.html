@@ -325,7 +325,7 @@
     <div class="orient">
       <div class="eyebrow" style="color: var(--cyan);">Start here · 30 seconds</div>
       <h3 style="margin: 10px 0 12px; font-family: var(--font-display); font-style: italic; font-size: 26px; color: var(--type-primary); line-height: 1.2;">What this thing actually is.</h3>
-      <p>It's a <strong>search-and-statistics engine for the world's patents</strong> — about 148 million of them, from the US, Europe, Japan, China and elsewhere. Customers are companies, investors and patent lawyers, and they ask it questions like:</p>
+      <p>It's a <strong>search-and-statistics engine for the world's patents</strong> — about 148.3 million of them, from the US, Europe, Japan, China and elsewhere. Customers are companies, investors and patent lawyers, and they ask it questions like:</p>
       <ul class="qlist">
         <li>“What is Samsung patenting in battery tech, and is that going up or down?”</li>
         <li>“Who else is working in this area, and who's the biggest?”</li>
@@ -339,7 +339,7 @@
       <div class="stat"><div class="sv">20</div><div class="sl">capabilities live</div></div>
       <div class="stat"><div class="sv">1</div><div class="sl">switched off on purpose</div></div>
       <div class="stat"><div class="sv">74</div><div class="sl">API routes</div></div>
-      <div class="stat"><div class="sv">~148M</div><div class="sl">patents</div></div>
+      <div class="stat"><div class="sv">~148.3M</div><div class="sl">patents</div></div>
       <div class="stat"><div class="sv">20</div><div class="sl">data sources</div></div>
     </div>
 
@@ -356,7 +356,7 @@
     <table class="ep-table">
       <thead><tr><th>Feature</th><th style="width:150px;">Status</th><th>What a user gets</th></tr></thead>
       <tbody>
-        <tr><td><a href="#f1"><strong>Company identity</strong></a><div class="sub">the “ultimate parent” spine</div></td><td><span class="st st-part">Live · v1</span></td><td>Type “Samsung” and get one company, with every subsidiary and spelling folded in. Everything else depends on this.</td></tr>
+        <tr><td><a href="#f1"><strong>Company identity</strong></a><div class="sub">the “ultimate parent” spine</div></td><td><span class="st st-part">Live · v1</span></td><td>Type “Samsung” and get one company, with every subsidiary and spelling folded up to its ultimate parent. Re-keyed and live in production as of 2026-08-27. Everything else depends on this.</td></tr>
         <tr><td><a href="#f2"><strong>Company file &amp; analytics</strong></a></td><td><span class="st st-done">Live</span></td><td>A profile page per company, plus every chart: top filers, trends by year, breakdowns by country and technology.</td></tr>
         <tr><td><a href="#f3"><strong>Patent lookup</strong></a></td><td><span class="st st-done">Live</span></td><td>Look up one patent — its text, its family, what it cites, its history at the patent office, who owns it now.</td></tr>
         <tr><td><a href="#f4"><strong>Keyword &amp; company search</strong></a></td><td><span class="st st-done">Live</span></td><td>Search patents by words, and the type-ahead box that turns what a user types into a company.</td></tr>
@@ -379,14 +379,14 @@
 
     <div class="eyebrow" style="margin-top: 46px;">Reading the roadmap</div>
     <h3 style="margin: 10px 0 6px; font-family: var(--font-display); font-style: italic; font-size: 26px; color: var(--type-primary);">What “M2” means.</h3>
-    <p style="color: var(--type-secondary); margin-bottom: 4px;">Work is grouped into numbered milestones. The page refers to them by number — “this is behind M2” means it is waiting on the entity-resolution work. Counts are done / to&nbsp;go, current 2026-08-26.</p>
+    <p style="color: var(--type-secondary); margin-bottom: 4px;">Work is grouped into numbered milestones. The page refers to them by number — “this is behind M2” means it is waiting on the entity-resolution work. Counts are done / to&nbsp;go, current 2026-08-27.</p>
 
     <div class="ep-scroll">
     <table class="ep-table">
       <thead><tr><th style="width:60px;">ID</th><th>What it covers</th><th style="width:110px;">Done / to go</th><th style="width:170px;">State</th></tr></thead>
       <tbody>
         <tr><td class="a">M1</td><td>Serving &amp; pipeline — the backbone that gets data in and artifacts out</td><td class="m">20 / 8</td><td>Ongoing backbone</td></tr>
-        <tr><td class="a">M2</td><td><strong>Entity resolution &amp; ownership</strong> — company identity, feature 1</td><td class="m">4 / 9</td><td><span class="st st-prog">Barely started — and it is the spine</span></td></tr>
+        <tr><td class="a">M2</td><td><strong>Entity resolution &amp; ownership</strong> — company identity, feature 1</td><td class="m">6 / 7</td><td><span class="st st-prog">Spine LIVE in prod — v2 registry map still ahead</span></td></tr>
         <tr><td class="a">M3</td><td>Patent strength &amp; core analytics</td><td class="m">5 / 2</td><td>Mostly done</td></tr>
         <tr><td class="a">M4</td><td>Product: company file &amp; filing strategy</td><td class="m">10 / 7</td><td>Past halfway</td></tr>
         <tr><td class="a">M5</td><td>Search &amp; semantic — keyword, meaning, prior art</td><td class="m">17 / 18</td><td>The active front</td></tr>
@@ -418,17 +418,17 @@
       <div class="w"><div class="wt">fusing two searches<br/><span class="wk">RRF</span></div><div class="wd">Running keyword and meaning search separately, then merging the two ranked lists into one. “Reciprocal-rank fusion” is just the merging rule — no scores to calibrate, so the same inputs always give the same output.</div></div>
       <div class="w"><div class="wt">capability</div><div class="wd">A named thing the server publishes at start-up saying “I can do this” — e.g. <code>keyword-search</code>, <code>strength</code>. The app reads that list and greys out what isn't available, instead of guessing. 20 are live today; 1 is off on purpose.</div></div>
       <div class="w"><div class="wt">cohort</div><div class="wd">The comparison group a number is measured against. Patent strength uses “same country, same technology, same year” as the cohort — so a score always means “compared with its own peers”, never “compared with everything”.</div></div>
-      <div class="w"><div class="wt">corpus</div><div class="wd">Our full cleaned-up collection of patents — all ~148 million. It gets rebuilt periodically, so you'll see it talked about as having versions.</div></div>
+      <div class="w"><div class="wt">corpus</div><div class="wd">Our full cleaned-up collection of patents — all 148,310,457 of them (~148.3M). It gets rebuilt periodically, so you'll see it talked about as having versions.</div></div>
       <div class="w"><div class="wt">report mart</div><div class="wd">An artifact holding <em>finished reports</em> rather than raw data — the answers are computed during the build, so serving one is just reading a row.</div></div>
       <div class="w"><div class="wt">bdds</div><div class="wd">Our command-line tool — it runs every build (<code>bdds build-cube</code>) and every server operation. ⚠ Unrelated to “EPO BDDS” in the diagrams, which is the European Patent Office's data service. Same letters, different thing.</div></div>
       <div class="w"><div class="wt">egress</div><div class="wd">Data leaving a cloud provider's network — which they charge for. It's why publishing a huge finished file can cost more than the machine that built it.</div></div>
-      <div class="w"><div class="wt">ticket · epic · milestone</div><div class="wd">A <strong>ticket</strong> (<code>#204</code>) is one unit of work on GitHub. An <strong>epic</strong> is a big ticket holding smaller ones. <strong>M1–M12</strong> are milestones — themed buckets like “M2 · Entity Resolution”. “4 closed / 9 open” means 4 done, 9 to go.</div></div>
+      <div class="w"><div class="wt">ticket · epic · milestone</div><div class="wd">A <strong>ticket</strong> (<code>#204</code>) is one unit of work on GitHub. An <strong>epic</strong> is a big ticket holding smaller ones. <strong>M1–M12</strong> are milestones — themed buckets like “M2 · Entity Resolution”. A count like “8 closed / 5 open” means 8 done, 5 to go.</div></div>
       <div class="w"><div class="wt">EDGAR · SEC filings</div><div class="wd">The US regulator's public database of company financial reports. We read R&amp;D spending out of it to compare what a company says it invests against what it patents.</div></div>
     </div>
 
     <div class="note" style="margin-top: 34px;">
       <p style="margin: 0 0 10px;"><strong>How the statuses below were decided — and why not from the ticket list.</strong> Tickets here often stay open after the thing they describe is already working (<span class="mono">#522</span>, <span class="mono">#452</span> and <span class="mono">#372</span> are all open tickets for features that are live right now). So “Live” on this page means <em>the running server actually reports it</em> — checked against the server's own start-up list of what it can do, its route table, its published API contract, and the 2026-08-21 status handoff: <strong>20 capabilities live, 1 switched off on purpose</strong>. Ticket numbers are listed for what is <em>still missing</em>, which is a different question from what is still open.</p>
-      <p style="margin: 0;"><strong>Milestone counts</strong> are current as of 2026-08-26.</p>
+      <p style="margin: 0;"><strong>Milestone counts</strong> are current as of 2026-08-27 — the day the entity-spine cutover went live.</p>
     </div>
 
     <div class="legend">
@@ -453,12 +453,13 @@
       <header>
         <span class="fno" id="f1">1</span>
         <h4>Company identity — one company, many names.</h4>
-        <span class="st st-part">Live · v1</span><span class="badge-note">the bigger v2 is barely started</span>
+        <span class="st st-part">Live · v1</span><span class="badge-note">ultimate-parent spine shipped 2026-08-27 · v2 registry map still ahead</span>
       </header>
       <div class="feat-body">
         <p><strong>The problem:</strong> patent offices record whatever name was typed on the form. One company shows up as dozens of strings, plus subsidiaries that don't share a name at all.</p>
         <p><strong>What this does:</strong> <span class="pill" data-term="entityresolution">entity resolution</span> decides which of those strings are the same company and folds them into one <em>ultimate parent</em>. Every count in the product is then per-company rather than per-filing-name.</p>
         <p><strong>Why it's called the spine:</strong> every other feature inherits this answer. Get a company wrong here and every chart, score and profile is wrong the same way.</p>
+        <p><strong>What just shipped (2026-08-27):</strong> the cube was re-keyed to <em>ultimate-parent</em> resolution and is now live in production. Filing names now roll up to the real top company — “PANASONIC” and its subsidiaries fold into <strong>PANASONIC HOLDINGS</strong>, which takes it from <strong>3,461</strong> patents to about <strong>1.1 million</strong>. Chinese, Japanese and Korean (CJK) name coverage went from <strong>0% to 16.9%</strong>, and roughly <strong>10,600</strong> newly-resolved companies now roll up correctly. The cutover shipped as one co-fresh batch — see <a href="#part-b">Part B</a> for why it had to.</p>
         <dl class="kv">
           <dt>Serving now</dt><dd><code>/v1/entities/resolve</code>, <code>/v1/entities/suggest</code> — FTS5 typeahead over ~25M parents, plus the <code>parent_key</code> dimension baked into every cube rollup.</dd>
           <dt>Artifacts</dt><dd><code>entity_dim.sqlite</code> (derived from the cube), <code>cube_parent_map</code> / <code>cube_entity</code> inside <code>cube.duckdb</code>, <code>assignee_map</code>.</dd>
@@ -466,14 +467,15 @@
           <dt>What v1 is</dt><dd>Clean up the names, apply a hand-maintained list of known corrections, and bake the result into the cube when it's built. Not clever, but it works — and it is what the entire product runs on today.</dd>
           <dt>What v2 adds</dt><dd>A real <em>ownership map</em> built from official company registries — GLEIF (the global registry of legal entities), Wikidata, and the Japanese and Korean equivalents — which know who actually owns whom. Today the name-matching <em>is</em> the truth; in v2 the registries are the truth and the name-matching becomes a copy of them.</dd>
           <dt>Tickets to done</dt>
-          <dd><details class="tixwrap"><summary>10 tickets — show the numbers</summary><div class="tix">
-            <span class="epic">#108 epic · ownership graph v2</span><span>#109 minimal graph + traversal</span><span>#111 JP/KR loaders</span><span>#112 multi-source merge + conflict resolution</span><span>#113 migrate v1 → v2</span><span>#122 industry crosswalk</span><span>#95 Wikidata + assignment grounding join</span><span>#99 quarterly map refresh</span><span>#792 legal-form-shell collisions + parent→subsidiary inversion</span><span>#752 ops: refresh a source on the serve box</span>
-          </div></details></dd>
+          <dd><details class="tixwrap"><summary>8 tickets — show the numbers</summary><div class="tix">
+            <span class="epic">#108 epic · ownership graph v2</span><span>#112 multi-source merge + conflict resolution</span><span>#113 migrate v1 → v2</span><span>#122 industry crosswalk</span><span>#95 Wikidata + assignment grounding join</span><span>#99 quarterly map refresh</span><span>#792 fast-follow · ~30 legal-form-collision matcher errors</span><span>#752 ops: refresh a source on the serve box</span>
+          </div></details>
+          <div class="badge-note" style="margin-top: 8px;">Closed by the 2026-08-27 spine cutover: <span class="mono">#109</span> minimal graph + traversal (ultimate-parent rollups) and <span class="mono">#111</span> JP/KR loaders (CJK coverage).</div></dd>
           <dt>Read this</dt><dd><a href="d4-entity-resolution.html">D4 · Entity resolution</a>.</dd>
         </dl>
         <div class="warn" style="margin-bottom: 0;">
           <div class="eyebrow">The honest gap</div>
-          <p style="margin-top: 6px;">This is the least-finished part of the system, and it is the part everything else stands on — milestone M2 is <strong>4 done, 9 to go</strong>. The design says “ownership map built from company registries”; what actually runs is name-matching plus a correction list. That gap is the biggest one between the plan and reality. If you only remember one weak spot, remember this one.</p>
+          <p style="margin-top: 6px;">The ultimate-parent spine took a big step on 2026-08-27 — re-keyed, CJK coverage on, holding-company rollups live and proven in production — and milestone M2 moved to <strong>6 done, 7 to go</strong>. But what runs is still <em>name-matching plus a correction list</em>, not the <strong>ownership map built from company registries</strong> the design calls for (that is v2, epic <span class="mono">#108</span>). A fast-follow, <span class="mono">#792</span>, tracks about <strong>30 residual matcher errors</strong> where legal-form suffixes collide. So company identity is now real and live — but not yet registry-grounded, and it is still the part everything else stands on. If you only remember one weak spot, remember that.</p>
         </div>
       </div>
     </div>
@@ -689,7 +691,7 @@ flowchart LR
   subgraph LAKE["THE LAKE · Cloudflare R2"]
     direction TB
     RAW[("Raw downloads, untouched")]
-    RES[("THE CORPUS<br/><small>148M patents,<br/>cleaned and<br/>deduplicated</small>")]
+    RES[("THE CORPUS<br/><small>148.3M patents<br/>(148,310,457),<br/>cleaned and<br/>deduplicated</small>")]
   end
 
   subgraph BUILD["BUILD · ephemeral rented boxes · DuckDB"]
@@ -796,7 +798,7 @@ flowchart LR
       <div class="eyebrow">The dependency that bit us</div>
       <p><strong>Three serving artifacts are re-keys of the cube.</strong> <code>entity_dim.sqlite</code>, <code>company_file.sqlite</code> and <code>facet_leaderboard.sqlite</code> are all derived from <code>cube.duckdb</code>. Rebuild the cube and deploy it without rebuilding them, and each one keeps serving counts for the <em>previous</em> corpus — with no error, no 503, and no visible symptom except two numbers on the same screen disagreeing.</p>
       <p>That is how we actually found it: two screens disagreed. The company lookup said Novartis held 17 more patents than the technology breakdown did. Neither screen showed an error — one file had simply been rebuilt and the other had not. <strong>A stale file does not look broken. It looks like a bug in whichever number you trust less.</strong></p>
-      <p>The fix is a <strong>reconciliation gate per re-key</strong>, run at deploy time against a marquee value that must be equal on both sides. Below is what each gate compares and what happens when it fails.</p>
+      <p>The fix has two parts. First, a <strong>reconciliation gate per re-key</strong>, run at deploy time against a marquee value that must be equal on both sides (below). Second, and wider: a <strong>co-fresh manifest</strong>. Parent identity is baked into more than just the three re-keys — <code>lookup_lean.db</code> carries each patent's ultimate parent, the strength scores and the report marts are all built from the same corpus snapshot — so a cube re-key forces the <em>whole serving set to be rebuilt and shipped together</em>, from one snapshot, never piecemeal. Below is what each gate compares and what happens when it fails; further down is the cutover that just ran the whole thing for real.</p>
     </div>
 
     <div class="mermaid-wrap wide">
@@ -833,6 +835,12 @@ flowchart TB
 
     <p>The three gates behave differently on purpose, and the reason is cost. Rebuilding the <strong>company name index</strong> is cheap — it is just a searchable list of company names, a few minutes and modest memory — so the live server can redo it itself and carry on.</p>
     <p>The other two need full passes over 170–200 million rows. Doing that on the live server would starve real user requests of memory and disk speed while it ran. So instead of fixing themselves they <strong>stop the deploy</strong>, and a person rebuilds them on a rented machine. This is one instance of the rule that shapes the whole system: <strong>never run a heavy build on the machine that is serving users.</strong></p>
+
+    <div class="note" style="border-color: rgba(52,211,153,0.4); background: linear-gradient(180deg, rgba(52,211,153,0.06), transparent);">
+      <div class="eyebrow" style="color: #6EE7B7;">Proven in production · 2026-08-27</div>
+      <p style="margin: 8px 0 0;">This is no longer a cautionary tale — it is the routine that just ran. The <strong>entity-spine cutover</strong> re-keyed the cube to ultimate-parent resolution, and because parent identity is baked into far more than the three re-keys, <strong>all eight serving artifacts were rebuilt and deployed as one co-fresh batch</strong>: the cube, <code>lookup_lean.db</code>, <code>strength.sqlite</code>, the facet index, the analytics marts, <code>company_file.sqlite</code>, <code>facet_leaderboard.sqlite</code> and <code>entity_dim.sqlite</code>. Every reconciliation gate passed, <strong>61 smoke checks came back green, and there were zero 5xx errors</strong>.</p>
+      <p style="margin: 12px 0 0;">The payoff shows up on every screen at once, because nothing was left on the old keying: <strong>Panasonic Holdings went from 3,461 to about 1.1 million patents</strong> (its subsidiaries now roll up), CJK name coverage went from <strong>0% to 16.9%</strong>, and roughly <strong>10,600</strong> newly-resolved companies appeared. A fast-follow, <span class="mono">#792</span>, tracks about 30 residual matcher errors where legal-form suffixes collide — logged, bounded, and not blocking.</p>
+    </div>
 
     <div class="mermaid-wrap wide">
 <pre class="mermaid">
@@ -1104,7 +1112,7 @@ flowchart LR
     <div class="card" style="border-color: var(--cyan-deep); background: linear-gradient(180deg, rgba(34,211,238,0.05), transparent);">
       <div class="eyebrow" id="takeaways" style="margin-bottom: 12px;">Three things to take away</div>
       <h3 class="feature-title" style="margin-bottom: 14px;">If you remember nothing else.</h3>
-      <p><strong>1 · One artifact is the keying authority.</strong> The cube decides what a company <em>is</em>, and three other serving artifacts are re-keys of it. Any change to how the cube keys parents desynchronises all three, silently. That is why there is a reconciliation gate per re-key, and why one of them self-heals while two refuse the deploy.</p>
+      <p><strong>1 · One artifact is the keying authority.</strong> The cube decides what a company <em>is</em>, and three other serving artifacts are re-keys of it. Any change to how the cube keys parents desynchronises all three, silently. That is why there is a reconciliation gate per re-key, why one of them self-heals while two refuse the deploy, and why a cube re-key ships as a co-fresh batch of the whole serving set. The 2026-08-27 spine cutover ran exactly this — all eight artifacts rebuilt together, gates green, zero 5xx.</p>
       <p><strong>2 · Absent is not zero.</strong> Every degraded route returns a typed 503 and declares itself on <code>/v1/capabilities</code>. An empty <code>200</code> would be a claim about the world; a 503 is a claim about the deployment. The litigation endpoint is the clearest example — cut from the MVP, and honest about it.</p>
       <p style="margin-bottom: 0;"><strong>3 · Status lives in the running system, not the tracker.</strong> Epics stay open after their surface ships. When you need to know whether something works, read <code>/v1/capabilities</code>, the route table, and the capability registry — then go look at the tickets to find out what is still <em>missing</em>.</p>
     </div>
